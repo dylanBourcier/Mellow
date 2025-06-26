@@ -2,6 +2,7 @@ package posts
 
 import (
 	"mellow/controllers/posts"
+	"mellow/utils"
 	"net/http"
 	"strings"
 )
@@ -14,7 +15,7 @@ func PostRootRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		posts.GetAllPosts(w, r)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
 
@@ -22,7 +23,7 @@ func PostRootRouter(w http.ResponseWriter, r *http.Request) {
 func PostRouter(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/posts/")
 	if id == "" || strings.Contains(id, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Post introuvable", utils.ErrPostNotFound)
 		return
 	}
 
@@ -34,7 +35,7 @@ func PostRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		posts.DeletePost(w, r, id)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
 
@@ -42,7 +43,7 @@ func PostRouter(w http.ResponseWriter, r *http.Request) {
 func LikeRouter(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/posts/like/")
 	if id == "" || strings.Contains(id, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Post introuvable", utils.ErrPostNotFound)
 		return
 	}
 
@@ -52,6 +53,6 @@ func LikeRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		posts.UnlikePost(w, r, id)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }

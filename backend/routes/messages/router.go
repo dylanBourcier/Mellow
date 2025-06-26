@@ -2,6 +2,7 @@ package messages
 
 import (
 	"mellow/controllers/messages"
+	"mellow/utils"
 	"net/http"
 	"strings"
 )
@@ -14,7 +15,7 @@ func MessageUserRouter(w http.ResponseWriter, r *http.Request) {
 
 	userId := strings.TrimPrefix(r.URL.Path, "/messages/")
 	if userId == "" || strings.Contains(userId, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Utilisateur introuvable", utils.ErrUserNotFound)
 		return
 	}
 
@@ -24,7 +25,7 @@ func MessageUserRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		messages.SendMessage(w, r, userId)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
 
@@ -32,7 +33,7 @@ func MessageUserRouter(w http.ResponseWriter, r *http.Request) {
 func MessageGroupRouter(w http.ResponseWriter, r *http.Request) {
 	groupId := strings.TrimPrefix(r.URL.Path, "/messages/group/")
 	if groupId == "" || strings.Contains(groupId, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Groupe introuvable", utils.ErrGroupNotFound)
 		return
 	}
 
@@ -42,6 +43,6 @@ func MessageGroupRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		messages.SendGroupMessage(w, r, groupId)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
