@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
-type Session struct {
-	SessionID    uuid.UUID `json:"session_id"`
+type Event struct {
+	EventID      uuid.UUID `json:"event_id"`
 	UserID       uuid.UUID `json:"user_id"`
+	GroupID      uuid.UUID `json:"group_id"`
 	CreationDate time.Time `json:"creation_date"`
-	LastActivity time.Time `json:"last_activity"`
+	EventDate    time.Time `json:"event_date"`
 }
