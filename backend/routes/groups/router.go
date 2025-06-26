@@ -2,6 +2,7 @@ package groups
 
 import (
 	"mellow/controllers/groups"
+	"mellow/utils"
 	"net/http"
 	"strings"
 )
@@ -14,7 +15,7 @@ func GroupRootRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		groups.GetAllGroups(w, r)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
 
@@ -22,7 +23,7 @@ func GroupRootRouter(w http.ResponseWriter, r *http.Request) {
 func GroupPostsRouter(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/groups/posts/")
 	if id == "" || strings.Contains(id, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Ressource introuvable", utils.ErrGroupNotFound)
 		return
 	}
 
@@ -32,6 +33,6 @@ func GroupPostsRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		groups.AddGroupPost(w, r, id)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }

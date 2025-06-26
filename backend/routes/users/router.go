@@ -2,6 +2,7 @@ package users
 
 import (
 	"mellow/controllers/users"
+	"mellow/utils"
 	"net/http"
 	"strings"
 )
@@ -9,7 +10,7 @@ import (
 func UserRouter(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/users/")
 	if id == "" || strings.Contains(id, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Utilisateur introuvable", utils.ErrUserNotFound)
 		return
 	}
 
@@ -21,14 +22,14 @@ func UserRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		users.DeleteUserHandler(w, r, id)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
 
 func FollowRouter(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/users/follow/")
 	if id == "" || strings.Contains(id, "/") {
-		http.NotFound(w, r)
+		utils.RespondError(w, http.StatusNotFound, "Utilisateur introuvable", utils.ErrUserNotFound)
 		return
 	}
 
@@ -38,6 +39,6 @@ func FollowRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		users.UnfollowUser(w, r, id)
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
