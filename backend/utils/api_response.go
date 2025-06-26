@@ -10,7 +10,7 @@ type APIResponse struct {
 	Status    string      `json:"status"`
 	Message   string      `json:"message"`
 	Data      interface{} `json:"data"`
-	ErrorCode *string     `json:"errorCode"` // pointeur = null possible
+	ErrorCode *string     `json:"errorCode"`
 }
 
 // Réponse succès
