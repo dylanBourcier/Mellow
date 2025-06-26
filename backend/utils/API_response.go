@@ -24,7 +24,9 @@ func RespondJSON(w http.ResponseWriter, code int, message string, data interface
 		ErrorCode: nil,
 	}
 
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Println("Failed to encode JSON response:", err)
+	}
 }
 
 // Réponse erreur
