@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -24,7 +25,8 @@ func RespondJSON(w http.ResponseWriter, code int, message string, data interface
 		ErrorCode: nil,
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
 		log.Println("Failed to encode JSON response:", err)
 	}
 }
@@ -41,5 +43,8 @@ func RespondError(w http.ResponseWriter, code int, message string, errorCode str
 		ErrorCode: &errorCode,
 	}
 
-	json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Println("Failed to encode JSON response:", err)
+	}
 }
