@@ -2,6 +2,7 @@ package comments
 
 import (
 	"mellow/controllers/comments"
+	"mellow/utils"
 	"net/http"
 	"strings"
 )
@@ -24,6 +25,6 @@ func CommentRouter(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		comments.DeleteComment(w, r, id) // id = commentId
 	default:
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
