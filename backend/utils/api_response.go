@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -9,7 +10,7 @@ type APIResponse struct {
 	Status    string      `json:"status"`
 	Message   string      `json:"message"`
 	Data      interface{} `json:"data"`
-	ErrorCode *string     `json:"errorCode"` // pointeur = null possible
+	ErrorCode *string     `json:"errorCode"`
 }
 
 // Réponse succès
@@ -24,7 +25,8 @@ func RespondJSON(w http.ResponseWriter, code int, message string, data interface
 		ErrorCode: nil,
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
 		log.Println("Failed to encode JSON response:", err)
 	}
 }
@@ -41,5 +43,8 @@ func RespondError(w http.ResponseWriter, code int, message string, errorCode str
 		ErrorCode: &errorCode,
 	}
 
-	json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Println("Failed to encode JSON response:", err)
+	}
 }
