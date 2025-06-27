@@ -1,1 +1,20 @@
 package repositories
+
+import (
+	"context"
+	"mellow/models"
+)
+
+type NotificationRepository interface {
+	// InsertNotification ajoute une nouvelle notification.
+	InsertNotification(ctx context.Context, notif *models.Notification) error
+
+	// GetUserNotifications récupère toutes les notifications d’un utilisateur.
+	GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error)
+
+	// MarkAsRead met à jour le statut d’une notification.
+	MarkAsRead(ctx context.Context, notificationID string) error
+
+	// DeleteNotification supprime une notification.
+	DeleteNotification(ctx context.Context, notificationID string) error
+}
