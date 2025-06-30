@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS "notifications" (
     ),
     "seen" BOOLEAN NOT NULL DEFAULT false,
     "creation_date" DATETIME NOT NULL,
-    FOREIGN KEY("user_id") REFERENCES "users"("user_id")
+    FOREIGN KEY("user_id") REFERENCES "users"("user_id") FOREIGN KEY ("user_id") REFERENCES "notifications"("user_id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );

@@ -14,6 +14,4 @@ CREATE TABLE IF NOT EXISTS "users" (
     -- optionnelle
     "description" VARCHAR,
     PRIMARY KEY("user_id"),
-    FOREIGN KEY ("user_id") REFERENCES "sessions"("user_id") ON UPDATE NO ACTION ON DELETE NO ACTION,
-    FOREIGN KEY ("user_id") REFERENCES "notifications"("user_id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
