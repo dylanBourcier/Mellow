@@ -13,5 +13,5 @@ CREATE TABLE IF NOT EXISTS "users" (
     "creation_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- optionnelle
     "description" VARCHAR,
-    PRIMARY KEY("user_id"),
+    PRIMARY KEY("user_id")
 );
