@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "birthdate" DATETIME NOT NULL,
     "role" VARCHAR NOT NULL,
     -- optionnelle
-    "avatar" BLOB,
+    "image_url" VARCHAR,
     "creation_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- optionnelle
     "description" VARCHAR,
