@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS "comments" (
     "post_id" VARCHAR NOT NULL,
     "content" TEXT NOT NULL,
     "creation_date" DATETIME NOT NULL,
-    "image" BLOB
+    "image" BLOB,
     FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE,
     FOREIGN KEY ("post_id") REFERENCES "posts"("post_id") ON DELETE CASCADE
 );
