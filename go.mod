@@ -1,5 +1,5 @@
-module github.com/golang-migrate/migrate/v4
+module mellow
 
-go 1.24.4
+go 1.24.2
 
 require github.com/mattn/go-sqlite3 v1.14.28 // indirect
