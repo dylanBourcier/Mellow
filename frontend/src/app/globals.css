@@ -23,13 +23,18 @@
 
   --box-shadow: 3px 3px 7px 0px rgba(0, 0, 0, 0.25);
 }
+*{
+  box-sizing: border-box;
+}
 body {
+  height: 100vh;
+  height: 100dvh;
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
   box-sizing: border-box;
   margin: 0;
-  padding: 0;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
