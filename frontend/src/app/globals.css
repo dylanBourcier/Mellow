@@ -1,20 +1,33 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter&family=Quicksand&display=swap');
+@import 'tailwindcss';
 
 :root {
-  --background: #ECE8E6;
-  --foreground: #4A4A4A;
+  --color-background: #ece8e6;
+  --color-foreground: #4a4a4a;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --font-heading: 'Quicksand', cursive;
+  --font-sans: 'Inter', Arial, Helvetica, sans-serif;
+
+  --color-white: #f7f4f2;
+  --color-light-grey: #ece8e6;
+  --color-dark-grey: #4a4a4a;
+  --color-dark-grey-lighter: #9f9ea0;
+  --color-lavender-1: #d8b4fe;
+  --color-lavender-2: #cda6f7;
+  --color-lavender-3: #b068fd;
+  --color-lavender-4: #a654fd;
+  --color-lavender-5: #922dfc;
+  --color-lavender-6: #ecdbff;
+
+  --box-shadow: 3px 3px 7px 0px rgba(0, 0, 0, 0.25);
 }
-
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
