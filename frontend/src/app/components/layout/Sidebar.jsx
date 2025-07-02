@@ -1,9 +1,12 @@
+'use client';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import Navlink from '../ui/Navlink';
 import Image from 'next/image';
 import Button from '../ui/Button';
 
 function Sidebar(props) {
+  const pathname = usePathname();
   return (
     <div
       className="hidden lg:flex fixed top-6 flex-col self-start items-start justify-start h-[95dvh] box-border w-72 bg-white shadow-(--box-shadow) p-4 rounded-2xl"
@@ -18,25 +21,45 @@ function Sidebar(props) {
             height={56}
           ></Image>
         </div>
-        <Navlink href="/" icon="home">
+        <Navlink href="/" icon="home" isActive={pathname === '/'}>
           Home
         </Navlink>
-        <Navlink href="/search" icon="search">
+        <Navlink
+          href="/search"
+          icon="search"
+          isActive={pathname.startsWith('/search')}
+        >
           Search
         </Navlink>
-        <Navlink href="/messages" icon="messages">
+        <Navlink
+          href="/messages"
+          icon="messages"
+          isActive={pathname.startsWith('/messages')}
+        >
           Messages
         </Navlink>
-        <Navlink href="/groups" icon="groups">
+        <Navlink
+          href="/groups"
+          icon="groups"
+          isActive={pathname.startsWith('/groups')}
+        >
           Groups
         </Navlink>
-        <Navlink href="/notifications" icon="notifications">
+        <Navlink
+          href="/notifications"
+          icon="notifications"
+          isActive={pathname.startsWith('/notifications')}
+        >
           Notifications
         </Navlink>
-        <Navlink href="/profile" icon="profile">
+        <Navlink
+          href="/profile"
+          icon="profile"
+          isActive={pathname.startsWith('/profile')}
+        >
           Profile
         </Navlink>
-        <Button className="mt-6 w-full">Post</Button>
+        <Button className="mt-6 w-full">New Post</Button>
       </nav>
       <div className="w-full">
         <Button className="w-full">Login</Button>

@@ -18,7 +18,7 @@ export default function MainLayout({ children }) {
       <body>
         <div className="flex relative h-full w-screen max-w-7xl justify-center items-start">
           <Sidebar />
-          <main className="lg:ml-78 flex-1 flex flex-col h-full">
+          <main className="lg:ml-78 flex-1 flex flex-col h-full px-2 lg:px-3">
             <Link href={'/'}>
               <Image
                 src="img/logo.svg"

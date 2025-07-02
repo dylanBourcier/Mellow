@@ -23,14 +23,18 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex align-middle gap-1 justify-center rounded-2xl px-4 transition-colors duration-200 shadow-(--box-shadow) disabled:bg-dark-grey-lighter ${className}`}
+      className={`flex align-middle gap-1 cursor-pointer justify-center rounded-2xl px-4 transition-colors duration-200 shadow-(--box-shadow) disabled:bg-dark-grey-lighter ${className}`}
     >
       <span>{children}</span>
       {icon && icons[icon] && <span className="w-6 h-6">{icons[icon]}</span>}
     </button>
   );
   if (href) {
-    return <Link href={href}>{button}</Link>;
+    return (
+      <Link href={href} className="flex">
+        {button}
+      </Link>
+    );
   }
   return button;
 }
