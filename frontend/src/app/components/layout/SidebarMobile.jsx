@@ -7,7 +7,7 @@ import { icons } from '@/app/lib/icons';
 function SidebarMobile() {
   //
   return (
-    <div className="flex w-full lg:hidden h-16 absolute -bottom-0 bg-white justify-evenly items-center">
+    <div className="flex w-full lg:hidden h-16 fixed -bottom-0 bg-white justify-evenly items-center">
       <Navlink href="/" icon="home" isActive></Navlink>
       <Navlink href="/search" icon="search"></Navlink>
       <Navlink href="/messages" icon="messages"></Navlink>
