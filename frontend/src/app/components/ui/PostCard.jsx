@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
 import Image from 'next/image';
-import { icons } from '@/app/lib/icons';
 
 function PostCard() {
     const  postId=1;
