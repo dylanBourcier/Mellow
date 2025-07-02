@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS events_table;
+DROP TABLE IF EXISTS events;
