@@ -1,37 +1,27 @@
 import Link from 'next/link';
 import React from 'react';
 import Image from 'next/image';
+import UserInfo from './UserInfo';
 
-function PostCard() {
-  const postId = 1;
-  const postTitle = 'Sample Post Title';
-  const postContent =
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod.';
-  const firstname = 'John';
-  const lastname = 'Doe';
-  const authorAvatar = '/img/DefaultAvatar.png';
-  const userName = 'johndoe';
-  const date = '2023-10-01';
-  const Comments = 5;
+function PostCard({postInfos}) {
+  
+  // You can replace these with props or state as needed
+   const { postId, postTitle, postContent, authorAvatar, userName, date, Comments } = postInfos;
   return (
     <div>
       <Link
-        href="/post/1"
+        href={`/posts/${postId}`}
         className="flex flex-col p-6 gap-3 bg-white shadow-(--box-shadow) rounded-lg hover:-translate-y-0.5 transition-all duration-300"
       >
-        <div className="flex items-center gap-1">
-          <Image
-            src={authorAvatar}
-            alt="Author Avatar"
-            width={32}
-            height={32}
-          ></Image>
-          <span className="underline">
-            {firstname} {lastname} · {userName}
-          </span>
-        </div>
-        <div>
-          <h3>{postTitle}</h3>
+        <UserInfo
+        authorAvatar={authorAvatar} 
+        userName={userName} 
+        userId={24} 
+        groupId={45} 
+        groupName="test">
+        </UserInfo>
+        <div> 
+          <h3>{postTitle}</h3> 
           <span>{postContent}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
@@ -52,3 +42,4 @@ function PostCard() {
 }
 
 export default PostCard;
+

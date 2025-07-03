@@ -22,7 +22,7 @@ export default function MainLayout({ children }) {
           <main className="lg:ml-78 flex-1 flex flex-col h-full px-2 lg:px-3">
             <Link href={'/'}>
               <Image
-                src="img/logo.svg"
+                src="/img/logo.svg"
                 alt="Mellow Logo"
                 width={32}
                 height={32}
