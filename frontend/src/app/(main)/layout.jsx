@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Sidebar from '../components/layout/Sidebar';
 import SidebarMobile from '../components/layout/SidebarMobile';
 import Link from 'next/link';
+import { Inter, Quicksand } from 'next/font/google';
 
 export const metadata = {
   title: {

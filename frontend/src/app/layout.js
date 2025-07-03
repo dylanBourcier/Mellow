@@ -1,14 +1,16 @@
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, Quicksand } from 'next/font/google';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
   subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const quicksand = Quicksand({
   subsets: ['latin'],
+  variable: '--font-quicksand',
+  display: 'swap',
 });
 
 export const metadata = {
@@ -19,9 +21,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${inter.variable} ${quicksand.variable} antialiased`}>
         {children}
       </body>
     </html>
