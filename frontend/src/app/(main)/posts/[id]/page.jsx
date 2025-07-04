@@ -5,6 +5,7 @@ import UserInfo from '@/app/components/ui/UserInfo';
 import PageTitle from '@/app/components/ui/PageTitle';
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
+import CommentCard from '@/app/components/ui/CommentCard';
 
 const metadata = {
   title: 'Post Details - Mellow',
@@ -28,12 +29,16 @@ export default function PostDetailsPage() {
     <PageTitle className='text-left'>{postTitle}</PageTitle><pre className='whitespace-pre-wrap break-words font-sans font-inter leading-relaxed'>{postContent}</pre>
     </div>
   </div>
-  <div className='flex flex-col gap-3 p-4 bg-white shadow-(--box-shadow) rounded-lg'>
-    <PageTitle className='flex text-left'>Comments({nbComments})</PageTitle>
+  <div className='flex flex-col gap-3 px-2 lg:px-8 py-2.5'>
+    <PageTitle className='flex text-left'>Comments ({nbComments})</PageTitle>
     <div className='flex gap-1 items-center'>
     <Input type="text" placeholder="Post a comment..."className='border border-lavender-5'></Input>
     <Button>Comment</Button>
     </div>
+    <CommentCard></CommentCard>
+    <CommentCard></CommentCard>
+    <CommentCard></CommentCard>
+    <CommentCard></CommentCard>
   </div>
   </div>
 );
