@@ -31,7 +31,7 @@ export default function Button({
   );
   if (href) {
     return (
-      <Link href={href} className="flex">
+      <Link href={href} className="flex w-full">
         {button}
       </Link>
     );
