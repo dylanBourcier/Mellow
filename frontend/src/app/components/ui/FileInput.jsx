@@ -10,6 +10,7 @@ export default function FileInput({
   name,
   register,
   setValue,
+  usePreview = true,
 }) {
   const inputRef = useRef(null);
   const [fileName, setFileName] = useState('');
@@ -64,7 +65,7 @@ export default function FileInput({
         />
         {fileName && <span className="text-sm">{fileName}</span>}
       </div>
-      {preview && (
+      {preview && usePreview &&(
         <img
           src={preview}
           alt="Preview"
