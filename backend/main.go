@@ -35,8 +35,13 @@ func main() {
 		middlewares.CORS,        // Headers CORS
 	)
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3225" // Default port
+	}
+
 	server := &http.Server{
-		Addr:              ":3225",
+		Addr:              ":" + port,
 		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 		WriteTimeout:      10 * time.Second,
