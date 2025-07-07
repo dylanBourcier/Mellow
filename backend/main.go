@@ -49,8 +49,8 @@ func main() {
 		MaxHeaderBytes:    1 << 20,
 	}
 
-	log.Println("✅ Serveur lancé sur http://localhost:3225")
+	log.Println("✅ Server started at http://localhost:3225")
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatal("Erreur serveur : ", err)
+		log.Fatal("Server error: ", err)
 	}
 }
