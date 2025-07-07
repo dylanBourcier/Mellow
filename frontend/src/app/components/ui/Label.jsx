@@ -1,9 +1,6 @@
 export default function Label({ htmlFor, children, className = '' }) {
   return (
-    <label
-      htmlFor={htmlFor}
-      className={`block mb-1 text-sm font-medium text-gray-700 ${className}`}
-    >
+    <label htmlFor={htmlFor} className={` font-heading text-xl ${className}`}>
       {children}
     </label>
   );
