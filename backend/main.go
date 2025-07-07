@@ -2,23 +2,24 @@ package main
 
 import (
 	"log"
-	"mellow/backend/database"
-	"mellow/backend/middlewares"
-	"mellow/backend/routes"
-	"mellow/backend/utils"
+	"mellow/database"
+	"mellow/middlewares"
+	"mellow/routes"
+	"mellow/utils"
 	"net/http"
+	"os"
 	"time"
 )
 
 func main() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		dbPath = "backend/data/social.db" // Default value
+		dbPath = "data/social.db" // Default value
 	}
 
 	migrationsPath := os.Getenv("MIGRATIONS_PATH")
 	if migrationsPath == "" {
-		migrationsPath = "backend/database/migration/sqlite" // Default value
+		migrationsPath = "database/migration/sqlite" // Default value
 	}
 	err := database.ApplyMigrations(dbPath, migrationsPath)
 	if err != nil {
