@@ -24,7 +24,7 @@ export default function MainLayout({ children }) {
             <div className=" flex relative justify-center items-center">
               <Link href={'/'}>
                 <Image
-                  src="img/logo.svg"
+                  src="/img/logo.svg"
                   alt="Mellow Logo"
                   width={32}
                   height={32}

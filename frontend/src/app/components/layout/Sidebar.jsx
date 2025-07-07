@@ -59,7 +59,7 @@ function Sidebar(props) {
         >
           Profile
         </Navlink>
-        <Button className="mt-6 w-full">New Post</Button>
+        <Button className="mt-6 w-full" href="/posts/create">New Post</Button>
       </nav>
       <div className="w-full">
         <Button href="/login" className="w-full">
