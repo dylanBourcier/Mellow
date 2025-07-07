@@ -11,9 +11,15 @@ import (
 )
 
 func main() {
-	dbPath := "backend/data/social.db"
-	migrationsPath := "backend/database/migration/sqlite"
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "backend/data/social.db" // Default value
+	}
 
+	migrationsPath := os.Getenv("MIGRATIONS_PATH")
+	if migrationsPath == "" {
+		migrationsPath = "backend/database/migration/sqlite" // Default value
+	}
 	err := database.ApplyMigrations(dbPath, migrationsPath)
 	if err != nil {
 		log.Fatalf("❌ Migration failed: %v", err)
