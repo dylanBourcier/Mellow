@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import Label from './Label';
 
 export default function FileInput({
-  label = 'Chose a file',
+  label = 'Choose a file',
   onChange,
   id,
   name,
