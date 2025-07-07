@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 
-function InputSelect({options}, id) {
+function InputSelect({ options, id }) {
     const handleChange = (event) => {
         console.log(event.target.value);
     };
