@@ -1,0 +1,56 @@
+package main
+
+import (
+	"log"
+	"mellow/backend/database"
+	"mellow/backend/middlewares"
+	"mellow/backend/routes"
+	"mellow/backend/utils"
+	"net/http"
+	"time"
+)
+
+func main() {
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "backend/data/social.db" // Default value
+	}
+
+	migrationsPath := os.Getenv("MIGRATIONS_PATH")
+	if migrationsPath == "" {
+		migrationsPath = "backend/database/migration/sqlite" // Default value
+	}
+	err := database.ApplyMigrations(dbPath, migrationsPath)
+	if err != nil {
+		log.Fatalf("❌ Migration failed: %v", err)
+	}
+
+	log.Println("✅ All migrations applied successfully.")
+
+	mux := routes.SetupRoutes()
+
+	// Appliquer middlewares globaux
+	handler := utils.ChainHTTP(mux,
+		middlewares.LoggingHTTP, // Logging des requêtes
+		middlewares.CORS,        // Headers CORS
+	)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3225" // Default port
+	}
+
+	server := &http.Server{
+		Addr:              ":" + port,
+		Handler:           handler,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    1 << 20,
+	}
+
+	log.Println("✅ Server started at http://localhost:3225")
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal("Server error: ", err)
+	}
+}
