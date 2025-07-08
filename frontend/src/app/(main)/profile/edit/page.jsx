@@ -1,10 +1,10 @@
-import UserInfo from '@/app/components/ui/UserInfo';
+import EditProfile from '@/app/components/layout/EditProfile';
 import React from 'react';
 
 function page() {
     return (
-        <div>
-            <h1>edit</h1>
+        <div className='flex flex-col items-center justify-center'>
+            <EditProfile />
         </div>
     );
 }
