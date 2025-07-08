@@ -10,6 +10,7 @@ type UserRepository interface {
 	FindUserByID(ctx context.Context, userID string) (*models.User, error)
 	FindUserByUsername(ctx context.Context, username string) (*models.User, error)
 	UserExistsByEmailOrUsername(ctx context.Context, email, username string) (bool, error)
+	GetUserByUsernameOrEmail(ctx context.Context, usernameOrEmail string) (*models.User, error)
 	UpdateUser(ctx context.Context, user *models.User) error
 	DeleteUser(ctx context.Context, userID string) error
 

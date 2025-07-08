@@ -17,7 +17,7 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Authentification
-	auth.RegisterAuthRoutes(mux, services.UserService)
+	auth.RegisterAuthRoutes(mux, services.UserService, services.AuthService)
 
 	// Utilisateurs
 	users.RegisterUserRoutes(mux, services.UserService)

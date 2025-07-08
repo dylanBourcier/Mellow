@@ -43,6 +43,23 @@ func (r *userRepositoryImpl) UserExistsByEmailOrUsername(ctx context.Context, em
 	}
 	return count > 0, nil
 }
+func (r *userRepositoryImpl) GetUserByUsernameOrEmail(ctx context.Context, usernameOrEmail string) (*models.User, error) {
+	var user models.User
+	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description 
+	          FROM users WHERE username = ? OR email = ?`
+	err := r.db.QueryRowContext(ctx, query, usernameOrEmail, usernameOrEmail).Scan(
+		&user.UserID, &user.Email, &user.Password, &user.Username,
+		&user.Firstname, &user.Lastname, &user.Birthdate,
+		&user.Role, &user.ImageURL, &user.CreationDate,
+		&user.Description)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // User not found
+		}
+		return nil, fmt.Errorf("error retrieving user: %w", err)
+	}
+	return &user, nil
+}
 
 func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) error {
 	// TODO: Requête UPDATE pour mettre à jour les informations de l'utilisateur
