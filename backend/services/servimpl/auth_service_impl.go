@@ -54,7 +54,6 @@ func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password s
 }
 
 func (s *authServiceImpl) Logout(ctx context.Context, sessionID string) error {
-	s.authRepo.DeleteSession(ctx, sessionID)
 	if err := s.authRepo.DeleteSession(ctx, sessionID); err != nil {
 		return fmt.Errorf("failed to delete session: %w", err)
 	}
