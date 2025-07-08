@@ -10,9 +10,7 @@ import { useForm } from 'react-hook-form';
 function EditProfile() {
       const {
         register,
-        handleSubmit,
         setValue,
-        formState: { errors },
       } = useForm();
 
         return (
@@ -20,7 +18,7 @@ function EditProfile() {
                 <div className='flex items-center justify-center mb-12'>
                     <h1 className=' text-lavender-3 text-shadow-(--text-shadow) w-full text-center'>Edit Profile</h1>
                 </div>
-                <div className='flex gap-2.5 w-full'>
+                <div className='flex flex-col lg:flex-row gap-2.5 w-full'>
                     <Label htmlFor={"firstname"}>FirstName* :<Input id="firstname" placeholder="Enter your firstname..."></Input></Label>
                     <Label htmlFor={"lastname"}>LastName* :<Input id="lastname" placeholder="Enter your lastname..."></Input></Label>
                 </div>
@@ -96,7 +94,7 @@ function EditProfile() {
                     label="Chose a profile picture"
                     setValue={setValue}
                     register={register}
-                            />
+                    />
                 </div>
                 <div className='flex flex-1 align-middle justify-center gap-2.5 w-full'>
                     <Button type="submit" className="w-full">
