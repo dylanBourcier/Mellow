@@ -1,7 +1,10 @@
+"use client";
+
 import React from 'react';
 import Image from 'next/image';
 import PostCard from '../ui/PostCard';
 import Link from 'next/link';
+import Button from '../ui/Button';
 
 
 function ProfileScreen({ firstName, lastName, username, email, birthdate, followers, following,authorAvatar, description, myposts, userId}) {
@@ -50,12 +53,26 @@ function ProfileScreen({ firstName, lastName, username, email, birthdate, follow
                 <div>
                     Birthdate: <span className='text-dark-grey-lighter font-inter'>{birthdate}</span>
                 </div>
-                <div className='flex gap-2.5 underline cursor-pointer font-inter text-sm'>
+                <div className='flex gap-2.5 font-inter text-sm justify-between w-full'>
+                    <div
+                    className='flex gap-2.5 underline cursor-pointer font-inter text-sm'>
                     <div>
-                        <Link href={`../user/${userId}/followers`}>Followers: <span >{followers}</span></Link>
+                        <Link href={`/user/${userId}/followers`}>Followers: <span >{followers}</span></Link>
                     </div>
                     <div>
-                        <Link href={`../user/${userId}/following`}>Following: <span>{following}</span></Link>
+                        <Link href={`/user/${userId}/following`}>Following: <span>{following}</span></Link>
+                    </div>
+                    </div>
+                    <div className='flex gap-2.5'>
+                    <Button className='flex items-center gap-1.5' href="/profile/edit" isSecondary={true} >
+                    <Image
+                    src="/img/Edit.svg"
+                    width={16}
+                    height={16}
+                    alt="Edit Icon"
+                    />
+                    <span className="px-1.5 text-center hidden lg:inline-block">Edit Profile</span>
+                    </Button>
                     </div>
                 </div>
             </div>
