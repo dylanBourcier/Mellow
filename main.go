@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
-	"mellow/backend/database"
+	"mellow/backend/utils"
 )
 
 func main() {
 	dbPath := "backend/data/social.db"
 	migrationsPath := "backend/database/migration/sqlite"
 
-	err := database.ApplyMigrations(dbPath, migrationsPath)
+	err := utils.ApplyMigrations(dbPath, migrationsPath)
 	if err != nil {
 		log.Fatalf("❌ Migration failed: %v", err)
 	}
