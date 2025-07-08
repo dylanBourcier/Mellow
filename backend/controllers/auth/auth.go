@@ -10,6 +10,7 @@ import (
 
 func SignUpHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 		if r.Method != http.MethodPost {
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
 			return

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"mellow/bootstrap"
 	"mellow/database"
 	"mellow/middlewares"
 	"mellow/routes"
@@ -34,8 +35,8 @@ func main() {
 		log.Fatalf("❌ Failed to connect to the database: %v", err)
 	}
 	defer db.Close()
-	repos := database.InitRepositories(db)
-	services := database.InitServices(repos)
+	repos := bootstrap.InitRepositories(db)
+	services := bootstrap.InitServices(repos)
 	mux := routes.SetupRoutes(services)
 
 	// Appliquer middlewares globaux

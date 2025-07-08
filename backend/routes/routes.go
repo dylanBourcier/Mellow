@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"mellow/database"
+	"mellow/bootstrap"
 	"mellow/routes/admin"
 	"mellow/routes/auth"
 	"mellow/routes/groups"
@@ -13,7 +13,7 @@ import (
 	"mellow/routes/users"
 )
 
-func SetupRoutes(services *database.Services) *http.ServeMux {
+func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Authentification
