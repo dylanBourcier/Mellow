@@ -4,10 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"io/fs"
-	"mellow/repositories"
-	"mellow/repositories/repoimpl"
-	"mellow/services"
-	"mellow/services/servimpl"
 	"os"
 	"path/filepath"
 	"sort"
@@ -68,24 +64,4 @@ func InitDB(dbPath string) (*sql.DB, error) {
 
 	fmt.Println("✅ Database connection established successfully.")
 	return db, nil
-}
-
-type Repositories struct {
-	UserRepository repositories.UserRepository
-}
-
-func InitRepositories(db *sql.DB) *Repositories {
-	return &Repositories{
-		UserRepository: repoimpl.NewUserRepository(db),
-	}
-}
-
-type Services struct {
-	UserService services.UserService
-}
-
-func InitServices(repos *Repositories) *Services {
-	return &Services{
-		UserService: servimpl.NewUserService(repos.UserRepository),
-	}
 }
