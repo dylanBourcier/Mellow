@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { icons } from '@/app/lib/icons';
+import React from 'react';
 
 export default function UserInfo({
     userName = 'johndoe',

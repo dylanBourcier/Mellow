@@ -1,9 +1,11 @@
 import React from 'react';
 import Image from 'next/image';
 import PostCard from '../ui/PostCard';
+import Link from 'next/link';
 
-function ProfileScreen({ firstName, lastName, username, email, birthdate, followers, following,authorAvatar, description, myposts}) {
-    const postId = 1;
+
+function ProfileScreen({ firstName, lastName, username, email, birthdate, followers, following,authorAvatar, description, myposts, userId}) {
+    const postId = 1;// Example user ID
     const postTitle = 'Sample Post Title';
     const postContent =
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod.';
@@ -50,10 +52,10 @@ function ProfileScreen({ firstName, lastName, username, email, birthdate, follow
                 </div>
                 <div className='flex gap-2.5 underline cursor-pointer font-inter text-sm'>
                     <div>
-                        Followers: <span >{followers}</span>
+                        <Link href={`../user/${userId}/followers`}>Followers: <span >{followers}</span></Link>
                     </div>
                     <div>
-                        Following: <span>{following}</span>
+                        <Link href={`../user/${userId}/following`}>Following: <span>{following}</span></Link>
                     </div>
                 </div>
             </div>
