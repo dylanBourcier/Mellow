@@ -52,7 +52,7 @@ function ProfileScreen({
           </div>
           <div className="font-quickSand text-xl">({username})</div>
         </div>
-        <div>{description}</div>
+        <div className='flex w-full'>{description}</div>
       </div>
       <div className="flex flex-col gap-2.5 items-start py-4 font-inter text-sm">
         <div>
