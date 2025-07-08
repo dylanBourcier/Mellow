@@ -20,8 +20,7 @@ func (r *userRepositoryImpl) InsertUser(ctx context.Context, user *models.User) 
 	query := "INSERT INTO users (user_id,email,password,username,firstname,lastname,birthdate,role,image_url,creation_date,description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	_, err := r.db.ExecContext(ctx, query, user.UserID, user.Email, user.Password, user.Username, user.Firstname, user.Lastname, user.Birthdate, user.Role, user.ImageURL, user.CreationDate, user.Description)
 	if err != nil {
-		fmt.Printf("Error inserting user: %v\n", err)
-		return err
+		return fmt.Errorf("error inserting user: %w", err)
 	}
 	return nil
 }
