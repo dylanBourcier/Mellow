@@ -10,6 +10,7 @@ export default function Button({
   disabled = false,
   isSecondary = false,
   icon,
+  childrenClassName = '',
 }) {
   if (isSecondary) {
     className +=
@@ -25,7 +26,7 @@ export default function Button({
       disabled={disabled}
       className={`flex align-middle gap-1 cursor-pointer justify-center rounded-2xl px-4 transition-colors duration-200 shadow-(--box-shadow) disabled:bg-dark-grey-lighter ${className}`}
     >
-      <span>{children}</span>
+      <span className={childrenClassName}>{children}</span>
       {icon && icons[icon] && <span className="w-6 h-6">{icons[icon]}</span>}
     </button>
   );
