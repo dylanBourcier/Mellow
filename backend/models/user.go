@@ -15,7 +15,7 @@ type User struct {
 	Lastname     string    `json:"lastname"`
 	Birthdate    time.Time `json:"birthdate"`
 	Role         string    `json:"role"`
-	Avatar       *string   `json:"avatar,omitempty"`
+	ImageURL     *string   `json:"image_url,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
 	Description  *string   `json:"description,omitempty"`
 }

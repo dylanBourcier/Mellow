@@ -1,25 +1,60 @@
-package impl
+package servimpl
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type userServiceImpl struct {
-	db *sql.DB
+	userRepo repositories.UserRepository // Référence au repository utilisateur
 }
 
 // NewUserService crée une nouvelle instance de UserService.
-func NewUserService(db *sql.DB) services.UserService {
-	return &userServiceImpl{db: db}
+func NewUserService(userRepo repositories.UserRepository) services.UserService {
+	return &userServiceImpl{userRepo: userRepo}
 }
 
 func (s *userServiceImpl) CreateUser(ctx context.Context, user *models.User) error {
-	// TODO: Appliquer la logique métier (ex: validation, vérification unicité)
-	// TODO: Appeler le repository pour insérer l'utilisateur en base
-	return nil
+	// Validation simple
+	if user.Email == "" || user.Username == "" || user.Password == "" || user.Firstname == "" || user.Lastname == "" || user.Birthdate.IsZero() {
+		return fmt.Errorf("%s: missing required fields", utils.ErrInvalidUserData)
+	}
+	// Vérifier si l'utilisateur existe déjà par email ou nom d'utilisateur
+	exists, err := s.userRepo.UserExistsByEmailOrUsername(ctx, user.Email, user.Username)
+	if err != nil {
+		return fmt.Errorf("failed to check if user exists: %w", err)
+	}
+	if exists {
+		return fmt.Errorf("%s: user with email or username already exists", utils.ErrUserAlreadyExists)
+	}
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return fmt.Errorf("failed to generate user ID: %w", err)
+	}
+	user.UserID = uuid
+
+	user.CreationDate = time.Now() // Assigner la date de création actuelle
+
+	if user.Role == "" {
+		user.Role = "user" // Assigner un rôle par défaut si non spécifié
+	}
+
+	//Hash the password before storing it
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+	user.Password = hashedPassword
+
+	return s.userRepo.InsertUser(ctx, user)
 }
 
 func (s *userServiceImpl) GetUserByID(ctx context.Context, userID string) (*models.User, error) {

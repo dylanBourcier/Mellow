@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS "users" (
     "user_id" VARCHAR NOT NULL,
-    "session_id" VARCHAR NOT NULL,
     "email" VARCHAR NOT NULL UNIQUE,
     "password" VARCHAR NOT NULL,
     "username" VARCHAR NOT NULL UNIQUE,
