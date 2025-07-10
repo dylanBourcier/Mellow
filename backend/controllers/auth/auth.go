@@ -62,9 +62,9 @@ func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
 			Name:     config.CookieName,
 			Value:    sid,
 			Path:     "/",
-			Expires:  time.Now().Add(config.CookieLifetime), // 7 jours par défaut
+			Expires:  time.Now().Add(config.CookieLifetime), // 7 days by default
 			HttpOnly: true,
-			Secure:   config.CookieSecure, // true en prod (HTTPS)
+			Secure:   config.CookieSecure, // true in production (HTTPS)
 			SameSite: http.SameSiteLaxMode,
 		})
 
@@ -74,7 +74,7 @@ func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
 
 func LogoutHandler(authSvc services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//Verifier si la méthode est POST
+		// Verify if the method is POST
 		if r.Method != http.MethodPost {
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
 			return
