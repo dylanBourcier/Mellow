@@ -23,6 +23,10 @@ func AuthMiddleware(sessionRepo repositories.AuthRepository) func(http.Handler) 
 				utils.RespondError(w, http.StatusUnauthorized, "Invalid session", utils.ErrUnauthorized)
 				return
 			}
+			if uid.String() == "" {
+				utils.RespondError(w, http.StatusUnauthorized, "Invalid session", utils.ErrUnauthorized)
+				return
+			}
 			if err := sessionRepo.UpdateLastActivity(r.Context(), sessionID); err != nil {
 				log.Printf("Failed to update session last_activity: %v", err)
 			}

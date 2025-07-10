@@ -24,7 +24,9 @@ func NewAuthService(userRepo repositories.UserRepository, authRepo repositories.
 
 func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password string) (*models.User, string, error) {
 
-	_ = s.authRepo.DeleteExpiredSessions(ctx)
+	if err := s.authRepo.DeleteExpiredSessions(ctx); err != nil {
+		return nil, "", fmt.Errorf("failed to delete expired sessions: %w", err)
+	}
 	// Vérifie si l'utilisateur existe avec l'email ou le nom d'utilisateur
 	user, err := s.userRepo.GetUserByUsernameOrEmail(ctx, emailOrUsername)
 	if err != nil {

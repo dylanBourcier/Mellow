@@ -30,23 +30,20 @@ func SignUpHandler(userService services.UserService) http.HandlerFunc {
 }
 
 func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
-	type payload struct {
-		Login    string `json:"login"` // email ou username
-		Password string `json:"password"`
-	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
-		var p payload
+		var p models.LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 			utils.RespondError(w, http.StatusBadRequest, "Invalid JSON", utils.ErrInvalidJSON)
 			return
 		}
 
-		user, sid, err := authSvc.Login(r.Context(), p.Login, p.Password)
+		user, sid, err := authSvc.Login(r.Context(), p.Identifier, p.Password)
 		if err != nil {
 			if err.Error() == utils.ErrUserNotFound || err.Error() == utils.ErrInvalidCredentials {
 				// Si l'utilisateur n'existe pas ou si les identifiants sont incorrects
