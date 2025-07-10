@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import PostCard from '../ui/PostCard';
-import Link from 'next/link';
-import Button from '../ui/Button';
-import { icons } from '@/app/lib/icons';
+import React from "react";
+import Image from "next/image";
+import PostCard from "../ui/PostCard";
+import Link from "next/link";
+import Button from "../ui/Button";
+import { icons } from "@/app/lib/icons";
 
 function ProfileScreen({
   firstName,
@@ -21,12 +21,11 @@ function ProfileScreen({
   userId,
 }) {
   const postId = 1; // Example user ID
-  const postTitle = 'Sample Post Title';
+  const postTitle = "Sample Post Title";
   const postContent =
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod.';
-  const authorAvatar2 = '/img/lion.png'; // Example avatar image
-  const userName = 'johndoe';
-  const date = '2023-10-01';
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod.";
+  const userName = "johndoe";
+  const date = "2023-10-01";
   const Comments = 5;
   const props = {
     postId,
@@ -52,15 +51,15 @@ function ProfileScreen({
           </div>
           <div className="font-quickSand text-xl">({username})</div>
         </div>
-        <div className='flex w-full'>{description}</div>
+        <div className="flex w-full">{description}</div>
       </div>
       <div className="flex flex-col gap-2.5 items-start py-4 font-inter text-sm">
         <div>
-          Email:{' '}
+          Email:{" "}
           <span className="text-dark-grey-lighter font-inter">{email}</span>
         </div>
         <div>
-          Birthdate:{' '}
+          Birthdate:{" "}
           <span className="text-dark-grey-lighter font-inter">{birthdate}</span>
         </div>
         <div className="flex gap-2.5 font-inter text-sm justify-between w-full">
@@ -83,7 +82,7 @@ function ProfileScreen({
               href="/profile/edit"
               isSecondary={true}
             >
-              <span>{icons['edit']}</span>
+              <span>{icons["edit"]}</span>
               <span className="px-1.5 text-center hidden lg:inline">
                 Edit Profile
               </span>
