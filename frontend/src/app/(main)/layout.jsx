@@ -15,8 +15,6 @@ export const metadata = {
 
 export default function MainLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
         <div className="flex relative h-full w-screen max-w-7xl justify-center items-start">
           <Sidebar />
           <SidebarMobile />
@@ -38,7 +36,5 @@ export default function MainLayout({ children }) {
             <section className="pb-24 lg:pb-0">{children}</section>
           </main>
         </div>
-      </body>
-    </html>
   );
 }
