@@ -13,13 +13,14 @@ import (
 )
 
 type authServiceImpl struct {
-	userRepo repositories.UserRepository
-	authRepo repositories.AuthRepository
+	userRepo    repositories.UserRepository
+	authRepo    repositories.AuthRepository
+	userService services.UserService
 }
 
 // NewAuthService crée une nouvelle instance de AuthService.
-func NewAuthService(userRepo repositories.UserRepository, authRepo repositories.AuthRepository) services.AuthService {
-	return &authServiceImpl{userRepo, authRepo}
+func NewAuthService(userRepo repositories.UserRepository, authRepo repositories.AuthRepository, userService services.UserService) services.AuthService {
+	return &authServiceImpl{userRepo, authRepo, userService}
 }
 
 func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password string) (*models.User, string, error) {
@@ -27,13 +28,12 @@ func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password s
 	if err := s.authRepo.DeleteExpiredSessions(ctx); err != nil {
 		return nil, "", fmt.Errorf("failed to delete expired sessions: %w", err)
 	}
-	// Vérifie si l'utilisateur existe avec l'email ou le nom d'utilisateur
-	user, err := s.userRepo.GetUserByUsernameOrEmail(ctx, emailOrUsername)
+	user, err := s.userService.GetUserByUsernameOrEmail(ctx, emailOrUsername)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to retrieve user: %w", err)
-	}
-	if user == nil {
-		return nil, "", fmt.Errorf(utils.ErrUserNotFound)
+		if err.Error() == utils.ErrUserNotFound {
+			return nil, "", fmt.Errorf(utils.ErrUserNotFound)
+		}
+		return nil, "", fmt.Errorf("failed to get user: %w", err)
 	}
 	if !utils.ComparePasswords(user.Password, password) {
 		return nil, "", fmt.Errorf(utils.ErrInvalidCredentials)

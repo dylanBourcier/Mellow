@@ -11,8 +11,10 @@ type Services struct {
 }
 
 func InitServices(repos *Repositories) *Services {
+	userService := servimpl.NewUserService(repos.UserRepository)
+	authService := servimpl.NewAuthService(repos.UserRepository, repos.AuthRepository, userService)
 	return &Services{
-		UserService: servimpl.NewUserService(repos.UserRepository),
-		AuthService: servimpl.NewAuthService(repos.UserRepository, repos.AuthRepository),
+		UserService: userService,
+		AuthService: authService,
 	}
 }

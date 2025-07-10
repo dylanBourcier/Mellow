@@ -68,6 +68,18 @@ func (s *userServiceImpl) GetUserByUsername(ctx context.Context, username string
 	// TODO: Appeler le repository pour récupérer l'utilisateur par username
 	return nil, nil
 }
+func (s *userServiceImpl) GetUserByUsernameOrEmail(ctx context.Context, identifier string) (*models.User, error) {
+
+	var user *models.User
+	user, err := s.userRepo.GetUserByUsernameOrEmail(ctx, identifier)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return nil, fmt.Errorf(utils.ErrUserNotFound)
+	}
+	return user, nil
+}
 
 func (s *userServiceImpl) UpdateUser(ctx context.Context, user *models.User) error {
 	// TODO: Appliquer la logique métier (ex: contrôle d'accès, validation)
