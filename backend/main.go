@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"mellow/bootstrap"
+	"mellow/config"
 	"mellow/database"
 	"mellow/middlewares"
 	"mellow/routes"
@@ -13,6 +14,7 @@ import (
 )
 
 func main() {
+	config.Load()
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		dbPath = "data/social.db" // Default value

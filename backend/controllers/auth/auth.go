@@ -79,10 +79,10 @@ func LogoutHandler(authSvc services.AuthService) http.HandlerFunc {
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
 			return
 		}
-		cookie, err := r.Cookie("session_id")
+		cookie, err := r.Cookie(config.CookieName)
 		if err == nil {
 			// Si le cookie existe, on tente de le supprimer
-			http.SetCookie(w, &http.Cookie{Name: "session_id", Value: "", Path: "/", Expires: time.Unix(0, 0)})
+			http.SetCookie(w, &http.Cookie{Name: config.CookieName, Value: "", Path: "/", Expires: time.Unix(0, 0)})
 
 			err := authSvc.Logout(r.Context(), cookie.Value)
 			if err != nil {
