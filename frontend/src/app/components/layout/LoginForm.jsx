@@ -1,42 +1,82 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Input from '@/app/components/ui/Input';
-import Label from '@/app/components/ui/Label';
-import Button from '@/app/components/ui/Button';
-import { useForm } from 'react-hook-form';
-import FileInput from '@/app/components/ui/FileInput';
-import Link from 'next/link';
+import React, { use } from "react";
+import Input from "@/app/components/ui/Input";
+import Label from "@/app/components/ui/Label";
+import Button from "@/app/components/ui/Button";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react";
 
-export default function RegisterForm() {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
+export default function LoginForm() {
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  
+  const router = useRouter();
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ identifier, password }),
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Envoyer à ton backend via fetch + FormData
+      router.push("/"); // Redirect to home page on successful login
+      const data = await response.json();
+      console.log(data);
+      
+      // Handle successful login (e.g., redirect or show success message)
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
-    <form className="flex flex-col gap-2.5 max-w-[600px] w-full">
+    <form
+      className="flex flex-col gap-2.5 max-w-[600px] w-full "
+      onSubmit={handleSubmit}
+    >
       <div>
         <Label htmlFor="username">Username or email* :</Label>
-        <Input type="text" id="username" name="username" required />
+        <Input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter your username..."
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          required
+        />
       </div>
       <div>
         <Label htmlFor="password" className="block mb-2">
           Password* :
         </Label>
-        <Input type="password" id="password" name="password" required />
+        <Input
+          type="password"
+          id="password"
+          placeholder="Enter your password..."
+          name="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
       </div>
       <Button type="submit">Log in</Button>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <p className="text-center text-sm">
-        You still don't have a <span className="text-lavender-3">Mellow</span>{' '}
-        account ?{' '}
+        You still don't have a <span className="text-lavender-3">Mellow</span>{" "}
+        account ?{" "}
         <Link href="/register" className="underline hover:font-[500] ">
           Register
         </Link>
