@@ -6,6 +6,8 @@ import (
 	"mellow/repositories"
 	"mellow/utils"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func AuthMiddleware(sessionRepo repositories.AuthRepository) func(http.Handler) http.Handler {
