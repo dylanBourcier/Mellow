@@ -59,12 +59,21 @@ function Sidebar(props) {
         >
           Profile
         </Navlink>
-        <Button className="mt-6 w-full" href="/posts/create">New Post</Button>
-      </nav>
-      <div className="w-full">
-        <Button href="/login" className="w-full">
-          Login
+        <Button className="mt-6 w-full" href="/posts/create">
+          New Post
         </Button>
+      </nav>
+      <div className="flex w-full gap-2">
+        {!pathname.startsWith('/login') && (
+          <Button href="/login" className="flex-1">
+            Login
+          </Button>
+        )}
+        {!pathname.startsWith('/register') && (
+          <Button href="/register" isSecondary className="flex-1">
+            Register
+          </Button>
+        )}
       </div>
     </div>
   );
