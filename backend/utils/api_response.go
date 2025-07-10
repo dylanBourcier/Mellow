@@ -32,15 +32,21 @@ func RespondJSON(w http.ResponseWriter, code int, message string, data interface
 }
 
 // Réponse erreur
-func RespondError(w http.ResponseWriter, code int, message string, errorCode string) {
+func RespondError(w http.ResponseWriter, code int, message string, errorCode error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
+
+	var codeStr *string
+	if errorCode != nil {
+		s := errorCode.Error()
+		codeStr = &s
+	}
 
 	response := APIResponse{
 		Status:    "error",
 		Message:   message,
 		Data:      nil,
-		ErrorCode: &errorCode,
+		ErrorCode: codeStr,
 	}
 
 	err := json.NewEncoder(w).Encode(response)

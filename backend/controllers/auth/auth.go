@@ -2,6 +2,8 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
+	"mellow/config"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -33,7 +35,7 @@ func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
 			return
 		}
 
@@ -45,7 +47,7 @@ func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
 
 		user, sid, err := authSvc.Login(r.Context(), p.Identifier, p.Password)
 		if err != nil {
-			if err.Error() == utils.ErrUserNotFound || err.Error() == utils.ErrInvalidCredentials {
+			if errors.Is(err, utils.ErrUserNotFound) || errors.Is(err, utils.ErrInvalidCredentials) {
 				// Si l'utilisateur n'existe pas ou si les identifiants sont incorrects
 				// On ne donne pas d'indice sur l'existence de l'utilisateur pour éviter les attaques de type enumeration
 				utils.RespondError(w, http.StatusUnauthorized, "Bad credentials", utils.ErrInvalidCredentials)
@@ -57,12 +59,12 @@ func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
 
 		// Secure cookie
 		http.SetCookie(w, &http.Cookie{
-			Name:     "session_id",
+			Name:     config.CookieName,
 			Value:    sid,
 			Path:     "/",
-			Expires:  time.Now().Add(7 * 24 * time.Hour),
+			Expires:  time.Now().Add(config.CookieLifetime), // 7 days by default
 			HttpOnly: true,
-			Secure:   true, // true en prod (HTTPS)
+			Secure:   config.CookieSecure, // true in production (HTTPS)
 			SameSite: http.SameSiteLaxMode,
 		})
 
@@ -72,6 +74,11 @@ func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
 
 func LogoutHandler(authSvc services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Verify if the method is POST
+		if r.Method != http.MethodPost {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
+			return
+		}
 		cookie, err := r.Cookie("session_id")
 		if err == nil {
 			// Si le cookie existe, on tente de le supprimer

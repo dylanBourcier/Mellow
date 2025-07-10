@@ -76,7 +76,7 @@ func (s *userServiceImpl) GetUserByUsernameOrEmail(ctx context.Context, identifi
 		return nil, fmt.Errorf("failed to retrieve user: %w", err)
 	}
 	if user == nil {
-		return nil, fmt.Errorf(utils.ErrUserNotFound)
+		return nil, utils.ErrUserNotFound
 	}
 	return user, nil
 }
