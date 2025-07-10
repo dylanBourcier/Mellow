@@ -17,11 +17,7 @@ function PostCreationForm() {
         }
     });
     const {setValue}= useForm();
-    const visibilityOptions=[
-        { value: 'public', label: 'Public' },
-        { value: 'private', label: 'Private' },
-        { value: 'almost-private', label: 'Almost Private' },
-    ]
+    
     const whoCanSeeOptions=[
         { value: 'everyone', label: 'Everyone' },
         { value: 'group', label: 'group' },

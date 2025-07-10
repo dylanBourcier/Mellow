@@ -12,13 +12,25 @@ export default function Button({
   icon,
   childrenClassName = '',
 }) {
-  if (isSecondary) {
-    className +=
-      ' text-lavender-5 bg-transparent border border-lavender-5 hover:bg-white hover:bg-dark-grey disabled:text-white disabled:border-transparent';
-  } else {
-    className += ' text-white bg-lavender-3 hover:bg-lavender-5';
+  
+  if (!className.includes('bg-')) {
+    if (isSecondary) {
+      className +=
+        ' text-lavender-5 bg-transparent border border-lavender-5 hover:bg-white hover:bg-dark-grey disabled:text-white disabled:border-transparent';
+    } else {
+      className += ' text-white bg-lavender-3 hover:bg-lavender-5';
+    }
   }
   className += icon ? ' py-1.5' : ' py-2';
+  
+  // if (isSecondary) {
+  //   className +=
+  //     ' text-lavender-5 bg-transparent border border-lavender-5 hover:bg-white hover:bg-dark-grey disabled:text-white disabled:border-transparent';
+  // } else {
+  //   className += ' text-white bg-lavender-3 hover:bg-lavender-5';
+  // }
+  // className += icon ? ' py-1.5' : ' py-2';
+
   const button = (
     <button
       type={type}
