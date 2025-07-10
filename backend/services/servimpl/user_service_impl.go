@@ -32,7 +32,7 @@ func (s *userServiceImpl) CreateUser(ctx context.Context, user *models.User) err
 		return fmt.Errorf("failed to check if user exists: %w", err)
 	}
 	if exists {
-		return fmt.Errorf("%s: user with email or username already exists", utils.ErrUserAlreadyExists)
+		return utils.ErrUserAlreadyExists
 	}
 
 	uuid, err := uuid.NewRandom()
