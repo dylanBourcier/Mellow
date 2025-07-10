@@ -2,10 +2,11 @@ package users
 
 import (
 	"mellow/controllers/users"
+	"mellow/services"
 	"net/http"
 )
 
-func RegisterUserRoutes(mux *http.ServeMux) {
+func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService) {
 	// Profil utilisateur : GET, PUT, DELETE
 	mux.HandleFunc("/users/", UserRouter)
 

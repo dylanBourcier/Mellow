@@ -16,6 +16,9 @@ type UserService interface {
 	// GetUserByUsername retourne un utilisateur à partir de son nom d'utilisateur.
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 
+	// GetUserByUsernameOrEmail retourne un utilisateur à partir de son nom d'utilisateur ou de son email.
+	GetUserByUsernameOrEmail(ctx context.Context, identifier string) (*models.User, error)
+
 	// UpdateUser modifie les informations d'un utilisateur.
 	UpdateUser(ctx context.Context, user *models.User) error
 

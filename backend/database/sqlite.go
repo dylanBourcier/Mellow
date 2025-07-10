@@ -49,3 +49,19 @@ func ApplyMigrations(dbPath string, migrationsPath string) error {
 
 	return nil
 }
+
+func InitDB(dbPath string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	// Check if the database is reachable
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to the database: %w", err)
+	}
+
+	fmt.Println("✅ Database connection established successfully.")
+	return db, nil
+}

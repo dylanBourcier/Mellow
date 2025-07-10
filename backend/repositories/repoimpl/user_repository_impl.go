@@ -1,8 +1,9 @@
-package impl
+package repoimpl
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 )
@@ -16,7 +17,11 @@ func NewUserRepository(db *sql.DB) repositories.UserRepository {
 }
 
 func (r *userRepositoryImpl) InsertUser(ctx context.Context, user *models.User) error {
-	// TODO: Insérer un nouvel utilisateur dans la table users
+	query := "INSERT INTO users (user_id,email,password,username,firstname,lastname,birthdate,role,image_url,creation_date,description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	_, err := r.db.ExecContext(ctx, query, user.UserID, user.Email, user.Password, user.Username, user.Firstname, user.Lastname, user.Birthdate, user.Role, user.ImageURL, user.CreationDate, user.Description)
+	if err != nil {
+		return fmt.Errorf("error inserting user: %w", err)
+	}
 	return nil
 }
 
@@ -28,6 +33,32 @@ func (r *userRepositoryImpl) FindUserByID(ctx context.Context, userID string) (*
 func (r *userRepositoryImpl) FindUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	// TODO: Requête SELECT pour récupérer un utilisateur par nom d'utilisateur
 	return nil, nil
+}
+func (r *userRepositoryImpl) UserExistsByEmailOrUsername(ctx context.Context, email, username string) (bool, error) {
+	var count int
+	err := r.db.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM users WHERE email = ? OR username = ?`, email, username).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+func (r *userRepositoryImpl) GetUserByUsernameOrEmail(ctx context.Context, usernameOrEmail string) (*models.User, error) {
+	var user models.User
+	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description 
+	          FROM users WHERE username = ? OR email = ?`
+	err := r.db.QueryRowContext(ctx, query, usernameOrEmail, usernameOrEmail).Scan(
+		&user.UserID, &user.Email, &user.Password, &user.Username,
+		&user.Firstname, &user.Lastname, &user.Birthdate,
+		&user.Role, &user.ImageURL, &user.CreationDate,
+		&user.Description)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // User not found
+		}
+		return nil, fmt.Errorf("error retrieving user: %w", err)
+	}
+	return &user, nil
 }
 
 func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) error {

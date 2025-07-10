@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"mellow/bootstrap"
 	"mellow/routes/admin"
 	"mellow/routes/auth"
 	"mellow/routes/groups"
@@ -12,14 +13,14 @@ import (
 	"mellow/routes/users"
 )
 
-func SetupRoutes() *http.ServeMux {
+func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Authentification
-	auth.RegisterAuthRoutes(mux)
+	auth.RegisterAuthRoutes(mux, services.UserService, services.AuthService)
 
 	// Utilisateurs
-	users.RegisterUserRoutes(mux)
+	users.RegisterUserRoutes(mux, services.UserService)
 
 	// Publications (posts)
 	posts.RegisterPostRoutes(mux)
