@@ -23,7 +23,7 @@ func AuthMiddleware(sessionRepo repositories.AuthRepository) func(http.Handler) 
 				utils.RespondError(w, http.StatusUnauthorized, "Invalid session", utils.ErrUnauthorized)
 				return
 			}
-			if uid.String() == "" {
+			if uid == uuid.Nil {
 				utils.RespondError(w, http.StatusUnauthorized, "Invalid session", utils.ErrUnauthorized)
 				return
 			}
