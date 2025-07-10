@@ -2,6 +2,7 @@ package servimpl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mellow/models"
 	"mellow/repositories"
@@ -30,13 +31,13 @@ func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password s
 	}
 	user, err := s.userService.GetUserByUsernameOrEmail(ctx, emailOrUsername)
 	if err != nil {
-		if err.Error() == utils.ErrUserNotFound {
-			return nil, "", fmt.Errorf(utils.ErrUserNotFound)
+		if errors.Is(err, utils.ErrUserNotFound) {
+			return nil, "", utils.ErrUserNotFound
 		}
 		return nil, "", fmt.Errorf("failed to get user: %w", err)
 	}
 	if !utils.ComparePasswords(user.Password, password) {
-		return nil, "", fmt.Errorf(utils.ErrInvalidCredentials)
+		return nil, "", utils.ErrInvalidCredentials
 	}
 
 	sid := uuid.New()
