@@ -7,7 +7,7 @@ import (
 
 type AuthService interface {
 	// Login vérifie les identifiants et crée une session.
-	Login(ctx context.Context, username, password string) (*models.User, error)
+	Login(ctx context.Context, username, password string) (*models.User, string, error)
 
 	// Logout détruit la session utilisateur.
 	Logout(ctx context.Context, sessionID string) error

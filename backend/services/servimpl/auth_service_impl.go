@@ -2,29 +2,63 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type authServiceImpl struct {
-	db *sql.DB
+	userRepo    repositories.UserRepository
+	authRepo    repositories.AuthRepository
+	userService services.UserService
 }
 
 // NewAuthService crée une nouvelle instance de AuthService.
-func NewAuthService(db *sql.DB) services.AuthService {
-	return &authServiceImpl{db: db}
+func NewAuthService(userRepo repositories.UserRepository, authRepo repositories.AuthRepository, userService services.UserService) services.AuthService {
+	return &authServiceImpl{userRepo, authRepo, userService}
 }
 
-func (s *authServiceImpl) Login(ctx context.Context, username, password string) (*models.User, error) {
-	// TODO: Récupérer l'utilisateur depuis le repository
-	// TODO: Utiliser utils.ComparePasswords pour vérifier le mot de passe
+func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password string) (*models.User, string, error) {
+
+	if err := s.authRepo.DeleteExpiredSessions(ctx); err != nil {
+		return nil, "", fmt.Errorf("failed to delete expired sessions: %w", err)
+	}
+	user, err := s.userService.GetUserByUsernameOrEmail(ctx, emailOrUsername)
+	if err != nil {
+		if err.Error() == utils.ErrUserNotFound {
+			return nil, "", fmt.Errorf(utils.ErrUserNotFound)
+		}
+		return nil, "", fmt.Errorf("failed to get user: %w", err)
+	}
+	if !utils.ComparePasswords(user.Password, password) {
+		return nil, "", fmt.Errorf(utils.ErrInvalidCredentials)
+	}
+
+	sid := uuid.New()
+	now := time.Now()
+	sess := &models.Session{
+		SessionID:    sid,
+		UserID:       user.UserID,
+		CreationDate: now,
+		LastActivity: now,
+	}
+	if err := s.authRepo.CreateSession(ctx, sess); err != nil {
+		return nil, "", fmt.Errorf("failed to create session: %w", err)
+	}
+
 	// TODO: Créer une session en base si les identifiants sont valides
-	return nil, nil
+	return user, sid.String(), nil
 }
 
 func (s *authServiceImpl) Logout(ctx context.Context, sessionID string) error {
-	// TODO: Supprimer la session de la base de données
+	if err := s.authRepo.DeleteSession(ctx, sessionID); err != nil {
+		return fmt.Errorf("failed to delete session: %w", err)
+	}
 	return nil
 }
 

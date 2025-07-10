@@ -7,10 +7,14 @@ import (
 
 type Services struct {
 	UserService services.UserService
+	AuthService services.AuthService
 }
 
 func InitServices(repos *Repositories) *Services {
+	userService := servimpl.NewUserService(repos.UserRepository)
+	authService := servimpl.NewAuthService(repos.UserRepository, repos.AuthRepository, userService)
 	return &Services{
-		UserService: servimpl.NewUserService(repos.UserRepository),
+		UserService: userService,
+		AuthService: authService,
 	}
 }

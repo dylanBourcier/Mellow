@@ -6,6 +6,7 @@ import (
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
+	"time"
 )
 
 func SignUpHandler(userService services.UserService) http.HandlerFunc {
@@ -28,18 +29,61 @@ func SignUpHandler(userService services.UserService) http.HandlerFunc {
 	}
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
-		return
+func LoginHandler(authSvc services.AuthService) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var p models.LoginRequest
+		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid JSON", utils.ErrInvalidJSON)
+			return
+		}
+
+		user, sid, err := authSvc.Login(r.Context(), p.Identifier, p.Password)
+		if err != nil {
+			if err.Error() == utils.ErrUserNotFound || err.Error() == utils.ErrInvalidCredentials {
+				// Si l'utilisateur n'existe pas ou si les identifiants sont incorrects
+				// On ne donne pas d'indice sur l'existence de l'utilisateur pour éviter les attaques de type enumeration
+				utils.RespondError(w, http.StatusUnauthorized, "Bad credentials", utils.ErrInvalidCredentials)
+			} else {
+				utils.RespondError(w, http.StatusInternalServerError, "Internal error", utils.ErrInternalServerError)
+			}
+			return
+		}
+
+		// Secure cookie
+		http.SetCookie(w, &http.Cookie{
+			Name:     "session_id",
+			Value:    sid,
+			Path:     "/",
+			Expires:  time.Now().Add(7 * 24 * time.Hour),
+			HttpOnly: true,
+			Secure:   true, // true en prod (HTTPS)
+			SameSite: http.SameSiteLaxMode,
+		})
+
+		utils.RespondJSON(w, http.StatusOK, "Login successful", map[string]any{"user_id": user.UserID, "session_id": sid})
 	}
-	// TODO: vérifier les identifiants et créer la session / cookie
 }
 
-func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
-		return
+func LogoutHandler(authSvc services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("session_id")
+		if err == nil {
+			// Si le cookie existe, on tente de le supprimer
+			http.SetCookie(w, &http.Cookie{Name: "session_id", Value: "", Path: "/", Expires: time.Unix(0, 0)})
+
+			err := authSvc.Logout(r.Context(), cookie.Value)
+			if err != nil {
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to log out: "+err.Error(), utils.ErrInternalServerError)
+				return
+			}
+
+		}
+		utils.RespondJSON(w, http.StatusOK, "Logged out", nil)
 	}
-	// TODO: invalider la session côté serveur + supprimer le cookie
 }
