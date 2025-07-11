@@ -15,26 +15,23 @@ export const metadata = {
 
 export default function MainLayout({ children }) {
   return (
-        <div className="flex relative h-full w-screen max-w-7xl justify-center items-start">
-          <Sidebar />
-          <SidebarMobile />
-          <main className="lg:ml-78 flex-1 flex flex-col h-full px-2 lg:px-3">
-            <div className=" flex relative justify-center items-center">
-              <Link href={'/'}>
-                <Image
-                  src="/img/logo.svg"
-                  alt="Mellow Logo"
-                  width={32}
-                  height={32}
-                  className="mx-auto"
-                />
-              </Link>
-              <button className="absolute right-0 text-red-500 bg-red-100 rounded-md p-1 border border-red-200 shadow-(--box-shadow) lg:hidden">
-                {icons['signin']}
-              </button>
-            </div>
-            <section className="pb-24 lg:pb-0">{children}</section>
-          </main>
+    <div className="flex relative h-full w-screen max-w-7xl justify-center items-start">
+      <Sidebar />
+      <SidebarMobile />
+      <main className="lg:ml-78 flex-1 flex flex-col h-full px-2 lg:px-3">
+        <div className=" flex relative justify-center items-center">
+          <Link href={'/'}>
+            <Image
+              src="/img/logo.svg"
+              alt="Mellow Logo"
+              width={32}
+              height={32}
+              className="mx-auto"
+            />
+          </Link>
         </div>
+        <section className="pb-24 lg:pb-0">{children}</section>
+      </main>
+    </div>
   );
 }

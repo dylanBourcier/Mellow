@@ -1,21 +1,17 @@
-import RegisterForm from '@/app/components/layout/RegisterForm';
-import GuestOnly from '@/app/components/auth/GuestOnly';
+'use client';
+import React from 'react';
+import LoginForm from '@/app/components/layout/LoginForm';
 import PageTitle from '@/app/components/ui/PageTitle';
 import Image from 'next/image';
-import React from 'react';
+import GuestOnly from '../auth/GuestOnly';
 
-export const metadata = {
-  title: 'Register',
-  description: 'Register a new account on Mellow',
-};
-
-export default function RegisterPage() {
+export default function LoginScreen() {
   return (
     <GuestOnly redirectTo="/">
       <div className="flex flex-col items-center justify-center">
-        <PageTitle>Register</PageTitle>
+        <PageTitle>Login</PageTitle>
         <h2 className="flex justify-center items-center gap-2">
-          <span>Welcome to</span>
+          <span>Welcome back to </span>
           <Image
             src="/img/Logo&Name.svg"
             width={120}
@@ -23,7 +19,7 @@ export default function RegisterPage() {
             alt="Mellow logo"
           ></Image>
         </h2>
-        <RegisterForm />
+        <LoginForm />
       </div>
     </GuestOnly>
   );

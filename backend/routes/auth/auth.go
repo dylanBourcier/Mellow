@@ -10,4 +10,5 @@ func RegisterAuthRoutes(mux *http.ServeMux, userService services.UserService, au
 	mux.HandleFunc("/auth/signup", auth.SignUpHandler(userService))
 	mux.HandleFunc("/auth/login", auth.LoginHandler(authService))
 	mux.HandleFunc("/auth/logout", auth.LogoutHandler(authService))
+	mux.HandleFunc("/me", auth.MeHandler(authService, userService))
 }

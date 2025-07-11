@@ -69,6 +69,17 @@ func (s *authServiceImpl) IsAuthenticated(ctx context.Context, sessionID string)
 }
 
 func (s *authServiceImpl) GetUserFromSession(ctx context.Context, sessionID string) (*models.User, error) {
-	// TODO: Récupérer l'utilisateur lié à une session donnée
-	return nil, nil
+	userId, err := s.authRepo.GetUserIDFromSession(ctx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get session: %w", err)
+	}
+	if userId == uuid.Nil {
+		return nil, utils.ErrUserNotFound
+	}
+
+	user, err := s.userRepo.FindUserByID(ctx, userId.String())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user from session: %w", err)
+	}
+	return user, nil
 }
