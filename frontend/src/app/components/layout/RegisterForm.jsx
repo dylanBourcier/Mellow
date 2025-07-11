@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import FileInput from '@/app/components/ui/FileInput';
 import Link from 'next/link';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import CustomToast from '@/app/components/ui/CustomToast';
 
 export default function RegisterForm() {
