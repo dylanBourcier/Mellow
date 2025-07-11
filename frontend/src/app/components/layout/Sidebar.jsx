@@ -4,9 +4,18 @@ import React from 'react';
 import Navlink from '../ui/Navlink';
 import Image from 'next/image';
 import Button from '../ui/Button';
+import { useUser } from '@/app/context/UserContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import UserInfo from '../ui/UserInfo';
+import LogoutButton from '../ui/LogoutButton';
+import Spinner from '../ui/Spinner';
 
 function Sidebar(props) {
   const pathname = usePathname();
+
+  const { user, loading } = useUser();
+
   return (
     <div
       className="hidden lg:flex fixed top-6 flex-col self-start items-start justify-start h-[95dvh] box-border w-72 bg-white shadow-(--box-shadow) p-4 rounded-2xl"
@@ -64,15 +73,34 @@ function Sidebar(props) {
         </Button>
       </nav>
       <div className="flex w-full gap-2">
-        {!pathname.startsWith('/login') && (
-          <Button href="/login" className="flex-1">
-            Login
-          </Button>
-        )}
-        {!pathname.startsWith('/register') && (
-          <Button href="/register" isSecondary className="flex-1">
-            Register
-          </Button>
+        {loading ? (
+          <div className="flex w-full items-center gap-2 justify-center ">
+            <Spinner size={32} color="#8B5CF6" />
+            <span>Loading...</span>
+          </div>
+        ) : user ? (
+          <div className="flex flex-col gap-2 w-full">
+            {' '}
+            <UserInfo
+              userName={user.username}
+              authorAvatar={user.image_url}
+              userId={user.user_id}
+            ></UserInfo>
+            <LogoutButton className="flex-1" />
+          </div>
+        ) : (
+          <>
+            {!pathname.startsWith('/login') && (
+              <Button href="/login" className="flex-1">
+                Login
+              </Button>
+            )}
+            {!pathname.startsWith('/register') && (
+              <Button href="/register" isSecondary className="flex-1">
+                Register
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>

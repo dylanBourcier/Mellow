@@ -26,8 +26,21 @@ func (r *userRepositoryImpl) InsertUser(ctx context.Context, user *models.User) 
 }
 
 func (r *userRepositoryImpl) FindUserByID(ctx context.Context, userID string) (*models.User, error) {
-	// TODO: Requête SELECT pour récupérer un utilisateur par ID
-	return nil, nil
+	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description 
+	          FROM users WHERE user_id = ?`
+	var user models.User
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&user.UserID, &user.Email, &user.Password, &user.Username,
+		&user.Firstname, &user.Lastname, &user.Birthdate,
+		&user.Role, &user.ImageURL, &user.CreationDate,
+		&user.Description)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // User not found
+		}
+		return nil, fmt.Errorf("error retrieving user: %w", err)
+	}
+	return &user, nil
 }
 
 func (r *userRepositoryImpl) FindUserByUsername(ctx context.Context, username string) (*models.User, error) {

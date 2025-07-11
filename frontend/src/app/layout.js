@@ -1,6 +1,7 @@
 import { Inter, Quicksand } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
+import { UserProvider } from './context/UserContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,14 +24,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} ${quicksand.variable} antialiased`}>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 3000,
-            style: { background: 'transparent', boxShadow: 'none' },
-          }}
-        />
-        {children}
+        <UserProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: { background: 'transparent', boxShadow: 'none' },
+            }}
+          />
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

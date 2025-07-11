@@ -169,3 +169,42 @@ func LogoutHandler(authSvc services.AuthService) http.HandlerFunc {
 		utils.RespondJSON(w, http.StatusOK, "Logged out", nil)
 	}
 }
+
+func MeHandler(authSvc services.AuthService, userService services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
+			return
+		}
+
+		cookie, err := r.Cookie(config.CookieName)
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized: "+err.Error(), utils.ErrUnauthorized)
+			return
+		}
+
+		user, err := authSvc.GetUserFromSession(r.Context(), cookie.Value)
+		if err != nil {
+			if errors.Is(err, utils.ErrSessionNotFound) {
+				utils.RespondError(w, http.StatusUnauthorized, "Unauthorized: Session not found", utils.ErrUnauthorized)
+			} else {
+				utils.RespondError(w, http.StatusInternalServerError, "Internal error: "+err.Error(), utils.ErrInternalServerError)
+			}
+			return
+		}
+		data := map[string]interface{}{
+			"user_id":       user.UserID,
+			"email":         user.Email,
+			"username":      user.Username,
+			"firstname":     user.Firstname,
+			"lastname":      user.Lastname,
+			"birthdate":     user.Birthdate,
+			"role":          user.Role,
+			"image_url":     user.ImageURL,
+			"creation_date": user.CreationDate,
+			"description":   user.Description,
+		}
+
+		utils.RespondJSON(w, http.StatusOK, "User retrieved successfully", data)
+	}
+}

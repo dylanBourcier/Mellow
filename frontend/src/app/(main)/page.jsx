@@ -27,7 +27,7 @@ export default function HomePage() {
   return (
     <div>
       <PageTitle>Home</PageTitle>
-      <div className='flex flex-col gap-3'>
+      <div className="flex flex-col gap-3">
         <PostCard postInfos={props} />
         <PostCard postInfos={props} />
         <PostCard postInfos={props} />

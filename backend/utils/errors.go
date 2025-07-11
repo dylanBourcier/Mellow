@@ -24,6 +24,7 @@ var (
 	ErrPostNotFound    = errors.New("POST_NOT_FOUND")
 	ErrGroupNotFound   = errors.New("GROUP_NOT_FOUND")
 	ErrMessageNotFound = errors.New("MESSAGE_NOT_FOUND")
+	ErrSessionNotFound = errors.New("SESSION_NOT_FOUND")
 
 	// Conflits
 	ErrUsernameAlreadyExists = errors.New("USERNAME_ALREADY_EXISTS")
