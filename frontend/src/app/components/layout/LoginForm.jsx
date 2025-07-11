@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use } from "react";
+import React from "react";
 import Input from "@/app/components/ui/Input";
 import Label from "@/app/components/ui/Label";
 import Button from "@/app/components/ui/Button";
