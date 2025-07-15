@@ -99,6 +99,10 @@ func SignUpHandler(userService services.UserService) http.HandlerFunc {
 		// Appelle le service (il hash le mdp, valide, insert)
 		if err := userService.CreateUser(r.Context(), &user); err != nil {
 			utils.RespondError(w, http.StatusBadRequest, "User creation failed: "+err.Error(), utils.ErrInvalidPayload)
+			// Supprimer le fichier si l'utilisateur n'a pas été créé
+			if user.ImageURL != nil {
+				os.Remove(filepath.Join("uploads", "avatars", *user.ImageURL))
+			}
 			return
 		}
 

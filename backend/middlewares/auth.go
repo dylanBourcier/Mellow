@@ -21,13 +21,13 @@ func AuthMiddleware(authService services.AuthService) func(http.Handler) http.Ha
 
 			sessionID := cookie.Value
 			fmt.Println("Session ID:", sessionID)
-	
+
 			user, err := authService.GetUserFromSession(r.Context(), sessionID)
-			uid := user.UserID
 			if err != nil {
 				utils.RespondError(w, http.StatusUnauthorized, "Invalid session", utils.ErrUnauthorized)
 				return
 			}
+			uid := user.UserID
 
 			_ = authService.UpdateLastActivity(r.Context(), sessionID)
 

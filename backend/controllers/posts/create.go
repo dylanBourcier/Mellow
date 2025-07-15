@@ -41,7 +41,7 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 				utils.RespondError(w, http.StatusInternalServerError, "Failed to create directory", err)
 				return
 			}
-			dst,err:=os.Create(savePath)
+			dst, err := os.Create(savePath)
 			if err != nil {
 				utils.RespondError(w, http.StatusInternalServerError, "Failed to create file", err)
 				return
@@ -52,7 +52,7 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 				return
 			}
 			image_url = &fileName
-		}else{
+		} else {
 			if err != http.ErrMissingFile {
 				utils.RespondError(w, http.StatusBadRequest, "Invalid image file", err)
 				return
@@ -77,15 +77,18 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 			Visibility: r.FormValue("visibility"),
 			UserID:     userID,
 			ImageURL:   image_url,
-			GroupID: groupID,
+			GroupID:    groupID,
 		}
 		fmt.Println("Post to create:", post)
 
-		if err:= postService.CreatePost(r.Context(), &post); err != nil {
+		if err := postService.CreatePost(r.Context(), &post); err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to create post", err)
+			if image_url != nil {
+				os.Remove(filepath.Join("uploads", *image_url))
+			}
 			return
 		}
 		utils.RespondJSON(w, http.StatusCreated, "Post created successfully", nil)
-		
+
 	}
 }

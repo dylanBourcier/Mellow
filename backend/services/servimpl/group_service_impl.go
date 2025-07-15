@@ -2,18 +2,18 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
 )
 
 type groupServiceImpl struct {
-	db *sql.DB
+	groupRepo repositories.GroupRepository
 }
 
 // NewGroupService crée une nouvelle instance de GroupService.
-func NewGroupService(db *sql.DB) services.GroupService {
-	return &groupServiceImpl{db: db}
+func NewGroupService(groupRepo repositories.GroupRepository) services.GroupService {
+	return &groupServiceImpl{groupRepo: groupRepo}
 }
 
 func (s *groupServiceImpl) CreateGroup(ctx context.Context, group *models.Group) error {
@@ -58,4 +58,13 @@ func (s *groupServiceImpl) GetGroupMembers(ctx context.Context, groupID string) 
 func (s *groupServiceImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
 	// TODO: Appeler le repository pour vérifier la relation d’appartenance
 	return false, nil
+}
+
+func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	// Call the repository function to get groups joined by the user
+	groups, err := s.groupRepo.GetGroupsJoinedByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
 }

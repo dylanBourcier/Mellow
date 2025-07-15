@@ -54,3 +54,26 @@ func (r *groupRepositoryImpl) IsMember(ctx context.Context, groupID, userID stri
 	// TODO: SELECT 1 FROM groups_member WHERE group_id = ? AND user_id = ?
 	return false, nil
 }
+
+func (r *groupRepositoryImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	query := `SELECT g.* FROM groups g
+JOIN groups_member gm ON g.group_id = gm.group_id
+WHERE gm.user_id = ?`
+	rows, err := r.db.QueryContext(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var groups []*models.Group
+	for rows.Next() {
+		var group models.Group
+		if err := rows.Scan(&group.GroupID, &group.Title, &group.Description, &group.UserID, &group.CreationDate); err != nil {
+			return nil, err
+		}
+		groups = append(groups, &group)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groups, nil
+}

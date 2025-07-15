@@ -10,12 +10,14 @@ import FileInput from '@/app/components/ui/FileInput';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CustomToast from '@/app/components/ui/CustomToast';
+import { Controller } from 'react-hook-form';
 
 export default function RegisterForm() {
   const router = useRouter();
   const {
     register,
     handleSubmit,
+    control,
     setValue,
     watch,
     formState: { errors },
@@ -35,8 +37,8 @@ export default function RegisterForm() {
       formData.append('description', data.about || '');
 
       // FileInput (avatar)
-      if (data.avatar && data.avatar.length > 0) {
-        formData.append('avatar', data.avatar[0]);
+      if (data.avatar) {
+        formData.append('avatar', data.avatar);
       }
 
       const res = await fetch('/api/auth/signup', {
@@ -179,12 +181,17 @@ export default function RegisterForm() {
         </div>
         <div>
           <Label htmlFor="avatar">Avatar :</Label>
-          <FileInput
-            id="avatar"
-            {...register('avatar')}
-            setValue={setValue}
-            multiple={false}
-            accept="image/*"
+          <Controller
+            name="avatar"
+            control={control}
+            render={({ field }) => (
+              <FileInput
+                id="avatar"
+                name="avatar"
+                setValue={setValue}
+                onChange={(file) => field.onChange(file)}
+              />
+            )}
           />
         </div>
         <div>

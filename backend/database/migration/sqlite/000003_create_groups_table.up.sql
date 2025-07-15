@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS "groups" (
     "title" VARCHAR NOT NULL,
     "description" TEXT,
     "creation_date" DATETIME NOT NULL,
-    "visibility" TEXT NOT NULL CHECK(
-        "visibility" IN ('public', 'private', 'hidden')
-    ),
-    PRIMARY KEY("group_id")
+    PRIMARY KEY("group_id"),
+    FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON UPDATE NO ACTION ON DELETE CASCADE
+
 );
