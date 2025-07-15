@@ -1,19 +1,17 @@
-'use client';
+"use client";
 
-import { useRef, useState, useEffect } from 'react';
-import Label from './Label';
+import { useRef, useState, useEffect } from "react";
 
 export default function FileInput({
-  label = 'Choose a file',
+  label = "Choose a file",
   onChange,
   id,
   name,
-  register,
   setValue,
   usePreview = true,
 }) {
   const inputRef = useRef(null);
-  const [fileName, setFileName] = useState('');
+  const [fileName, setFileName] = useState("");
   const [preview, setPreview] = useState(null);
 
   const handleClick = () => {
@@ -25,7 +23,7 @@ export default function FileInput({
     if (!file) return;
 
     setFileName(file.name);
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith("image/")) {
       setPreview(URL.createObjectURL(file));
     } else {
       setPreview(null);
@@ -58,6 +56,7 @@ export default function FileInput({
         <input
           type="file"
           id={id || name}
+          name={name}
           accept="image/*"
           ref={inputRef}
           onChange={handleFileChange}
@@ -65,7 +64,7 @@ export default function FileInput({
         />
         {fileName && <span className="text-sm">{fileName}</span>}
       </div>
-      {preview && usePreview &&(
+      {preview && usePreview && (
         <img
           src={preview}
           alt="Preview"
