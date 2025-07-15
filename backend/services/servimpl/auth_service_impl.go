@@ -83,3 +83,10 @@ func (s *authServiceImpl) GetUserFromSession(ctx context.Context, sessionID stri
 	}
 	return user, nil
 }
+
+func (s *authServiceImpl) UpdateLastActivity(ctx context.Context, sessionID string) error {
+	if err := s.authRepo.UpdateLastActivity(ctx, sessionID); err != nil {
+		return fmt.Errorf("failed to update last activity: %w", err)
+	}
+	return nil
+}

@@ -38,4 +38,5 @@ var (
 	// Autres
 	ErrInternalServerError = errors.New("INTERNAL_SERVER_ERROR")
 	ErrNotImplemented      = errors.New("NOT_IMPLEMENTED")
+	ErrUUIDGeneration	  = errors.New("UUID_GENERATION_FAILED")
 )

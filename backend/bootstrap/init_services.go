@@ -8,13 +8,16 @@ import (
 type Services struct {
 	UserService services.UserService
 	AuthService services.AuthService
+	PostService services.PostService
 }
 
 func InitServices(repos *Repositories) *Services {
 	userService := servimpl.NewUserService(repos.UserRepository)
 	authService := servimpl.NewAuthService(repos.UserRepository, repos.AuthRepository, userService)
+	postService := servimpl.NewPostService(repos.PostRepository)
 	return &Services{
 		UserService: userService,
 		AuthService: authService,
+		PostService: postService,
 	}
 }

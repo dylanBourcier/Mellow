@@ -3,6 +3,7 @@ package repoimpl
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 )
@@ -16,7 +17,11 @@ func NewPostRepository(db *sql.DB) repositories.PostRepository {
 }
 
 func (r *postRepositoryImpl) InsertPost(ctx context.Context, post *models.Post) error {
-	// TODO: INSERT INTO posts (id, author_id, content, visibility, created_at) VALUES (?, ?, ?, ?, ?)
+	query:= `INSERT INTO posts (post_id, group_id, user_id, title, content, creation_date, visibility, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	_,err:= r.db.ExecContext(ctx, query, post.PostID, post.GroupID, post.UserID, post.Title, post.Content, post.CreationDate, post.Visibility, post.ImageURL)
+	if err != nil {
+		return fmt.Errorf("failed to insert post: %w", err)
+	}
 	return nil
 }
 

@@ -2,24 +2,42 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type postServiceImpl struct {
-	db *sql.DB
+	postRepo repositories.PostRepository
 }
 
 // NewPostService crée une nouvelle instance de PostService.
-func NewPostService(db *sql.DB) services.PostService {
-	return &postServiceImpl{db: db}
+func NewPostService(postRepo repositories.PostRepository) services.PostService {
+	return &postServiceImpl{postRepo: postRepo}
 }
 
 func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) error {
 	// TODO: Vérifier la validité du post (contenu, visibilité)
 	// TODO: Appeler le repository pour insérer le post
-	return nil
+	if post.Title == "" || post.Content == "" || post.Visibility == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	if post.Visibility != "public" && post.Visibility != "private" && post.Visibility != "followers" {
+		return utils.ErrInvalidPayload
+	}
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	post.PostID = uuid
+	post.CreationDate = time.Now()
+	return s.postRepo.InsertPost(ctx, post)
 }
 
 func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, requesterID string) (*models.Post, error) {

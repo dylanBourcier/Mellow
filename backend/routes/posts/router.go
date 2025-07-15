@@ -2,16 +2,17 @@ package posts
 
 import (
 	"mellow/controllers/posts"
+	"mellow/services"
 	"mellow/utils"
 	"net/http"
 	"strings"
 )
 
 // /posts → POST (create) ou GET (list)
-func PostRootRouter(w http.ResponseWriter, r *http.Request) {
+func PostRootRouter(w http.ResponseWriter, r *http.Request, PostService services.PostService) {
 	switch r.Method {
 	case http.MethodPost:
-		posts.CreatePost(w, r)
+		posts.CreatePost(PostService)(w, r)
 	case http.MethodGet:
 		posts.GetAllPosts(w, r)
 	default:
