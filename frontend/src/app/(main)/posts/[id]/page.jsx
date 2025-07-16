@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use } from 'react';
 import PostDetailscreen from '@/app/components/layout/PostDetailscreen';
 
 const metadata = {
@@ -6,10 +6,12 @@ const metadata = {
 };
 export { metadata };
 
-export default function PostDetailsPage() {
+export default async function PostDetailsPage(props) {
+  const params=await props.params;
+  const id= params.id;
   return(
     <div>
-      <PostDetailscreen></PostDetailscreen>
+      <PostDetailscreen postid={id} ></PostDetailscreen>
     </div>
   )
 

@@ -108,3 +108,13 @@ func (r *userRepositoryImpl) SearchUsers(ctx context.Context, query string) ([]*
 	// TODO: SELECT * FROM users WHERE username LIKE ?
 	return nil, nil
 }
+
+func (r *userRepositoryImpl) IsFollowing(ctx context.Context, followerID, targetID string) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND target_id = ?)`
+	err := r.db.QueryRowContext(ctx, query, followerID, targetID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error checking following status: %w", err)
+	}
+	return exists, nil
+}

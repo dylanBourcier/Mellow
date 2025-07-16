@@ -52,13 +52,19 @@ func (r *groupRepositoryImpl) GetGroupMembers(ctx context.Context, groupID strin
 
 func (r *groupRepositoryImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
 	// TODO: SELECT 1 FROM groups_member WHERE group_id = ? AND user_id = ?
-	return false, nil
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM groups_member WHERE group_id = ? AND user_id = ?)`
+	err := r.db.QueryRowContext(ctx, query, groupID, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 func (r *groupRepositoryImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
 	query := `SELECT g.* FROM groups g
-JOIN groups_member gm ON g.group_id = gm.group_id
-WHERE gm.user_id = ?`
+			JOIN groups_member gm ON g.group_id = gm.group_id
+			WHERE gm.user_id = ?`
 	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err

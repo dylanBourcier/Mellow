@@ -25,7 +25,7 @@ func PostRootRouter(PostService services.PostService, authService services.AuthS
 }
 
 // /posts/:id → GET (view one), PUT (edit), DELETE (delete)
-func PostRouter(w http.ResponseWriter, r *http.Request) {
+func PostRouter(w http.ResponseWriter, r *http.Request, groupService services.GroupService, userService services.UserService, postService services.PostService) {
 	id := strings.TrimPrefix(r.URL.Path, "/posts/")
 	if id == "" || strings.Contains(id, "/") {
 		utils.RespondError(w, http.StatusNotFound, "Post introuvable", utils.ErrPostNotFound)
@@ -34,7 +34,7 @@ func PostRouter(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		posts.GetPostByID(w, r, id)
+		posts.GetPostByID(groupService, userService, postService)(w, r)
 	case http.MethodPut:
 		posts.UpdatePost(w, r, id)
 	case http.MethodDelete:

@@ -40,10 +40,55 @@ func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) err
 	return s.postRepo.InsertPost(ctx, post)
 }
 
-func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, requesterID string) (*models.Post, error) {
+func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, groupService services.GroupService, userService services.UserService, requesterID string) (*models.PostDetails, error) {
 	// TODO: Vérifier la visibilité du post pour le requester
 	// TODO: Récupérer le post depuis le repository
-	return nil, nil
+	post, err := s.postRepo.GetPostByID(ctx, postID)
+	if err != nil {
+		return nil, utils.ErrPostNotFound
+	}
+	if post == nil {
+		return nil, utils.ErrPostNotFound
+	}
+	if post.GroupID != nil && post.GroupID.String() != "" && requesterID != "" {
+
+		//verifier si l'user est membre du groupe
+		isMember, err := groupService.IsMember(ctx, post.GroupID.String(), requesterID)
+		if err != nil {
+			return nil, utils.ErrInternalServerError
+		}
+		if !isMember {
+			return nil, utils.ErrUnauthorized
+		}
+	}
+	if post.ImageURL != nil {
+		post.ImageURL = utils.GetFullImageURL(post.ImageURL)
+	}
+	if post.AvatarURL != nil {
+		post.AvatarURL = utils.GetFullImageURLAvatar(post.AvatarURL)
+	}
+
+	switch post.Visibility {
+	case "public":
+		return post, nil
+	case "followers":
+		//Vérifier si l'user follow l'auteur
+		isFollowing, err := userService.IsFollowing(ctx, requesterID, post.UserID.String())
+		if err != nil {
+			return nil, utils.ErrInternalServerError
+		}
+		if !isFollowing {
+			return nil, utils.ErrUnauthorized
+		}
+
+		return post, nil
+	case "private":
+		//TODO: Vérifier si le user est autorisé à voir le post
+	default:
+		return nil, utils.ErrBadRequest
+
+	}
+	return post, nil
 }
 
 func (s *postServiceImpl) DeletePost(ctx context.Context, postID, requesterID string) error {

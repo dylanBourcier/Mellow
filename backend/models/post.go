@@ -16,3 +16,5 @@ type Post struct {
 	Visibility   string     `json:"visibility"`
 	ImageURL     *string    `json:"image_url,omitempty"` // nullable
 }
+
+

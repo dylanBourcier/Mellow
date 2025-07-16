@@ -128,3 +128,7 @@ func (s *userServiceImpl) SearchUsers(ctx context.Context, query string) ([]*mod
 	// TODO: Appeler le repository pour exécuter la recherche
 	return nil, nil
 }
+
+func (s *userServiceImpl) IsFollowing(ctx context.Context, followerID, targetID string) (bool, error) {
+	return s.userRepo.IsFollowing(ctx, followerID, targetID)
+}

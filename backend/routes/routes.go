@@ -23,7 +23,7 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	users.RegisterUserRoutes(mux, services.UserService)
 
 	// Publications (posts)
-	posts.RegisterPostRoutes(mux, services.PostService, services.AuthService)
+	posts.RegisterPostRoutes(mux, services.PostService, services.AuthService, services.UserService, services.GroupService)
 
 	// Groupes
 	groups.RegisterGroupRoutes(mux, services.GroupService, services.AuthService)

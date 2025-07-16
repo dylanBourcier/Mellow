@@ -57,7 +57,7 @@ func (s *groupServiceImpl) GetGroupMembers(ctx context.Context, groupID string) 
 
 func (s *groupServiceImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
 	// TODO: Appeler le repository pour vérifier la relation d’appartenance
-	return false, nil
+	return s.groupRepo.IsMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
