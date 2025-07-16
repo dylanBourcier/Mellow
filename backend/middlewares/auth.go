@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"fmt"
 
 	"mellow/config"
 	"mellow/services"
@@ -10,7 +9,7 @@ import (
 	"net/http"
 )
 
-func AuthMiddleware(authService services.AuthService) func(http.Handler) http.Handler {
+func RequireAuthMiddleware(authService services.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie(config.CookieName)
@@ -20,7 +19,6 @@ func AuthMiddleware(authService services.AuthService) func(http.Handler) http.Ha
 			}
 
 			sessionID := cookie.Value
-			fmt.Println("Session ID:", sessionID)
 
 			user, err := authService.GetUserFromSession(r.Context(), sessionID)
 			if err != nil {
@@ -30,6 +28,30 @@ func AuthMiddleware(authService services.AuthService) func(http.Handler) http.Ha
 			uid := user.UserID
 
 			_ = authService.UpdateLastActivity(r.Context(), sessionID)
+
+			ctx := context.WithValue(r.Context(), utils.CtxKeyUserID, uid)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func OptionalAuthMiddleware(authService services.AuthService) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			cookie, err := r.Cookie(config.CookieName)
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			sessionID := cookie.Value
+
+			user, err := authService.GetUserFromSession(r.Context(), sessionID)
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+			uid := user.UserID
 
 			ctx := context.WithValue(r.Context(), utils.CtxKeyUserID, uid)
 			next.ServeHTTP(w, r.WithContext(ctx))

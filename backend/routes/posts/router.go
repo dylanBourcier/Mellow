@@ -2,6 +2,7 @@ package posts
 
 import (
 	"mellow/controllers/posts"
+	"mellow/middlewares"
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
@@ -9,14 +10,17 @@ import (
 )
 
 // /posts → POST (create) ou GET (list)
-func PostRootRouter(w http.ResponseWriter, r *http.Request, PostService services.PostService) {
-	switch r.Method {
-	case http.MethodPost:
-		posts.CreatePost(PostService)(w, r)
-	case http.MethodGet:
-		posts.GetAllPosts(w, r)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+func PostRootRouter(PostService services.PostService, authService services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handler := utils.ChainHTTP(posts.CreatePost(PostService), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
+		case http.MethodGet:
+			posts.GetAllPosts(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
 	}
 }
 

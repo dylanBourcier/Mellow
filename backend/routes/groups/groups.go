@@ -28,5 +28,5 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 	mux.HandleFunc("/groups/chat/", groups.GroupChatHandler)
 
 	// Voir les groupes auxquels l'utilisateur a adhéré
-	mux.Handle("/groups/joined", utils.ChainHTTP(groups.GetGroupsJoinedByUser(groupSvc), middlewares.AuthMiddleware(authSvc)))
+	mux.Handle("/groups/joined", utils.ChainHTTP(groups.GetGroupsJoinedByUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 }
