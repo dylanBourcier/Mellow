@@ -47,7 +47,7 @@ func (r *userRepositoryImpl) FindUserByUsername(ctx context.Context, username st
 	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description FROM users WHERE username = ?`
 	var user models.User
 	err := r.db.QueryRowContext(ctx, query, username).Scan(
-		&user.UserID, &user.Email, &user.Password, &user.Username, &user.Firstname, &user.Lastname, &user.Birthdate, user.Role, &user.ImageURL, &user.CreationDate, &user.Description)
+		&user.UserID, &user.Email, &user.Password, &user.Username, &user.Firstname, &user.Lastname, &user.Birthdate, &user.Role, &user.ImageURL, &user.CreationDate, &user.Description)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
