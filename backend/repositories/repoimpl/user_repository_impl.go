@@ -84,7 +84,7 @@ func (r *userRepositoryImpl) GetUserByUsernameOrEmail(ctx context.Context, usern
 }
 
 func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) error {
-	query := `UPDATE users SET email = ?, password = ?, username = ?, firstname = ?, lastname = ?, birthdate = ?, role = ?, image_url = ?, descrription = ? WHERE user_id = ?`
+	query := `UPDATE users SET email = ?, password = ?, username = ?, firstname = ?, lastname = ?, birthdate = ?, role = ?, image_url = ?, description = ? WHERE user_id = ?`
 	_, err := r.db.ExecContext(ctx, query,
 		user.Email, user.Password, user.Username, user.Firstname, user.Lastname, user.Birthdate, user.Role, user.ImageURL, user.Description, user.UserID)
 	if err != nil {
