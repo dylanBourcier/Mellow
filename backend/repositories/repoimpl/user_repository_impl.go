@@ -96,7 +96,7 @@ func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) 
 func (r *userRepositoryImpl) DeleteUser(ctx context.Context, userID string) error {
 	_, err := r.db.ExecContext(ctx, `DELETE FROM users WHERE user_id = ?`, userID)
 	if err != nil {
-		return fmt.Errorf("error deletting user: %w", err)
+		return fmt.Errorf("error deleting user: %w", err)
 	}
 	return nil
 }
