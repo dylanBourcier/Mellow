@@ -7,6 +7,7 @@ import (
 	"mellow/repositories"
 	"mellow/services"
 	"mellow/utils"
+	"mellow/utils/sanitize"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,15 +59,36 @@ func (s *userServiceImpl) CreateUser(ctx context.Context, user *models.User) err
 }
 
 func (s *userServiceImpl) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
-	// TODO: Vérifier la validité de l'ID si nécessaire
-	// TODO: Appeler le repository pour récupérer l'utilisateur
-	return nil, nil
+	if userID == "" {
+		return nil, fmt.Errorf("%s: empty id", utils.ErrInvalidUserData)
+	}
+
+	user, err := s.userRepo.FindUserByID(ctx, sanitize.SearchQuery(userID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user by id: %w", err)
+	}
+
+	if user == nil {
+		return nil, utils.ErrUserNotFound
+	}
+	return user, nil
 }
 
 func (s *userServiceImpl) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	// TODO: Appliquer les éventuelles règles métier (ex: autorisations)
-	// TODO: Appeler le repository pour récupérer l'utilisateur par username
-	return nil, nil
+	if username == "" {
+		return nil, fmt.Errorf("%s: empty username", utils.ErrUserNotFound)
+	}
+
+	user, err := s.userRepo.FindUserByUsername(ctx, sanitize.SearchQuery(username))
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user by username: %w", err)
+	}
+
+	if user == nil {
+		return nil, utils.ErrUserNotFound
+	}
+	return user, nil
 }
 func (s *userServiceImpl) GetUserByUsernameOrEmail(ctx context.Context, identifier string) (*models.User, error) {
 
@@ -82,51 +104,90 @@ func (s *userServiceImpl) GetUserByUsernameOrEmail(ctx context.Context, identifi
 }
 
 func (s *userServiceImpl) UpdateUser(ctx context.Context, user *models.User) error {
-	// TODO: Appliquer la logique métier (ex: contrôle d'accès, validation)
-	// TODO: Appeler le repository pour mettre à jour les données en base
+	if user == nil || user.UserID == uuid.Nil {
+		return fmt.Errorf("%s: empty id", utils.ErrUserNotFound)
+	}
+	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
 	return nil
 }
 
 func (s *userServiceImpl) DeleteUser(ctx context.Context, userID string) error {
-	// TODO: Vérifier les droits de suppression, effets de bord éventuels
-	// TODO: Appeler le repository pour supprimer l'utilisateur
+	if userID == "" {
+		return fmt.Errorf("%s: empty id", utils.ErrInvalidUserData)
+	}
+	if err := s.userRepo.DeleteUser(ctx, userID); err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
 	return nil
 }
 
 func (s *userServiceImpl) Authenticate(ctx context.Context, username, password string) (*models.User, error) {
-	// TODO: Vérifier les règles métier liées à l'authentification
-	// TODO: Appeler le repository pour récupérer l'utilisateur et comparer le mot de passe
-	return nil, nil
+	user, err := s.userRepo.FindUserByUsername(ctx, username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	if user == nil {
+		return nil, utils.ErrUserNotFound
+	}
+	if !utils.ComparePasswords(user.Password, password) {
+		return nil, utils.ErrInvalidCredentials
+	}
+	return user, nil
 }
 
 func (s *userServiceImpl) FollowUser(ctx context.Context, followerID, targetID string) error {
-	// TODO: Vérifier la logique métier (ex: ne pas suivre soi-même, blocage, etc.)
-	// TODO: Appeler le repository pour créer la relation de suivi
+	if followerID == "" || targetID == "" || followerID == targetID {
+		return fmt.Errorf("%s: invalid follow", utils.ErrInvalidUserData)
+	}
+	if err := s.userRepo.Follow(ctx, followerID, targetID); err != nil {
+		return fmt.Errorf("failed to follow user: %w", err)
+	}
 	return nil
 }
 
 func (s *userServiceImpl) UnfollowUser(ctx context.Context, followerID, targetID string) error {
-	// TODO: Appliquer les règles de désabonnement (ex: vérifications)
-	// TODO: Appeler le repository pour supprimer la relation de suivi
+	if followerID == "" || targetID == "" || followerID == targetID {
+		return fmt.Errorf("%s: invalid unfollow", utils.ErrInvalidUserData)
+	}
+	if err := s.userRepo.Unfollow(ctx, followerID, targetID); err != nil {
+		return fmt.Errorf("failed to unfollow user: %w", err)
+	}
 	return nil
 }
 
 func (s *userServiceImpl) GetFollowers(ctx context.Context, userID string) ([]*models.User, error) {
-	// TODO: Appliquer les règles d'accès (ex: profil privé)
-	// TODO: Appeler le repository pour récupérer les followers
-	return nil, nil
+	if userID == "" {
+		return nil, fmt.Errorf("%s: empty id", utils.ErrUserNotFound)
+	}
+	users, err := s.userRepo.GetFollowers(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve followers: %w", err)
+	}
+	return users, nil
 }
 
 func (s *userServiceImpl) GetFollowing(ctx context.Context, userID string) ([]*models.User, error) {
-	// TODO: Appliquer les règles d'accès si nécessaire
-	// TODO: Appeler le repository pour récupérer les utilisateurs suivis
-	return nil, nil
+	if userID == "" {
+		return nil, fmt.Errorf("%s: empty id", utils.ErrUserNotFound)
+	}
+	users, err := s.userRepo.GetFollowing(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve following: %w", err)
+	}
+	return users, nil
 }
 
 func (s *userServiceImpl) SearchUsers(ctx context.Context, query string) ([]*models.User, error) {
-	// TODO: Nettoyer/valider le terme de recherche
-	// TODO: Appeler le repository pour exécuter la recherche
-	return nil, nil
+	if query == "" {
+		return []*models.User{}, nil
+	}
+	users, err := s.userRepo.SearchUsers(ctx, sanitize.SanatizeInput(query))
+	if err != nil {
+		return nil, fmt.Errorf("failed to search users: %w", err)
+	}
+	return users, nil
 }
 
 func (s *userServiceImpl) IsFollowing(ctx context.Context, followerID, targetID string) (bool, error) {
