@@ -3,7 +3,6 @@ package auth
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"mellow/config"
 	"mellow/models"
 	"mellow/services"
@@ -12,8 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func SignUpHandler(userService services.UserService) http.HandlerFunc {
@@ -62,40 +59,16 @@ func SignUpHandler(userService services.UserService) http.HandlerFunc {
 		}
 		user.Password = password
 
-		// Traite le fichier avatar
 		file, header, err := r.FormFile("avatar")
+		var image_url *string
 		if err == nil {
-			defer file.Close()
-
-			// Génère un nom unique pour éviter les collisions
-			filename := uuid.New().String() + filepath.Ext(header.Filename)
-			savePath := filepath.Join("uploads", "avatars", filename)
-
-			// Crée le dossier si besoin
-			if err := os.MkdirAll(filepath.Dir(savePath), os.ModePerm); err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Unable to create directory", utils.ErrInternalServerError)
-				return
-			}
-
-			dst, err := os.Create(savePath)
+			image_url, err = utils.HandleImageUpload(header, file, []string{"uploads","avatars"})
 			if err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Unable to save avatar", utils.ErrInternalServerError)
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to upload image", err)
 				return
 			}
-			defer dst.Close()
-
-			if _, err := io.Copy(dst, file); err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Failed to save avatar", utils.ErrInternalServerError)
-				return
-			}
-
-			user.ImageURL = &filename
-		} else if err != http.ErrMissingFile {
-			// Erreur autre que "fichier manquant"
-			utils.RespondError(w, http.StatusBadRequest, "Error reading avatar file: "+err.Error(), utils.ErrInvalidPayload)
-			return
+			user.ImageURL = image_url
 		}
-
 		// Appelle le service (il hash le mdp, valide, insert)
 		if err := userService.CreateUser(r.Context(), &user); err != nil {
 			utils.RespondError(w, http.StatusBadRequest, "User creation failed: "+err.Error(), utils.ErrInvalidPayload)

@@ -2,7 +2,6 @@ package posts
 
 import (
 	"fmt"
-	"io"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -31,64 +30,45 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
 			return
 		}
-		var image_url *string
 		file, header, err := r.FormFile("image")
-		if err == nil {
-			defer file.Close()
-			fileName := uuid.New().String() + filepath.Ext(header.Filename)
-			savePath := filepath.Join("uploads", fileName)
-			if err := os.MkdirAll(filepath.Dir(savePath), os.ModePerm); err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Failed to create directory", err)
-				return
-			}
-			dst, err := os.Create(savePath)
+		var image_url *string
+		if err== nil {
+
+			image_url, err = utils.HandleImageUpload(header, file, []string{"uploads"})
 			if err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Failed to create file", err)
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to upload image", err)
 				return
 			}
-			defer dst.Close()
-			if _, err := io.Copy(dst, file); err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Failed to save file", err)
+		}
+		fmt.Println("Image URL:", image_url)
+			groupIdStr := r.FormValue("group_id")
+			var groupID *uuid.UUID
+			if groupIdStr != "" {
+				groupIDValue, err := uuid.Parse(groupIdStr)
+				if err != nil {
+					utils.RespondError(w, http.StatusBadRequest, "Invalid group ID", utils.ErrInvalidPayload)
+					return
+				}
+				groupID = &groupIDValue
+			}
+
+			post := models.Post{
+				Title:      r.FormValue("title"),
+				Content:    r.FormValue("content"),
+				Visibility: r.FormValue("visibility"),
+				UserID:     userID,
+				ImageURL:   image_url,
+				GroupID:    groupID,
+			}
+			fmt.Println("Post to create:", post)
+
+			if err := postService.CreatePost(r.Context(), &post); err != nil {
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to create post", err)
+				if image_url != nil {
+					os.Remove(filepath.Join("uploads", *image_url))
+				}
 				return
 			}
-			image_url = &fileName
-		} else {
-			if err != http.ErrMissingFile {
-				utils.RespondError(w, http.StatusBadRequest, "Invalid image file", err)
-				return
-			}
-			image_url = nil // No image uploaded
+			utils.RespondJSON(w, http.StatusCreated, "Post created successfully", nil)
 		}
-
-		groupIdStr := r.FormValue("group_id")
-		var groupID *uuid.UUID
-		if groupIdStr != "" {
-			groupIDValue, err := uuid.Parse(groupIdStr)
-			if err != nil {
-				utils.RespondError(w, http.StatusBadRequest, "Invalid group ID", utils.ErrInvalidPayload)
-				return
-			}
-			groupID = &groupIDValue
-		}
-
-		post := models.Post{
-			Title:      r.FormValue("title"),
-			Content:    r.FormValue("content"),
-			Visibility: r.FormValue("visibility"),
-			UserID:     userID,
-			ImageURL:   image_url,
-			GroupID:    groupID,
-		}
-		fmt.Println("Post to create:", post)
-
-		if err := postService.CreatePost(r.Context(), &post); err != nil {
-			utils.RespondError(w, http.StatusInternalServerError, "Failed to create post", err)
-			if image_url != nil {
-				os.Remove(filepath.Join("uploads", *image_url))
-			}
-			return
-		}
-		utils.RespondJSON(w, http.StatusCreated, "Post created successfully", nil)
-
-	}
 }
