@@ -10,7 +10,7 @@ type PostRepository interface {
 	InsertPost(ctx context.Context, post *models.Post) error
 
 	// GetPostByID retourne un post par son ID.
-	GetPostByID(ctx context.Context, postID string) (*models.Post, error)
+	GetPostByID(ctx context.Context, postID string) (*models.PostDetails, error)
 
 	// DeletePost supprime un post par son ID.
 	DeletePost(ctx context.Context, postID string) error

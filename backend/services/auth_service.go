@@ -17,4 +17,7 @@ type AuthService interface {
 
 	// GetUserFromSession retourne l'utilisateur lié à une session.
 	GetUserFromSession(ctx context.Context, sessionID string) (*models.User, error)
+
+	// UpdateLastActivity met à jour la dernière activité d'une session.
+	UpdateLastActivity(ctx context.Context, sessionID string) error
 }

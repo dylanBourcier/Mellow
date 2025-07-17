@@ -2,10 +2,13 @@ package groups
 
 import (
 	"mellow/controllers/groups"
+	"mellow/middlewares"
+	"mellow/services"
+	"mellow/utils"
 	"net/http"
 )
 
-func RegisterGroupRoutes(mux *http.ServeMux) {
+func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, authSvc services.AuthService) {
 	// Créer un groupe / voir tous les groupes
 	mux.HandleFunc("/groups", GroupRootRouter)
 
@@ -23,4 +26,7 @@ func RegisterGroupRoutes(mux *http.ServeMux) {
 
 	// Voir le chat de groupe
 	mux.HandleFunc("/groups/chat/", groups.GroupChatHandler)
+
+	// Voir les groupes auxquels l'utilisateur a adhéré
+	mux.Handle("/groups/joined", utils.ChainHTTP(groups.GetGroupsJoinedByUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 }

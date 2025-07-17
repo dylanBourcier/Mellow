@@ -40,6 +40,7 @@ func main() {
 	repos := bootstrap.InitRepositories(db)
 	services := bootstrap.InitServices(repos)
 	mux := routes.SetupRoutes(services)
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads/"))))
 
 	// Appliquer middlewares globaux
 	handler := utils.ChainHTTP(mux,
@@ -51,6 +52,7 @@ func main() {
 	if port == "" {
 		port = "3225" // Default port
 	}
+
 
 	server := &http.Server{
 		Addr:              ":" + port,

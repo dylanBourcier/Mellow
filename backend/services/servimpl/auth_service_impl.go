@@ -51,7 +51,7 @@ func (s *authServiceImpl) Login(ctx context.Context, emailOrUsername, password s
 	if err := s.authRepo.CreateSession(ctx, sess); err != nil {
 		return nil, "", fmt.Errorf("failed to create session: %w", err)
 	}
-
+	user.ImageURL = utils.GetFullImageURLAvatar(user.ImageURL)
 	// TODO: Créer une session en base si les identifiants sont valides
 	return user, sid.String(), nil
 }
@@ -81,5 +81,13 @@ func (s *authServiceImpl) GetUserFromSession(ctx context.Context, sessionID stri
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user from session: %w", err)
 	}
+	user.ImageURL = utils.GetFullImageURLAvatar(user.ImageURL)
 	return user, nil
+}
+
+func (s *authServiceImpl) UpdateLastActivity(ctx context.Context, sessionID string) error {
+	if err := s.authRepo.UpdateLastActivity(ctx, sessionID); err != nil {
+		return fmt.Errorf("failed to update last activity: %w", err)
+	}
+	return nil
 }

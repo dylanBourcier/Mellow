@@ -2,30 +2,93 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type postServiceImpl struct {
-	db *sql.DB
+	postRepo repositories.PostRepository
 }
 
 // NewPostService crée une nouvelle instance de PostService.
-func NewPostService(db *sql.DB) services.PostService {
-	return &postServiceImpl{db: db}
+func NewPostService(postRepo repositories.PostRepository) services.PostService {
+	return &postServiceImpl{postRepo: postRepo}
 }
 
 func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) error {
 	// TODO: Vérifier la validité du post (contenu, visibilité)
 	// TODO: Appeler le repository pour insérer le post
-	return nil
+	if post.Title == "" || post.Content == "" || post.Visibility == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	if post.Visibility != "public" && post.Visibility != "private" && post.Visibility != "followers" {
+		return utils.ErrInvalidPayload
+	}
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	post.PostID = uuid
+	post.CreationDate = time.Now()
+	return s.postRepo.InsertPost(ctx, post)
 }
 
-func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, requesterID string) (*models.Post, error) {
+func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, groupService services.GroupService, userService services.UserService, requesterID string) (*models.PostDetails, error) {
 	// TODO: Vérifier la visibilité du post pour le requester
 	// TODO: Récupérer le post depuis le repository
-	return nil, nil
+	post, err := s.postRepo.GetPostByID(ctx, postID)
+	if err != nil {
+		return nil, utils.ErrPostNotFound
+	}
+	if post == nil {
+		return nil, utils.ErrPostNotFound
+	}
+	if post.GroupID != nil && post.GroupID.String() != "" && requesterID != "" {
+
+		//verifier si l'user est membre du groupe
+		isMember, err := groupService.IsMember(ctx, post.GroupID.String(), requesterID)
+		if err != nil {
+			return nil, utils.ErrInternalServerError
+		}
+		if !isMember {
+			return nil, utils.ErrUnauthorized
+		}
+	}
+	if post.ImageURL != nil {
+		post.ImageURL = utils.GetFullImageURL(post.ImageURL)
+	}
+	if post.AvatarURL != nil {
+		post.AvatarURL = utils.GetFullImageURLAvatar(post.AvatarURL)
+	}
+
+	switch post.Visibility {
+	case "public":
+		return post, nil
+	case "followers":
+		//Vérifier si l'user follow l'auteur
+		isFollowing, err := userService.IsFollowing(ctx, requesterID, post.UserID.String())
+		if err != nil {
+			return nil, utils.ErrInternalServerError
+		}
+		if !isFollowing {
+			return nil, utils.ErrUnauthorized
+		}
+
+		return post, nil
+	case "private":
+		//TODO: Vérifier si le user est autorisé à voir le post
+	default:
+		return nil, utils.ErrBadRequest
+
+	}
+	return post, nil
 }
 
 func (s *postServiceImpl) DeletePost(ctx context.Context, postID, requesterID string) error {

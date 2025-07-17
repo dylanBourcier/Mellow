@@ -12,5 +12,4 @@ type Group struct {
 	Title        string    `json:"title"`
 	Description  *string   `json:"description,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
-	Visibility   *string   `json:"visibility,omitempty"`
 }

@@ -10,7 +10,7 @@ type PostService interface {
 	CreatePost(ctx context.Context, post *models.Post) error
 
 	// GetPostByID retourne un post par son ID.
-	GetPostByID(ctx context.Context, postID string, requesterID string) (*models.Post, error)
+	GetPostByID(ctx context.Context, postID string, groupService GroupService, userService UserService, requesterID string) (*models.PostDetails, error)
 
 	// DeletePost supprime un post (par son auteur ou un modérateur).
 	DeletePost(ctx context.Context, postID, requesterID string) error

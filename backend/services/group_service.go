@@ -29,4 +29,7 @@ type GroupService interface {
 
 	// IsMember vérifie si un utilisateur est membre d’un groupe.
 	IsMember(ctx context.Context, groupID, userID string) (bool, error)
+
+	// GetGroupsJoinedByUser retourne les groupes auxquels un utilisateur a adhéré.
+	GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error)
 }
