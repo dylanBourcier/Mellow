@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { use, useEffect, useState } from "react";
-import Link from "next/link";
-import UserInfo from "../ui/UserInfo";
-import { icons } from "@/app/lib/icons";
-import PageTitle from "../ui/PageTitle";
-import Input from "../ui/Input";
-import Button from "../ui/Button";
-import CommentCard from "../ui/CommentCard";
-import Spinner from "../ui/Spinner";
-import Image from "next/image";
+import React, { use, useEffect, useState } from 'react';
+import Link from 'next/link';
+import UserInfo from '../ui/UserInfo';
+import { icons } from '@/app/lib/icons';
+import PageTitle from '../ui/PageTitle';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import CommentCard from '../ui/CommentCard';
+import Spinner from '../ui/Spinner';
+import Image from 'next/image';
 
 function PostDetailscreen({ postid }) {
   const [post, setPost] = useState(null);
@@ -26,19 +26,19 @@ function PostDetailscreen({ postid }) {
         }
 
         const result = await response.json();
-        if (result.status == "error") {
-          throw new Error(result.message || "Failed to fetch post data");
+        if (result.status == 'error') {
+          throw new Error(result.message || 'Failed to fetch post data');
         }
 
         if (!result?.data) {
-          throw new Error("No post data returned from server");
+          throw new Error('No post data returned from server');
         }
 
-        console.log("Fetched post:", result.data);
+        console.log('Fetched post:', result.data);
         setPost(result.data);
       } catch (err) {
-        console.error("Error fetching post:", err);
-        setError("Could not load the post. Please try again later.");
+        console.error('Error fetching post:', err);
+        setError('Could not load the post. Please try again later.');
       }
     };
 
@@ -61,13 +61,13 @@ function PostDetailscreen({ postid }) {
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 p-4 bg-white shadow-(--box-shadow) rounded-lg">
         <Link
-          href={"/"}
+          href={'/'}
           className="group flex items-center hover:underline hover:text-lavender-3 text-sm"
         >
-          {" "}
+          {' '}
           <span className="group-hover:animate-bounce">
-            {icons["back_arrow"]}
-          </span>{" "}
+            {icons['back_arrow']}
+          </span>{' '}
           <span>Back to home</span>
         </Link>
         <div className="flex items-center justify-between gap-1">

@@ -95,7 +95,7 @@ function PostCreationForm() {
         body: formData,
         credentials: 'include',
       });
-      const result = res.json();
+      const result = await res.json();
       console.log(result);
       if (result.status === 'error') {
         throw new Error(result.message);
