@@ -53,7 +53,7 @@ func SanitizeInput(input string) string {
 	return s
 }
 
-func SanatizeEmail(input string) string {
+func SanitizeEmail(input string) string {
 	s := TrimInput(input)
 	s = NormalizeUTF8(s)
 	s = RemoveControlChars(s)
