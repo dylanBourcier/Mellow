@@ -45,7 +45,7 @@ func URLEncode(input string) string {
 	return url.QueryEscape(input)
 }
 
-func SanatizeInput(input string) string {
+func SanitizeInput(input string) string {
 	s := TrimInput(input)
 	s = NormalizeUTF8(s)
 	s = RemoveControlChars(s)
