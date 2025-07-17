@@ -77,7 +77,7 @@ func (s *userServiceImpl) GetUserByID(ctx context.Context, userID string) (*mode
 func (s *userServiceImpl) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	// TODO: Appliquer les éventuelles règles métier (ex: autorisations)
 	if username == "" {
-		return nil, fmt.Errorf("%s: empty usernamee", utils.ErrUserNotFound)
+		return nil, fmt.Errorf("%s: empty username", utils.ErrUserNotFound)
 	}
 
 	user, err := s.userRepo.FindUserByUsername(ctx, sanitize.SearchQuery(username))
