@@ -103,9 +103,11 @@ func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc
 		}
 		if req.Birthdate != nil && *req.Birthdate != "" {
 			bd, err := time.Parse("2006-01-02", *req.Birthdate)
-			if err == nil {
-				user.Birthdate = bd
+			if err != nil {
+				utils.RespondError(w, http.StatusBadRequest, "Invalid birthdate format. Expected format: YYYY-MM-DD", utils.ErrInvalidInput)
+				return
 			}
+			user.Birthdate = bd
 		}
 
 		if err := userService.UpdateUser(r.Context(), user); err != nil {
