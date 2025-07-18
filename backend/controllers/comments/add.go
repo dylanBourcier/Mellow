@@ -64,6 +64,9 @@ func AddComment(commentService services.CommentService, postService services.Pos
 			}
 			return
 		}
+		if comment.ImageURL != nil {
+			comment.ImageURL = utils.GetFullImageURL(comment.ImageURL) // Convert relative URL to full URL
+		}
 		utils.RespondJSON(w, http.StatusCreated, "Comment added successfully", comment)
 	}
 }
