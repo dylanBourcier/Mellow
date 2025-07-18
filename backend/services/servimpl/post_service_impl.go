@@ -97,9 +97,25 @@ func (s *postServiceImpl) DeletePost(ctx context.Context, postID, requesterID st
 	return nil
 }
 
-func (s *postServiceImpl) GetFeed(ctx context.Context, userID string) ([]*models.Post, error) {
-	// TODO: Récupérer les posts visibles par l’utilisateur (publics + privés de ses abonnements)
-	return nil, nil
+func (s *postServiceImpl) GetFeed(ctx context.Context, userID *string, limit, offset int) ([]*models.PostDetails, error) {
+	// Validate limit and offset
+	if limit <= 0 || offset < 0 {
+		return nil, utils.ErrInvalidPayload
+	}
+	// Additional validation can be added here if needed
+	posts, err := s.postRepo.GetFeed(ctx, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	for _, post := range posts {
+		if post.ImageURL != nil {
+			post.ImageURL = utils.GetFullImageURL(post.ImageURL)
+		}
+		if post.AvatarURL != nil {
+			post.AvatarURL = utils.GetFullImageURLAvatar(post.AvatarURL)
+		}
+	}
+	return posts, nil
 }
 
 func (s *postServiceImpl) GetUserPosts(ctx context.Context, ownerID, requesterID string) ([]*models.Post, error) {

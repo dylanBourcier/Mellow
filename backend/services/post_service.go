@@ -16,7 +16,7 @@ type PostService interface {
 	DeletePost(ctx context.Context, postID, requesterID string) error
 
 	// GetFeed retourne le flux de posts visibles par l’utilisateur connecté.
-	GetFeed(ctx context.Context, userID string) ([]*models.Post, error)
+	GetFeed(ctx context.Context, userID *string, limit, offset int) ([]*models.PostDetails, error)
 
 	// GetUserPosts retourne les posts publics ou privés d’un utilisateur (en fonction du rôle).
 	GetUserPosts(ctx context.Context, ownerID, requesterID string) ([]*models.Post, error)

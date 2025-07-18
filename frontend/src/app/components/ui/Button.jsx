@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from 'next/link';
 import { icons } from '@/app/lib/icons';
@@ -14,7 +14,6 @@ export default function Button({
   icon,
   childrenClassName = '',
 }) {
-  
   if (!className.includes('bg-')) {
     if (isSecondary) {
       className +=
@@ -24,7 +23,7 @@ export default function Button({
     }
   }
   className += icon ? ' py-1.5' : ' py-2';
-  
+
   // if (isSecondary) {
   //   className +=
   //     ' text-lavender-5 bg-transparent border border-lavender-5 hover:bg-white hover:bg-dark-grey disabled:text-white disabled:border-transparent';

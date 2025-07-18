@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from 'react';
 
 export default function FileInput({
-  label = "Choose a file",
+  label = 'Choose a file',
   onChange,
   id,
   name,
@@ -11,7 +11,7 @@ export default function FileInput({
   usePreview = true,
 }) {
   const inputRef = useRef(null);
-  const [fileName, setFileName] = useState("");
+  const [fileName, setFileName] = useState('');
   const [preview, setPreview] = useState(null);
 
   const handleClick = () => {
@@ -23,7 +23,7 @@ export default function FileInput({
     if (!file) return;
 
     setFileName(file.name);
-    if (file.type.startsWith("image/")) {
+    if (file.type.startsWith('image/')) {
       setPreview(URL.createObjectURL(file));
     } else {
       setPreview(null);

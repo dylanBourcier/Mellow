@@ -5,8 +5,7 @@ import Navlink from '../ui/Navlink';
 import Image from 'next/image';
 import Button from '../ui/Button';
 import { useUser } from '@/app/context/UserContext';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+
 import UserInfo from '../ui/UserInfo';
 import LogoutButton from '../ui/LogoutButton';
 import Spinner from '../ui/Spinner';

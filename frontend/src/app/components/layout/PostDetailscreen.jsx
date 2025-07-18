@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { use, useEffect, useState } from "react";
-import Link from "next/link";
-import UserInfo from "../ui/UserInfo";
-import { icons } from "@/app/lib/icons";
-import PageTitle from "../ui/PageTitle";
-import Input from "../ui/Input";
-import Button from "../ui/Button";
-import CommentCard from "../ui/CommentCard";
-import Spinner from "../ui/Spinner";
-import Image from "next/image";
+import React, { use, useEffect, useState } from 'react';
+import Link from 'next/link';
+import UserInfo from '../ui/UserInfo';
+import { icons } from '@/app/lib/icons';
+import PageTitle from '../ui/PageTitle';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import Spinner from '../ui/Spinner';
+import Image from 'next/image';
+import { formatDate } from '@/app/utils/date';
 
 function PostDetailscreen({ postid }) {
   const [post, setPost] = useState(null);
@@ -26,19 +26,19 @@ function PostDetailscreen({ postid }) {
         }
 
         const result = await response.json();
-        if (result.status == "error") {
-          throw new Error(result.message || "Failed to fetch post data");
+        if (result.status == 'error') {
+          throw new Error(result.message || 'Failed to fetch post data');
         }
 
         if (!result?.data) {
-          throw new Error("No post data returned from server");
+          throw new Error('No post data returned from server');
         }
 
-        console.log("Fetched post:", result.data);
         setPost(result.data);
+        post;
       } catch (err) {
-        console.error("Error fetching post:", err);
-        setError("Could not load the post. Please try again later.");
+        console.error('Error fetching post:', err);
+        setError('Could not load the post. Please try again later.');
       }
     };
 
@@ -58,16 +58,16 @@ function PostDetailscreen({ postid }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 w-full">
       <div className="flex flex-col gap-3 p-4 bg-white shadow-(--box-shadow) rounded-lg">
         <Link
-          href={"/"}
+          href={'/'}
           className="group flex items-center hover:underline hover:text-lavender-3 text-sm"
         >
-          {" "}
+          {' '}
           <span className="group-hover:animate-bounce">
-            {icons["back_arrow"]}
-          </span>{" "}
+            {icons['back_arrow']}
+          </span>{' '}
           <span>Back to home</span>
         </Link>
         <div className="flex items-center justify-between gap-1">
@@ -76,7 +76,9 @@ function PostDetailscreen({ postid }) {
             userId={post.user_id}
             authorAvatar={post.avatar_url}
           ></UserInfo>
-          <span className="font-thin text-sm">{post.creation_date}</span>
+          <span className="font-thin text-sm">
+            {formatDate(post.creation_date)}
+          </span>
         </div>
         <div className="flex flex-col gap-2">
           <PageTitle className="text-left">{post.title}</PageTitle>
