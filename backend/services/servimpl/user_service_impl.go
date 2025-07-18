@@ -183,7 +183,7 @@ func (s *userServiceImpl) SearchUsers(ctx context.Context, query string) ([]*mod
 	if query == "" {
 		return []*models.User{}, nil
 	}
-	users, err := s.userRepo.SearchUsers(ctx, sanitize.SanatizeInput(query))
+	users, err := s.userRepo.SearchUsers(ctx, sanitize.SanitizeInput(query))
 	if err != nil {
 		return nil, fmt.Errorf("failed to search users: %w", err)
 	}
