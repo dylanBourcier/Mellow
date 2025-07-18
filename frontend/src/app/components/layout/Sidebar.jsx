@@ -82,7 +82,7 @@ function Sidebar(props) {
             {' '}
             <UserInfo
               userName={user.username}
-              authorAvatar={user.image_url}
+              authorAvatar={user.image_url && user.image_url !== "" ? user.image_url : '/img/DefaultAvatar.svg'}
               userId={user.user_id}
             ></UserInfo>
             <LogoutButton className="flex-1" />

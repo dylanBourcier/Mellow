@@ -23,4 +23,7 @@ type PostService interface {
 
 	// ReportPost permet de signaler un post inapproprié.
 	ReportPost(ctx context.Context, report *models.Report) error
+
+	// IsPostExisting vérifie si un post existe déjà.
+	IsPostExisting(ctx context.Context, postID string) (bool, error)
 }

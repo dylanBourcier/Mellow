@@ -9,6 +9,7 @@ export default function FileInput({
   name,
   setValue,
   usePreview = true,
+  isMini = false,
 }) {
   const inputRef = useRef(null);
   const [fileName, setFileName] = useState('');
@@ -48,7 +49,7 @@ export default function FileInput({
         <button
           type="button"
           onClick={handleClick}
-          className="inline-flex items-center gap-2 px-4 py-2 text-lavender-5 bg-transparent border border-lavender-5 hover:bg-lavender-6 rounded-2xl cursor-pointer transition w-fit"
+          className={`inline-flex items-center gap-2 px-4 py-2  text-lavender-5 border border-lavender-5 rounded-2xl cursor-pointer transition w-fit ${isMini && fileName?'bg-lavender-1 text-lavender-2':' bg-transparent  hover:bg-lavender-6'}`}
         >
           {label}
         </button>
@@ -62,7 +63,7 @@ export default function FileInput({
           onChange={handleFileChange}
           className="hidden"
         />
-        {fileName && <span className="text-sm">{fileName}</span>}
+        {fileName && !isMini && <span className="text-sm">{fileName}</span>}
       </div>
       {preview && usePreview && (
         <img

@@ -10,10 +10,13 @@ import Button from '../ui/Button';
 import Spinner from '../ui/Spinner';
 import Image from 'next/image';
 import { formatDate } from '@/app/utils/date';
+import { useUser } from '@/app/context/UserContext';
+import FileInput from '../ui/FileInput';
 
 function PostDetailscreen({ postid }) {
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
+  const { user, loading } = useUser();
 
   useEffect(() => {
     if (!postid) return;
@@ -103,14 +106,17 @@ function PostDetailscreen({ postid }) {
         <PageTitle className="flex text-left">
           Comments ({post.comment?.length || 0})
         </PageTitle>
-        <div className="flex gap-1 items-center">
-          <Input
-            type="text"
-            placeholder="Post a comment..."
-            className="border border-lavender-5"
-          ></Input>
-          <Button>Comment</Button>
-        </div>
+        {user && (
+          <div className="flex gap-1 items-center">
+            <Input
+              type="text"
+              placeholder="Post a comment..."
+              className="border border-lavender-5"
+            ></Input>
+            <FileInput label={icons['image']} usePreview={false} isMini></FileInput>
+            <Button>Comment</Button>
+          </div>
+        )}
         {/* {(post.comment || []).map((comment, index) => ( */}
         {/* <CommentCard key={index} comment={comment}></CommentCard> */}
         {/* ))} */}

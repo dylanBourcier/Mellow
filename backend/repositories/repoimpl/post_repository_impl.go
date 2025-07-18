@@ -144,3 +144,13 @@ func (r *postRepositoryImpl) InsertPostReport(ctx context.Context, report *model
 	// TODO: INSERT INTO reports (id, reporter_id, post_id, reason, created_at) VALUES (?, ?, ?, ?, ?)
 	return nil
 }
+
+func (r *postRepositoryImpl) IsPostExisting(ctx context.Context, postID string) (bool, error) {
+	query := `SELECT COUNT(*) FROM posts WHERE post_id = ?`
+	var count int
+	err := r.db.QueryRowContext(ctx, query, postID).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("error checking post existence: %w", err)
+	}
+	return count > 0, nil
+}

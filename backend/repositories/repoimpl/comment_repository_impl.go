@@ -3,6 +3,7 @@ package repoimpl
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 )
@@ -17,6 +18,11 @@ func NewCommentRepository(db *sql.DB) repositories.CommentRepository {
 
 func (r *commentRepositoryImpl) InsertComment(ctx context.Context, comment *models.Comment) error {
 	// TODO: INSERT INTO comments (id, post_id, author_id, content, created_at) VALUES (?, ?, ?, ?, ?)
+	query := `INSERT INTO comments (comment_id, post_id, user_id, content, creation_date, image_url) VALUES (?, ?, ?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, comment.CommentID, comment.PostID, comment.UserID, comment.Content, comment.CreationDate, comment.ImageURL)
+	if err != nil {
+		return fmt.Errorf("failed to insert comment: %w", err)
+	}
 	return nil
 }
 

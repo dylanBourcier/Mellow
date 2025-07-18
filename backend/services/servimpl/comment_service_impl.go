@@ -2,24 +2,51 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type commentServiceImpl struct {
-	db *sql.DB
+	commentRepo repositories.CommentRepository
 }
 
 // NewCommentService crée une nouvelle instance de CommentService.
-func NewCommentService(db *sql.DB) services.CommentService {
-	return &commentServiceImpl{db: db}
+func NewCommentService(commentRepo repositories.CommentRepository) services.CommentService {
+	return &commentServiceImpl{commentRepo: commentRepo}
 }
 
 func (s *commentServiceImpl) CreateComment(ctx context.Context, comment *models.Comment) error {
 	// TODO: Vérifier que le post existe et que l'utilisateur a le droit de commenter
+	if comment.PostID == uuid.Nil || comment.Content == nil || comment.UserID == uuid.Nil {
+		return utils.ErrInvalidPayload
+	}
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	if comment.Content == nil || *comment.Content == "" {
+		return utils.ErrInvalidPayload
+	}
+	if len(*comment.Content) > 500 {
+		return utils.ErrContentTooLong
+	}
+	if len(*comment.Content) < 1 {
+		return utils.ErrContentTooShort
+	}
+	
+
+	comment.CommentID = uuid
+	comment.CreationDate = time.Now()
+
 	// TODO: Appeler le repository pour insérer le commentaire
-	return nil
+
+	return s.commentRepo.InsertComment(ctx, comment)
 }
 
 func (s *commentServiceImpl) GetCommentsByPostID(ctx context.Context, postID string) ([]*models.Comment, error) {

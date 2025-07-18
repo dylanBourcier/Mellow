@@ -129,3 +129,11 @@ func (s *postServiceImpl) ReportPost(ctx context.Context, report *models.Report)
 	// TODO: Enregistrer le signalement via le repository
 	return nil
 }
+
+func (s *postServiceImpl) IsPostExisting(ctx context.Context, postID string) (bool, error) {
+	exists, err := s.postRepo.IsPostExisting(ctx, postID)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}

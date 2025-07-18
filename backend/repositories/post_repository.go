@@ -23,4 +23,7 @@ type PostRepository interface {
 
 	// InsertPostReport signale un post via un report.
 	InsertPostReport(ctx context.Context, report *models.Report) error
+
+	// IsPostExisting(ctx context.Context, postID string) (bool, error)
+	IsPostExisting(ctx context.Context, postID string) (bool, error)
 }

@@ -6,6 +6,7 @@ import (
 	"mellow/bootstrap"
 	"mellow/routes/admin"
 	"mellow/routes/auth"
+	"mellow/routes/comments"
 	"mellow/routes/groups"
 	"mellow/routes/messages"
 	"mellow/routes/notifications"
@@ -36,6 +37,9 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 
 	// Modération (admin)
 	admin.RegisterAdminRoutes(mux)
+
+	// comments
+	comments.RegisterCommentRoutes(mux, services.PostService, services.CommentService, services.AuthService)
 
 	return mux
 }
