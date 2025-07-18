@@ -24,16 +24,13 @@ func NewCommentService(commentRepo repositories.CommentRepository, userRepo repo
 
 func (s *commentServiceImpl) CreateComment(ctx context.Context, comment *models.Comment) error {
 	// TODO: Vérifier que le post existe et que l'utilisateur a le droit de commenter
-	if comment.PostID == uuid.Nil || comment.Content == nil || comment.UserID == uuid.Nil {
+	if comment.PostID == uuid.Nil || comment.Content == nil || *comment.Content == "" || comment.UserID == uuid.Nil {
 		return utils.ErrInvalidPayload
 	}
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
 		return utils.ErrUUIDGeneration
-	}
-	if comment.Content == nil || *comment.Content == "" {
-		return utils.ErrInvalidPayload
 	}
 	if len(*comment.Content) > 500 {
 		return utils.ErrContentTooLong

@@ -118,7 +118,7 @@ export default function CommentSection({ postid, initialCommentCount }) {
           <Input
             type="text"
             name={'content'}
-            {...register('content', { required: true })}
+            {...register('content', { required: true, maxLength: 500 })}
             placeholder="Post a comment..."
             className="border border-lavender-5"
           ></Input>

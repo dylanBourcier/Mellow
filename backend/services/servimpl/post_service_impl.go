@@ -2,7 +2,6 @@ package servimpl
 
 import (
 	"context"
-	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
@@ -130,40 +129,32 @@ func (s *postServiceImpl) CanUserSeePost(ctx context.Context, postId string, pos
 		//If post is nil, get it from the repository
 		postDetails, err = s.postRepo.GetPostByID(ctx, postId)
 		if err != nil {
-			fmt.Println("2", err)
-
 			return false, err
 		}
 		if postDetails == nil {
-			fmt.Println("3", err)
 			return false, utils.ErrPostNotFound
 		}
 	}
 
 	if postDetails.GroupID != nil && postDetails.GroupID.String() != "" {
 		if userID.String() == "" {
-			fmt.Println("4", err)
 			return false, nil // User is not logged in, cannot see the post
 		}
 		// Vérifier si l'utilisateur est membre du groupe
 		isMember, err := s.groupService.IsMember(ctx, postDetails.GroupID.String(), userID.String())
 		if err != nil {
-			fmt.Println("5", err)
 			return false, err
 		}
 		if !isMember {
-			fmt.Println("6", err)
 			return false, nil // User is not a member of the group, cannot see the post
 		}
 		return true, nil // User is a member of the group, can see the post
 	}
-	fmt.Println("post", postDetails)
 	switch postDetails.Visibility {
 	case "public":
 		return true, nil
 	case "followers":
 		if userID.String() == "" {
-			fmt.Println("7", err)
 			return false, nil
 		}
 		if userID == postDetails.UserID {
@@ -172,7 +163,6 @@ func (s *postServiceImpl) CanUserSeePost(ctx context.Context, postId string, pos
 		return s.userService.IsFollowing(ctx, userID.String(), postDetails.UserID.String())
 	case "private":
 		if userID.String() == "" {
-			fmt.Println("8", err)
 			return false, nil
 		}
 		if userID == postDetails.UserID {
@@ -180,7 +170,6 @@ func (s *postServiceImpl) CanUserSeePost(ctx context.Context, postId string, pos
 		}
 		return s.postRepo.IsUserAllowed(ctx, postDetails.PostID.String(), userID.String())
 	default:
-		fmt.Println("9", err)
 		return false, nil
 	}
 }
