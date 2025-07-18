@@ -2,6 +2,7 @@ package servimpl
 
 import (
 	"context"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
@@ -12,12 +13,14 @@ import (
 )
 
 type postServiceImpl struct {
-	postRepo repositories.PostRepository
+	postRepo     repositories.PostRepository
+	userService  services.UserService
+	groupService services.GroupService
 }
 
 // NewPostService crée une nouvelle instance de PostService.
-func NewPostService(postRepo repositories.PostRepository) services.PostService {
-	return &postServiceImpl{postRepo: postRepo}
+func NewPostService(postRepo repositories.PostRepository, userService services.UserService, groupService services.GroupService) services.PostService {
+	return &postServiceImpl{postRepo: postRepo, userService: userService, groupService: groupService}
 }
 
 func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) error {
@@ -40,9 +43,8 @@ func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) err
 	return s.postRepo.InsertPost(ctx, post)
 }
 
-func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, groupService services.GroupService, userService services.UserService, requesterID string) (*models.PostDetails, error) {
-	// TODO: Vérifier la visibilité du post pour le requester
-	// TODO: Récupérer le post depuis le repository
+func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, requesterID string) (*models.PostDetails, error) {
+	// Récupérer le post depuis le repository
 	post, err := s.postRepo.GetPostByID(ctx, postID)
 	if err != nil {
 		return nil, utils.ErrPostNotFound
@@ -50,17 +52,16 @@ func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, groupS
 	if post == nil {
 		return nil, utils.ErrPostNotFound
 	}
-	if post.GroupID != nil && post.GroupID.String() != "" && requesterID != "" {
 
-		//verifier si l'user est membre du groupe
-		isMember, err := groupService.IsMember(ctx, post.GroupID.String(), requesterID)
-		if err != nil {
-			return nil, utils.ErrInternalServerError
-		}
-		if !isMember {
-			return nil, utils.ErrUnauthorized
-		}
+	// Vérifier la visibilité du post pour le requester
+	canSee, err := s.CanUserSeePost(ctx, postID, post)
+	if err != nil {
+		return nil, utils.ErrInternalServerError
 	}
+	if !canSee {
+		return nil, utils.ErrUnauthorized
+	}
+
 	if post.ImageURL != nil {
 		post.ImageURL = utils.GetFullImageURL(post.ImageURL)
 	}
@@ -68,26 +69,6 @@ func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, groupS
 		post.AvatarURL = utils.GetFullImageURLAvatar(post.AvatarURL)
 	}
 
-	switch post.Visibility {
-	case "public":
-		return post, nil
-	case "followers":
-		//Vérifier si l'user follow l'auteur
-		isFollowing, err := userService.IsFollowing(ctx, requesterID, post.UserID.String())
-		if err != nil {
-			return nil, utils.ErrInternalServerError
-		}
-		if !isFollowing {
-			return nil, utils.ErrUnauthorized
-		}
-
-		return post, nil
-	case "private":
-		//TODO: Vérifier si le user est autorisé à voir le post
-	default:
-		return nil, utils.ErrBadRequest
-
-	}
 	return post, nil
 }
 
@@ -136,4 +117,70 @@ func (s *postServiceImpl) IsPostExisting(ctx context.Context, postID string) (bo
 		return false, err
 	}
 	return exists, nil
+}
+
+// postService.go
+
+func (s *postServiceImpl) CanUserSeePost(ctx context.Context, postId string, postDetails *models.PostDetails) (bool, error) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil && err != utils.ErrNoUserInContext {
+		return false, err
+	}
+	if postDetails.PostID == uuid.Nil {
+		//If post is nil, get it from the repository
+		postDetails, err = s.postRepo.GetPostByID(ctx, postId)
+		if err != nil {
+			fmt.Println("2", err)
+
+			return false, err
+		}
+		if postDetails == nil {
+			fmt.Println("3", err)
+			return false, utils.ErrPostNotFound
+		}
+	}
+
+	if postDetails.GroupID != nil && postDetails.GroupID.String() != "" {
+		if userID.String() == "" {
+			fmt.Println("4", err)
+			return false, nil // User is not logged in, cannot see the post
+		}
+		// Vérifier si l'utilisateur est membre du groupe
+		isMember, err := s.groupService.IsMember(ctx, postDetails.GroupID.String(), userID.String())
+		if err != nil {
+			fmt.Println("5", err)
+			return false, err
+		}
+		if !isMember {
+			fmt.Println("6", err)
+			return false, nil // User is not a member of the group, cannot see the post
+		}
+		return true, nil // User is a member of the group, can see the post
+	}
+	fmt.Println("post", postDetails)
+	switch postDetails.Visibility {
+	case "public":
+		return true, nil
+	case "followers":
+		if userID.String() == "" {
+			fmt.Println("7", err)
+			return false, nil
+		}
+		if userID == postDetails.UserID {
+			return true, nil
+		}
+		return s.userService.IsFollowing(ctx, userID.String(), postDetails.UserID.String())
+	case "private":
+		if userID.String() == "" {
+			fmt.Println("8", err)
+			return false, nil
+		}
+		if userID == postDetails.UserID {
+			return true, nil
+		}
+		return s.postRepo.IsUserAllowed(ctx, postDetails.PostID.String(), userID.String())
+	default:
+		fmt.Println("9", err)
+		return false, nil
+	}
 }

@@ -13,11 +13,13 @@ import (
 
 type commentServiceImpl struct {
 	commentRepo repositories.CommentRepository
+	userRepo    repositories.UserRepository
+	postService services.PostService
 }
 
 // NewCommentService crée une nouvelle instance de CommentService.
-func NewCommentService(commentRepo repositories.CommentRepository) services.CommentService {
-	return &commentServiceImpl{commentRepo: commentRepo}
+func NewCommentService(commentRepo repositories.CommentRepository, userRepo repositories.UserRepository, postService services.PostService) services.CommentService {
+	return &commentServiceImpl{commentRepo: commentRepo, userRepo: userRepo, postService: postService}
 }
 
 func (s *commentServiceImpl) CreateComment(ctx context.Context, comment *models.Comment) error {
@@ -39,7 +41,6 @@ func (s *commentServiceImpl) CreateComment(ctx context.Context, comment *models.
 	if len(*comment.Content) < 1 {
 		return utils.ErrContentTooShort
 	}
-	
 
 	comment.CommentID = uuid
 	comment.CreationDate = time.Now()
@@ -49,10 +50,41 @@ func (s *commentServiceImpl) CreateComment(ctx context.Context, comment *models.
 	return s.commentRepo.InsertComment(ctx, comment)
 }
 
-func (s *commentServiceImpl) GetCommentsByPostID(ctx context.Context, postID string) ([]*models.Comment, error) {
+func (s *commentServiceImpl) GetCommentsByPostID(ctx context.Context, postID string) ([]*models.CommentDetails, error) {
 	// TODO: Vérifier l'accès au post (visibilité)
-	// TODO: Appeler le repository pour récupérer les commentaires liés au post
-	return nil, nil
+	if postID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+	// Vérifier que le post existe
+	exists, err := s.postService.IsPostExisting(ctx, postID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, utils.ErrPostNotFound
+	}
+
+	canSee, err := s.postService.CanUserSeePost(ctx, postID, &models.PostDetails{})
+	if err != nil {
+		return nil, err
+	}
+	if !canSee {
+		return nil, utils.ErrUnauthorized
+	}
+	comments, err := s.commentRepo.GetCommentsByPostID(ctx, postID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, comment := range comments {
+		if comment.ImageURL != nil && *comment.ImageURL != "" {
+			comment.ImageURL = utils.GetFullImageURL(comment.ImageURL)
+		}
+		if comment.AvatarURL != nil && *comment.AvatarURL != "" {
+			comment.AvatarURL = utils.GetFullImageURLAvatar(comment.AvatarURL)
+		}
+	}
+	return comments, nil
 }
 
 func (s *commentServiceImpl) DeleteComment(ctx context.Context, commentID, requesterID string) error {

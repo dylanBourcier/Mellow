@@ -20,10 +20,11 @@ func CommentRouter(postService services.PostService, commentService services.Com
 
 		switch r.Method {
 		case http.MethodPost:
-			handler:=utils.ChainHTTP(comments.AddComment(commentService, postService, id),middlewares.RequireAuthMiddleware(authService)) // id = postId
+			handler := utils.ChainHTTP(comments.AddComment(commentService, postService, id), middlewares.RequireAuthMiddleware(authService)) // id = postId
 			handler.ServeHTTP(w, r)
 		case http.MethodGet:
-			comments.GetComments(w, r, id) // id = postId
+			handler := utils.ChainHTTP(comments.GetComments(commentService, postService, id), middlewares.OptionalAuthMiddleware(authService)) // id = postId
+			handler.ServeHTTP(w, r)
 		case http.MethodPut:
 			comments.UpdateComment(w, r, id) // id = commentId
 		case http.MethodDelete:

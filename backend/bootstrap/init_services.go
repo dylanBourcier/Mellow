@@ -16,9 +16,9 @@ type Services struct {
 func InitServices(repos *Repositories) *Services {
 	userService := servimpl.NewUserService(repos.UserRepository)
 	authService := servimpl.NewAuthService(repos.UserRepository, repos.AuthRepository, userService)
-	postService := servimpl.NewPostService(repos.PostRepository)
 	groupService := servimpl.NewGroupService(repos.GroupRepository)
-	commentService := servimpl.NewCommentService(repos.CommentRepository)
+	postService := servimpl.NewPostService(repos.PostRepository, userService, groupService)
+	commentService := servimpl.NewCommentService(repos.CommentRepository, repos.UserRepository, postService)
 
 	return &Services{
 		UserService:    userService,

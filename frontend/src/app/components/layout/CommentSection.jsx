@@ -9,7 +9,6 @@ import { icons } from '@/app/lib/icons';
 import { useForm, Controller, set } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import CustomToast from '../ui/CustomToast';
-import { formatDate } from '@/app/utils/date';
 import { useEffect } from 'react';
 import Spinner from '../ui/Spinner';
 
@@ -48,7 +47,6 @@ export default function CommentSection({ postid, initialCommentCount }) {
         credentials: 'include',
       });
       const result = await res.json();
-      console.log('user', user);
 
       if (result.status === 'error') {
         throw new Error(result.message);
@@ -62,10 +60,10 @@ export default function CommentSection({ postid, initialCommentCount }) {
       ));
       setCommentCount((prev) => prev + 1);
       const newComment = result.data;
-      newComment.user_id = user.id; // Ensure user_id is set correctly
+      newComment.user_id = user.user_id; // Ensure user_id is set correctly
       newComment.username = user.username; // Ensure username is set correctly
       newComment.avatar_url = user.image_url; // Ensure avatar_url is set correctly
-      newComment.creation_date = formatDate(newComment.creation_date);
+
       setComments((prev) => [...prev, newComment]);
       reset();
     } catch (error) {
@@ -78,7 +76,9 @@ export default function CommentSection({ postid, initialCommentCount }) {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await fetch(`/api/comments/${postid}`);
+        const response = await fetch(`/api/comments/${postid}`, {
+          credentials: 'include',
+        });
         if (!response.ok) {
           throw new Error(
             `Failed to fetch comments (status: ${response.status})`
@@ -88,9 +88,13 @@ export default function CommentSection({ postid, initialCommentCount }) {
         if (result.status === 'error') {
           throw new Error(result.message || 'Failed to fetch comments');
         }
+        if (!result?.data) {
+          result.data = [];
+        }
         setComments(result.data);
-        setCommentCount(result.data.length);
+        setCommentCount(result.data?.length);
       } catch (error) {
+        console.error('Error loading comments:', error);
         toast.custom((t) => (
           <CustomToast t={t} type="error" message="Error loading comments!" />
         ));
@@ -106,7 +110,7 @@ export default function CommentSection({ postid, initialCommentCount }) {
       <PageTitle className="flex text-left">
         Comment{commentCount > 1 ? 's' : ''} ({commentCount || 0})
       </PageTitle>
-      {user && (
+      {user ? (
         <form
           className="flex gap-1 items-center"
           onSubmit={handleSubmit(onSubmit)}
@@ -139,15 +143,26 @@ export default function CommentSection({ postid, initialCommentCount }) {
           ></Controller>
           <Button type="submit">Comment</Button>
         </form>
+      ) : (
+        <div className="w-full flex gap-2 items-center justify-center">
+          <span>You need to be logged in to comment on this post.</span>
+          <Button href="/login" wFull={false}>
+            Login
+          </Button>
+        </div>
       )}
       {loading ? (
         <div className="flex w-full items-center gap-2 justify-center ">
           <Spinner></Spinner>Loading comments...
         </div>
-      ) : (
+      ) : comments?.length ? (
         (comments || []).map((comment, index) => (
           <CommentCard key={index} comment={comment}></CommentCard>
         ))
+      ) : (
+        <span className="inline-block w-full text-center italic ">
+          Be the first to comment this post !
+        </span>
       )}
     </div>
   );

@@ -26,9 +26,31 @@ func (r *commentRepositoryImpl) InsertComment(ctx context.Context, comment *mode
 	return nil
 }
 
-func (r *commentRepositoryImpl) GetCommentsByPostID(ctx context.Context, postID string) ([]*models.Comment, error) {
-	// TODO: SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC
-	return nil, nil
+func (r *commentRepositoryImpl) GetCommentsByPostID(ctx context.Context, postID string) ([]*models.CommentDetails, error) {
+	query := `SELECT c.comment_id, c.post_id, c.content, c.creation_date, c.image_url, u.user_id, u.username, u.image_url
+			  FROM comments c
+			  JOIN users u ON c.user_id = u.user_id
+			  WHERE c.post_id = ?
+			  ORDER BY c.creation_date ASC`
+	rows, err := r.db.QueryContext(ctx, query, postID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get comments for post %s: %w", postID, err)
+	}
+	defer rows.Close()
+	var comments []*models.CommentDetails
+	for rows.Next() {
+		var comment models.CommentDetails
+		if err := rows.Scan(&comment.CommentID, &comment.PostID, &comment.Content, &comment.CreationDate, &comment.ImageURL, &comment.UserID, &comment.Username, &comment.AvatarURL); err != nil {
+			return nil, fmt.Errorf("failed to scan comment: %w", err)
+		}
+		comments = append(comments, &comment)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over comments: %w", err)
+	}
+
+	return comments, nil
+
 }
 
 func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, commentID string) error {

@@ -26,4 +26,6 @@ type PostRepository interface {
 
 	// IsPostExisting(ctx context.Context, postID string) (bool, error)
 	IsPostExisting(ctx context.Context, postID string) (bool, error)
+
+	IsUserAllowed(ctx context.Context, postID string, userID string) (bool, error)
 }

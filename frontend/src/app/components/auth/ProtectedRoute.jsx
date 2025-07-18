@@ -3,6 +3,7 @@
 import { useUser } from '@/app/context/UserContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Spinner from '../ui/Spinner';
 
 export default function ProtectedRoute({ children, redirectTo = '/login' }) {
   const { user, loading } = useUser();
