@@ -11,6 +11,7 @@ type Repositories struct {
 	AuthRepository  repositories.AuthRepository
 	PostRepository  repositories.PostRepository
 	GroupRepository repositories.GroupRepository
+	CommentRepository repositories.CommentRepository
 }
 
 func InitRepositories(db *sql.DB) *Repositories {
@@ -19,5 +20,6 @@ func InitRepositories(db *sql.DB) *Repositories {
 		AuthRepository:  repoimpl.NewAuthRepository(db),
 		PostRepository:  repoimpl.NewPostRepository(db),
 		GroupRepository: repoimpl.NewGroupRepository(db),
+		CommentRepository: repoimpl.NewCommentRepository(db),
 	}
 }

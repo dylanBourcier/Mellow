@@ -43,7 +43,7 @@ func GetFeedPosts(postSvc services.PostService) http.HandlerFunc {
 	}
 }
 
-func GetPostByID(groupService services.GroupService, userService services.UserService, postService services.PostService) http.HandlerFunc {
+func GetPostByID(postService services.PostService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: retourner post spécifique
 		//récupérer le postID depuis l'URL
@@ -56,7 +56,7 @@ func GetPostByID(groupService services.GroupService, userService services.UserSe
 		if !ok {
 			userID = "" // No user ID in context, maybe unauthenticated request
 		}
-		post, err := postService.GetPostByID(r.Context(), id, groupService, userService, userID)
+		post, err := postService.GetPostByID(r.Context(), id, userID)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				http.Error(w, "Post not found", http.StatusNotFound)

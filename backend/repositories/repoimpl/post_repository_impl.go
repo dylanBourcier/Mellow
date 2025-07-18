@@ -144,3 +144,27 @@ func (r *postRepositoryImpl) InsertPostReport(ctx context.Context, report *model
 	// TODO: INSERT INTO reports (id, reporter_id, post_id, reason, created_at) VALUES (?, ?, ?, ?, ?)
 	return nil
 }
+
+func (r *postRepositoryImpl) IsPostExisting(ctx context.Context, postID string) (bool, error) {
+	query := `SELECT COUNT(*) FROM posts WHERE post_id = ?`
+	var count int
+	err := r.db.QueryRowContext(ctx, query, postID).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("error checking post existence: %w", err)
+	}
+	return count > 0, nil
+}
+
+func (r *postRepositoryImpl) IsUserAllowed(ctx context.Context, postID string, userID string) (bool, error) {
+	query := `SELECT COUNT(*) FROM posts_viewer WHERE post_id = ? AND user_id = ?`
+	var count int
+	err := r.db.QueryRowContext(ctx, query, postID, userID).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("error checking user access to post: %w", err)
+	}
+	if count > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}

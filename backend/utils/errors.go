@@ -34,6 +34,8 @@ var (
 
 	// Limites et contraintes
 	ErrTooManyRequests = errors.New("TOO_MANY_REQUESTS")
+	ErrContentTooLong  = errors.New("CONTENT_TOO_LONG")
+	ErrContentTooShort = errors.New("CONTENT_TOO_SHORT")
 
 	// Autres
 	ErrInternalServerError = errors.New("INTERNAL_SERVER_ERROR")

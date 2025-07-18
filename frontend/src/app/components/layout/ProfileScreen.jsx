@@ -90,10 +90,10 @@ function ProfileScreen({
           </div>
         </div>
       </div>
+      {/* <PostCard postInfos={props} />
       <PostCard postInfos={props} />
       <PostCard postInfos={props} />
-      <PostCard postInfos={props} />
-      <PostCard postInfos={props} />
+      <PostCard postInfos={props} /> */}
     </div>
   );
 }

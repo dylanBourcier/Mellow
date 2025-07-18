@@ -5,16 +5,15 @@ import Link from 'next/link';
 import UserInfo from '../ui/UserInfo';
 import { icons } from '@/app/lib/icons';
 import PageTitle from '../ui/PageTitle';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
 import Spinner from '../ui/Spinner';
 import Image from 'next/image';
 import { formatDate } from '@/app/utils/date';
 
+import CommentSection from './CommentSection';
+
 function PostDetailscreen({ postid }) {
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     if (!postid) return;
 
@@ -35,7 +34,7 @@ function PostDetailscreen({ postid }) {
         }
 
         setPost(result.data);
-        post;
+        console.log('Post fetched successfully:', result.data);
       } catch (err) {
         console.error('Error fetching post:', err);
         setError('Could not load the post. Please try again later.');
@@ -99,22 +98,10 @@ function PostDetailscreen({ postid }) {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-3 px-2 lg:px-8 py-2.5">
-        <PageTitle className="flex text-left">
-          Comments ({post.comment?.length || 0})
-        </PageTitle>
-        <div className="flex gap-1 items-center">
-          <Input
-            type="text"
-            placeholder="Post a comment..."
-            className="border border-lavender-5"
-          ></Input>
-          <Button>Comment</Button>
-        </div>
-        {/* {(post.comment || []).map((comment, index) => ( */}
-        {/* <CommentCard key={index} comment={comment}></CommentCard> */}
-        {/* ))} */}
-      </div>
+      <CommentSection
+        postid={postid}
+        commentCount={post.comment_count + 1}
+      ></CommentSection>
     </div>
   );
 }

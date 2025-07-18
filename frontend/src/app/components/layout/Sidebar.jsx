@@ -42,6 +42,7 @@ function Sidebar(props) {
         <Navlink
           href="/messages"
           icon="messages"
+          disabled={!user}
           isActive={pathname.startsWith('/messages')}
         >
           Messages
@@ -49,6 +50,7 @@ function Sidebar(props) {
         <Navlink
           href="/groups"
           icon="groups"
+          disabled={!user}
           isActive={pathname.startsWith('/groups')}
         >
           Groups
@@ -56,18 +58,21 @@ function Sidebar(props) {
         <Navlink
           href="/notifications"
           icon="notifications"
+          disabled={!user}
           isActive={pathname.startsWith('/notifications')}
         >
           Notifications
         </Navlink>
         <Navlink
           href="/profile"
-          icon="profile"
+          icon={user ? undefined : 'profile'}
+          img={user ? user.image_url || '/img/DefaultAvatar.svg' : undefined}
+          disabled={!user}
           isActive={pathname.startsWith('/profile')}
         >
           Profile
         </Navlink>
-        <Button className="mt-6 w-full" href="/posts/create">
+        <Button className="mt-6 w-full" disabled={!user} href="/posts/create">
           New Post
         </Button>
       </nav>
@@ -79,10 +84,13 @@ function Sidebar(props) {
           </div>
         ) : user ? (
           <div className="flex flex-col gap-2 w-full">
-            {' '}
             <UserInfo
               userName={user.username}
-              authorAvatar={user.image_url}
+              authorAvatar={
+                user.image_url && user.image_url !== ''
+                  ? user.image_url
+                  : '/img/DefaultAvatar.svg'
+              }
               userId={user.user_id}
             ></UserInfo>
             <LogoutButton className="flex-1" />

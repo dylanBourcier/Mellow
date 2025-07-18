@@ -13,6 +13,7 @@ export default function Button({
   isSecondary = false,
   icon,
   childrenClassName = '',
+  wFull = true,
 }) {
   if (!className.includes('bg-')) {
     if (isSecondary) {
@@ -45,7 +46,7 @@ export default function Button({
   );
   if (href) {
     return (
-      <Link href={href} className="flex w-full">
+      <Link href={href} className={`flex` + (wFull ? ' w-full' : '')}>
         {button}
       </Link>
     );
