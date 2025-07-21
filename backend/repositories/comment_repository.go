@@ -15,6 +15,12 @@ type CommentRepository interface {
 	// DeleteComment supprime un commentaire par son ID.
 	DeleteComment(ctx context.Context, commentID string) error
 
+	// UpdateComment met à jour le contenu d'un commentaire.
+	UpdateComment(ctx context.Context, commentID string, content string) error
+
+	// GetCommentByID récupère un commentaire par son ID.
+	GetCommentByID(ctx context.Context, commentID string) (*models.Comment, error)
+
 	// InsertCommentReport enregistre un signalement de commentaire.
 	InsertCommentReport(ctx context.Context, report *models.Report) error
 }

@@ -58,6 +58,28 @@ func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, commentID str
 	return nil
 }
 
+func (r *commentRepositoryImpl) UpdateComment(ctx context.Context, commentID string, content string) error {
+	query := `UPDATE comments SET content = ? WHERE comment_id = ?`
+	_, err := r.db.ExecContext(ctx, query, content, commentID)
+	if err != nil {
+		return fmt.Errorf("failed to update comment: %w", err)
+	}
+	return nil
+}
+
+func (r *commentRepositoryImpl) GetCommentByID(ctx context.Context, commentID string) (*models.Comment, error) {
+	query := `SELECT comment_id, user_id, post_id, content, creation_date, image_url FROM comments WHERE comment_id = ?`
+	var c models.Comment
+	err := r.db.QueryRowContext(ctx, query, commentID).Scan(&c.CommentID, &c.UserID, &c.PostID, &c.Content, &c.CreationDate, &c.ImageURL)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get comment: %w", err)
+	}
+	return &c, nil
+}
+
 func (r *commentRepositoryImpl) InsertCommentReport(ctx context.Context, report *models.Report) error {
 	// TODO: INSERT INTO reports (id, reporter_id, comment_id, reason, created_at) VALUES (?, ?, ?, ?, ?)
 	return nil

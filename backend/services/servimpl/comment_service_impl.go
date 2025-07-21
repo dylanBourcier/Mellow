@@ -90,6 +90,31 @@ func (s *commentServiceImpl) DeleteComment(ctx context.Context, commentID, reque
 	return nil
 }
 
+func (s *commentServiceImpl) UpdateComment(ctx context.Context, commentID, requesterID, content string) error {
+	if commentID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+	if len(content) > 500 {
+		return utils.ErrContentTooLong
+	}
+	if len(content) < 1 {
+		return utils.ErrContentTooShort
+	}
+
+	comment, err := s.commentRepo.GetCommentByID(ctx, commentID)
+	if err != nil {
+		return err
+	}
+	if comment == nil {
+		return utils.ErrCommentNotFound
+	}
+	if comment.UserID.String() != requesterID {
+		return utils.ErrForbidden
+	}
+
+	return s.commentRepo.UpdateComment(ctx, commentID, content)
+}
+
 func (s *commentServiceImpl) ReportComment(ctx context.Context, report *models.Report) error {
 	// TODO: Vérifier que le commentaire existe
 	// TODO: Appeler le repository pour enregistrer le signalement
