@@ -17,7 +17,8 @@ func GroupRootRouter(groupSvc services.GroupService, authSvc services.AuthServic
 			handler := utils.ChainHTTP(groups.CreateGroup(groupSvc), middlewares.RequireAuthMiddleware(authSvc))
 			handler.ServeHTTP(w, r)
 		case http.MethodGet:
-			groups.GetAllGroups(w, r)
+			handler := utils.ChainHTTP(groups.CreateGroup(groupSvc), middlewares.OptionalAuthMiddleware(authSvc))
+			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}
