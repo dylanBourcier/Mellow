@@ -46,10 +46,6 @@ func UpdatePost(postService services.PostService, id string) http.HandlerFunc {
 
 func DeletePost(postService services.PostService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
 		id := strings.TrimPrefix(r.URL.Path, "/posts/")
 		if id == "" || strings.Contains(id, "/") {
 			utils.RespondError(w, http.StatusNotFound, "Post not found", utils.ErrPostNotFound)

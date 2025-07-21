@@ -32,4 +32,7 @@ type GroupRepository interface {
 
 	// GetGroupsJoinedByUser retourne les groupes auxquels un utilisateur a adhéré.
 	GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error)
+
+	// IsTitleTaken vérifie si un titre de groupe est déjà utilisé.
+	IsTitleTaken(ctx context.Context, title string) (bool, error)
 }
