@@ -19,13 +19,14 @@ export default function GroupCreationForm() {
   } = useForm();
 
   const onSubmit = async (data) => {
+    console.log('data:', data);
+
     try {
       const formData = new FormData();
 
       // Champs texte
       formData.append('title', data.title);
       formData.append('description', data.description || '');
-      
 
       const res = await fetch('/api/groups', {
         method: 'POST',
@@ -34,6 +35,10 @@ export default function GroupCreationForm() {
       });
 
       const result = await res.json();
+      console.log('response:', res.status);
+      console.log('result:', result);
+      console.log(res.credentials);
+      
 
       if (result.status === 'error') {
         throw new Error(result.message || 'Group creation failed');
@@ -90,7 +95,7 @@ export default function GroupCreationForm() {
             className="h-24"
           />
         </div>
-        <div className='flex flex-col gap-2 w-full'> 
+        <div className="flex flex-col gap-2 w-full">
           <Button type="submit">Create group</Button>
           <Link href={'/groups'}></Link>
         </div>

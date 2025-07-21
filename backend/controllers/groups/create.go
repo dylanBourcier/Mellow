@@ -10,13 +10,8 @@ import (
 
 func CreateGroup(groupSvc services.GroupService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
-
-		if err := r.ParseForm(); err != nil {
-			utils.RespondError(w, http.StatusBadRequest, "Invalid form data", utils.ErrInvalidPayload)
+		if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB max size
+			utils.RespondError(w, http.StatusBadRequest, "Invalid multipart form data", utils.ErrInvalidPayload)
 			return
 		}
 
@@ -32,10 +27,7 @@ func CreateGroup(groupSvc services.GroupService) http.HandlerFunc {
 			return
 		}
 
-		var desc *string
-		if d := r.FormValue("description"); d != "" {
-			desc = &d
-		}
+		desc := r.FormValue("description")
 
 		g := models.Group{
 			Title:       title,
