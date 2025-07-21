@@ -29,7 +29,8 @@ func CommentRouter(postService services.PostService, commentService services.Com
 			handler := utils.ChainHTTP(comments.UpdateComment(commentService, id), middlewares.RequireAuthMiddleware(authService)) // id = commentId
 			handler.ServeHTTP(w, r)
 		case http.MethodDelete:
-			comments.DeleteComment(w, r, id) // id = commentId
+			handler := utils.ChainHTTP(comments.DeleteComment(commentService, id), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}

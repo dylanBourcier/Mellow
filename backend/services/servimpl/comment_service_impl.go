@@ -85,8 +85,24 @@ func (s *commentServiceImpl) GetCommentsByPostID(ctx context.Context, postID str
 }
 
 func (s *commentServiceImpl) DeleteComment(ctx context.Context, commentID, requesterID string) error {
-	// TODO: Vérifier que le requester est l'auteur ou a les droits de modération
-	// TODO: Appeler le repository pour supprimer le commentaire
+	if commentID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	authorID, err := s.commentRepo.GetCommentAuthorID(ctx, commentID)
+	if err != nil {
+		return err
+	}
+	if authorID == "" {
+		return utils.ErrCommentNotFound
+	}
+	if authorID != requesterID {
+		return utils.ErrForbidden
+	}
+
+	if err := s.commentRepo.DeleteComment(ctx, commentID); err != nil {
+		return err
+	}
 	return nil
 }
 

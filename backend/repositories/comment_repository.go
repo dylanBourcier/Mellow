@@ -21,6 +21,9 @@ type CommentRepository interface {
 	// GetCommentByID récupère un commentaire par son ID.
 	GetCommentByID(ctx context.Context, commentID string) (*models.Comment, error)
 
+	// GetCommentAuthorID retourne l'auteur d'un commentaire.
+	GetCommentAuthorID(ctx context.Context, commentID string) (string, error)
+
 	// InsertCommentReport enregistre un signalement de commentaire.
 	InsertCommentReport(ctx context.Context, report *models.Report) error
 }
