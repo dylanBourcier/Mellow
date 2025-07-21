@@ -42,7 +42,8 @@ func PostRouter(postService services.PostService, authService services.AuthServi
 			handler := utils.ChainHTTP(posts.UpdatePost(postService, id), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
 		case http.MethodDelete:
-			posts.DeletePost(w, r, id)
+			handler := utils.ChainHTTP(posts.DeletePost(postService), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}

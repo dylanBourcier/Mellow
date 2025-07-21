@@ -109,8 +109,25 @@ func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, reques
 }
 
 func (s *postServiceImpl) DeletePost(ctx context.Context, postID, requesterID string) error {
-	// TODO: Vérifier que le requester est l’auteur ou un modérateur
-	// TODO: Supprimer le post via le repository
+	if postID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	post, err := s.postRepo.GetPostByID(ctx, postID)
+	if err != nil {
+		return err
+	}
+	if post == nil {
+		return utils.ErrPostNotFound
+	}
+
+	if post.UserID.String() != requesterID {
+		return utils.ErrUnauthorized
+	}
+
+	if err := s.postRepo.DeletePost(ctx, postID); err != nil {
+		return err
+	}
 	return nil
 }
 
