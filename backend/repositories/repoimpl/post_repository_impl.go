@@ -61,7 +61,10 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, post *models.Post) 
 }
 
 func (r *postRepositoryImpl) DeletePost(ctx context.Context, postID string) error {
-	// TODO: DELETE FROM posts WHERE id = ?
+	_, err := r.db.ExecContext(ctx, `DELETE FROM posts WHERE post_id = ?`, postID)
+	if err != nil {
+		return fmt.Errorf("failed to delete post: %w", err)
+	}
 	return nil
 }
 
