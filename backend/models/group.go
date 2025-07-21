@@ -10,6 +10,6 @@ type Group struct {
 	GroupID      uuid.UUID `json:"group_id"`
 	UserID       uuid.UUID `json:"user_id"`
 	Title        string    `json:"title"`
-	Description  *string   `json:"description,omitempty"`
+	Description  string    `json:"description,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
 }

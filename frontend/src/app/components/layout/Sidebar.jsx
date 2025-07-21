@@ -14,6 +14,7 @@ function Sidebar(props) {
   const pathname = usePathname();
 
   const { user, loading } = useUser();
+  console.log('user in sidebar', user);
 
   return (
     <div
@@ -70,7 +71,7 @@ function Sidebar(props) {
           disabled={!user}
           isActive={pathname.startsWith('/profile')}
         >
-          Profile
+          {user ? user.lastname + ' ' + user.firstname : 'Profile'}
         </Navlink>
         <Button className="mt-6 w-full" disabled={!user} href="/posts/create">
           New Post
