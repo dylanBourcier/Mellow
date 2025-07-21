@@ -51,6 +51,15 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, postID string) (*m
 	return &post, nil
 }
 
+func (r *postRepositoryImpl) UpdatePost(ctx context.Context, post *models.Post) error {
+	query := `UPDATE posts SET title = ?, content = ? WHERE post_id = ?`
+	_, err := r.db.ExecContext(ctx, query, post.Title, post.Content, post.PostID)
+	if err != nil {
+		return fmt.Errorf("error updating post: %w", err)
+	}
+	return nil
+}
+
 func (r *postRepositoryImpl) DeletePost(ctx context.Context, postID string) error {
 	// TODO: DELETE FROM posts WHERE id = ?
 	return nil

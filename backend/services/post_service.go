@@ -9,6 +9,9 @@ type PostService interface {
 	// CreatePost publie un nouveau post.
 	CreatePost(ctx context.Context, post *models.Post) error
 
+	// UpdatePost modifie le titre ou le contenu d'un post existant.
+	UpdatePost(ctx context.Context, postID, requesterID, title, content string) error
+
 	// GetPostByID retourne un post par son ID.
 	GetPostByID(ctx context.Context, postID string, requesterID string) (*models.PostDetails, error)
 

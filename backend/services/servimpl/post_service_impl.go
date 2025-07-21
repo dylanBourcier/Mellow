@@ -42,6 +42,43 @@ func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) err
 	return s.postRepo.InsertPost(ctx, post)
 }
 
+func (s *postServiceImpl) UpdatePost(ctx context.Context, postID, requesterID, title, content string) error {
+	if postID == "" || requesterID == "" || title == "" || content == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	existing, err := s.postRepo.GetPostByID(ctx, postID)
+	if err != nil {
+		return utils.ErrPostNotFound
+	}
+	if existing == nil {
+		return utils.ErrPostNotFound
+	}
+	if existing.UserID.String() != requesterID {
+		return utils.ErrForbidden
+	}
+
+	if len(content) > 5000 {
+		return utils.ErrContentTooLong
+	}
+	if len(content) < 1 {
+		return utils.ErrContentTooShort
+	}
+
+	pid, err := uuid.Parse(postID)
+	if err != nil {
+		return utils.ErrInvalidPayload
+	}
+
+	post := &models.Post{
+		PostID:  pid,
+		Title:   title,
+		Content: content,
+	}
+
+	return s.postRepo.UpdatePost(ctx, post)
+}
+
 func (s *postServiceImpl) GetPostByID(ctx context.Context, postID string, requesterID string) (*models.PostDetails, error) {
 	// Récupérer le post depuis le repository
 	post, err := s.postRepo.GetPostByID(ctx, postID)
