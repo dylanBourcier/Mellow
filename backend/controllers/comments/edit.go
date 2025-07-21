@@ -11,10 +11,6 @@ import (
 // UpdateComment retourne un handler permettant de mettre à jour un commentaire.
 func UpdateComment(commentService services.CommentService, commentID string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPut {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
 		defer r.Body.Close()
 
 		var payload struct {
