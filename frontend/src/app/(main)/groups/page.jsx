@@ -1,12 +1,15 @@
-import JoinedGroupsList from '@/app/components/layout/JoinedGroupsList';
-import GroupsList from '@/app/components/layout/GroupsList';
-import React from 'react';
+import GroupListContainer from '@/app/components/layout/GroupListContainer';
+
+const metadata = {
+  title: {
+    template: '%s - Mellow',
+    default: 'Groups',
+  },
+  description:
+    'Explore and manage your groups on Mellow, a social media platform for developers to share their projects and connect with others.',
+};
+export { metadata };
 
 export default function GroupsPage() {
-  return (
-    <div className="flex flex-col lg:flex-row h-full gap-2">
-      <JoinedGroupsList />
-      <GroupsList />
-    </div>
-  );
+  return <GroupListContainer />;
 }
