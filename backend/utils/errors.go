@@ -32,6 +32,7 @@ var (
 	ErrEmailAlreadyExists    = errors.New("EMAIL_ALREADY_EXISTS")
 	ErrUserAlreadyExists     = errors.New("USER_ALREADY_EXISTS")
 	ErrResourceConflict      = errors.New("RESOURCE_CONFLICT")
+	ErrGroupAlreadyExists    = errors.New("GROUP_ALREADY_EXISTS")
 
 	// Limites et contraintes
 	ErrTooManyRequests = errors.New("TOO_MANY_REQUESTS")
