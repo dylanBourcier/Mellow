@@ -13,7 +13,7 @@ export default function UserInfo({
   return (
     <div className="flex items-center gap-2">
       <Image
-        src={authorAvatar}
+        src={authorAvatar || '/img/DefaultAvatar.svg'}
         width={40}
         height={40}
         alt="Author Avatar"
