@@ -31,8 +31,25 @@ func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) 
 }
 
 func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
-	// TODO: SELECT * FROM groups ORDER BY created_at DESC
-	return nil, nil
+	query := `SELECT group_id, user_id, title, description, creation_date FROM groups ORDER BY creation_date DESC`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []*models.Group
+	for rows.Next() {
+		var g models.Group
+		if err := rows.Scan(&g.GroupID, &g.UserID, &g.Title, &g.Description, &g.CreationDate); err != nil {
+			return nil, err
+		}
+		groups = append(groups, &g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
 
 func (r *groupRepositoryImpl) DeleteGroup(ctx context.Context, groupID string) error {

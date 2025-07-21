@@ -56,8 +56,11 @@ func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*m
 }
 
 func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
-	// TODO: Appeler le repository pour récupérer tous les groupes
-	return nil, nil
+	groups, err := s.groupRepo.GetAllGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
 
 func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID string) error {
