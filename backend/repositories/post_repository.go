@@ -9,6 +9,9 @@ type PostRepository interface {
 	// InsertPost crée un nouveau post.
 	InsertPost(ctx context.Context, post *models.Post) error
 
+	// UpdatePost met à jour le titre et le contenu d'un post.
+	UpdatePost(ctx context.Context, post *models.Post) error
+
 	// GetPostByID retourne un post par son ID.
 	GetPostByID(ctx context.Context, postID string) (*models.PostDetails, error)
 

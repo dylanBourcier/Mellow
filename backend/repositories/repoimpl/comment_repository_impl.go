@@ -54,8 +54,45 @@ func (r *commentRepositoryImpl) GetCommentsByPostID(ctx context.Context, postID 
 }
 
 func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, commentID string) error {
-	// TODO: DELETE FROM comments WHERE id = ?
+	_, err := r.db.ExecContext(ctx, `DELETE FROM comments WHERE comment_id = ?`, commentID)
+	if err != nil {
+		return fmt.Errorf("failed to delete comment: %w", err)
+	}
 	return nil
+}
+
+func (r *commentRepositoryImpl) GetCommentAuthorID(ctx context.Context, commentID string) (string, error) {
+	var userID string
+	err := r.db.QueryRowContext(ctx, `SELECT user_id FROM comments WHERE comment_id = ?`, commentID).Scan(&userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		return "", fmt.Errorf("failed to get comment author: %w", err)
+	}
+	return userID, nil
+}
+
+func (r *commentRepositoryImpl) UpdateComment(ctx context.Context, commentID string, content string) error {
+	query := `UPDATE comments SET content = ? WHERE comment_id = ?`
+	_, err := r.db.ExecContext(ctx, query, content, commentID)
+	if err != nil {
+		return fmt.Errorf("failed to update comment: %w", err)
+	}
+	return nil
+}
+
+func (r *commentRepositoryImpl) GetCommentByID(ctx context.Context, commentID string) (*models.Comment, error) {
+	query := `SELECT comment_id, user_id, post_id, content, creation_date, image_url FROM comments WHERE comment_id = ?`
+	var c models.Comment
+	err := r.db.QueryRowContext(ctx, query, commentID).Scan(&c.CommentID, &c.UserID, &c.PostID, &c.Content, &c.CreationDate, &c.ImageURL)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get comment: %w", err)
+	}
+	return &c, nil
 }
 
 func (r *commentRepositoryImpl) InsertCommentReport(ctx context.Context, report *models.Report) error {

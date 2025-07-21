@@ -85,9 +85,50 @@ func (s *commentServiceImpl) GetCommentsByPostID(ctx context.Context, postID str
 }
 
 func (s *commentServiceImpl) DeleteComment(ctx context.Context, commentID, requesterID string) error {
-	// TODO: Vérifier que le requester est l'auteur ou a les droits de modération
-	// TODO: Appeler le repository pour supprimer le commentaire
+	if commentID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	authorID, err := s.commentRepo.GetCommentAuthorID(ctx, commentID)
+	if err != nil {
+		return err
+	}
+	if authorID == "" {
+		return utils.ErrCommentNotFound
+	}
+	if authorID != requesterID {
+		return utils.ErrForbidden
+	}
+
+	if err := s.commentRepo.DeleteComment(ctx, commentID); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (s *commentServiceImpl) UpdateComment(ctx context.Context, commentID, requesterID, content string) error {
+	if commentID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+	if len(content) > 500 {
+		return utils.ErrContentTooLong
+	}
+	if len(content) < 1 {
+		return utils.ErrContentTooShort
+	}
+
+	comment, err := s.commentRepo.GetCommentByID(ctx, commentID)
+	if err != nil {
+		return err
+	}
+	if comment == nil {
+		return utils.ErrCommentNotFound
+	}
+	if comment.UserID.String() != requesterID {
+		return utils.ErrForbidden
+	}
+
+	return s.commentRepo.UpdateComment(ctx, commentID, content)
 }
 
 func (s *commentServiceImpl) ReportComment(ctx context.Context, report *models.Report) error {

@@ -1,10 +1,7 @@
 package posts
 
 import (
-	"mellow/controllers/posts"
-	"mellow/middlewares"
 	"mellow/services"
-	"mellow/utils"
 	"net/http"
 )
 
@@ -13,7 +10,7 @@ func RegisterPostRoutes(mux *http.ServeMux, PostService services.PostService, au
 	mux.Handle("/posts", http.HandlerFunc(PostRootRouter(PostService, authService)))
 
 	// Voir, éditer, supprimer un post spécifique
-	mux.Handle("/posts/", utils.ChainHTTP(posts.GetPostByID(PostService), middlewares.OptionalAuthMiddleware(authService)))
+	mux.Handle("/posts/", PostRouter(PostService, authService))
 
 	// Liker ou unliker un post
 	//mux.HandleFunc("/posts/like/", LikeRouter)

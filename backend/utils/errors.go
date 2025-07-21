@@ -25,6 +25,7 @@ var (
 	ErrGroupNotFound   = errors.New("GROUP_NOT_FOUND")
 	ErrMessageNotFound = errors.New("MESSAGE_NOT_FOUND")
 	ErrSessionNotFound = errors.New("SESSION_NOT_FOUND")
+	ErrCommentNotFound = errors.New("COMMENT_NOT_FOUND")
 
 	// Conflits
 	ErrUsernameAlreadyExists = errors.New("USERNAME_ALREADY_EXISTS")
@@ -40,5 +41,5 @@ var (
 	// Autres
 	ErrInternalServerError = errors.New("INTERNAL_SERVER_ERROR")
 	ErrNotImplemented      = errors.New("NOT_IMPLEMENTED")
-	ErrUUIDGeneration	  = errors.New("UUID_GENERATION_FAILED")
+	ErrUUIDGeneration      = errors.New("UUID_GENERATION_FAILED")
 )
