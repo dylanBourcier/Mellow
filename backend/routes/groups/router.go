@@ -42,3 +42,22 @@ func GroupPostsRouter(w http.ResponseWriter, r *http.Request) {
 		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 	}
 }
+
+// /groups/:id → PUT (update) [Future: GET, DELETE]
+func GroupRouter(groupService services.GroupService, authService services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimPrefix(r.URL.Path, "/groups/")
+		if id == "" || strings.Contains(id, "/") {
+			utils.RespondError(w, http.StatusNotFound, "Groupe introuvable", utils.ErrGroupNotFound)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodPut:
+			handler := utils.ChainHTTP(groups.UpdateGroup(groupService, id), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
+	}
+}

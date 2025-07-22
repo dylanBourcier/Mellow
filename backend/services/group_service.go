@@ -9,6 +9,9 @@ type GroupService interface {
 	// CreateGroup crée un nouveau groupe.
 	CreateGroup(ctx context.Context, group *models.Group) error
 
+	// UpdateGroup met à jour le titre ou la description d'un groupe.
+	UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error
+
 	// GetGroupByID récupère un groupe par son ID.
 	GetGroupByID(ctx context.Context, groupID string) (*models.Group, error)
 
