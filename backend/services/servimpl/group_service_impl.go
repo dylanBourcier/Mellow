@@ -91,8 +91,17 @@ func (s *groupServiceImpl) UpdateGroup(ctx context.Context, groupID, requesterID
 }
 
 func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
-	// TODO: Appeler le repository pour récupérer un groupe par ID
-	return nil, nil
+	if groupID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+	return group, nil
 }
 
 func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
@@ -104,8 +113,24 @@ func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, e
 }
 
 func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID string) error {
-	// TODO: Vérifier que le requester est créateur ou admin
-	// TODO: Appeler le repository pour supprimer le groupe
+	if groupID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return utils.ErrGroupNotFound
+	}
+	if group.UserID.String() != requesterID {
+		return utils.ErrUnauthorized
+	}
+
+	if err := s.groupRepo.DeleteGroup(ctx, groupID); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -130,17 +155,30 @@ func (s *groupServiceImpl) RemoveMember(ctx context.Context, groupID, userID str
 }
 
 func (s *groupServiceImpl) GetGroupMembers(ctx context.Context, groupID string) ([]*models.User, error) {
-	// TODO: Appeler le repository pour récupérer les membres du groupe
-	return nil, nil
+	if groupID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+
+	members, err := s.groupRepo.GetGroupMembers(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	return members, nil
 }
 
 func (s *groupServiceImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
-	// TODO: Appeler le repository pour vérifier la relation d’appartenance
 	return s.groupRepo.IsMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
-	// Call the repository function to get groups joined by the user
 	groups, err := s.groupRepo.GetGroupsJoinedByUser(ctx, userID)
 	if err != nil {
 		return nil, err

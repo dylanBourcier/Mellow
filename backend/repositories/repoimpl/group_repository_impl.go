@@ -61,7 +61,10 @@ func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group
 }
 
 func (r *groupRepositoryImpl) DeleteGroup(ctx context.Context, groupID string) error {
-	// TODO: DELETE FROM groups WHERE id = ?
+	_, err := r.db.ExecContext(ctx, `DELETE FROM groups WHERE group_id = ?`, groupID)
+	if err != nil {
+		return fmt.Errorf("failed to delete group: %w", err)
+	}
 	return nil
 }
 
@@ -90,12 +93,31 @@ func (r *groupRepositoryImpl) RemoveMember(ctx context.Context, groupID, userID 
 }
 
 func (r *groupRepositoryImpl) GetGroupMembers(ctx context.Context, groupID string) ([]*models.User, error) {
-	// TODO: SELECT u.* FROM users u JOIN groups_member gm ON u.id = gm.user_id WHERE gm.group_id = ?
-	return nil, nil
+	query := `SELECT u.user_id, u.email, u.password, u.username, u.firstname, u.lastname, u.birthdate, u.role, u.image_url, u.creation_date, u.description
+                        FROM users u
+                        JOIN groups_member gm ON u.user_id = gm.user_id
+                        WHERE gm.group_id = ?`
+	rows, err := r.db.QueryContext(ctx, query, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group members: %w", err)
+	}
+	defer rows.Close()
+
+	var users []*models.User
+	for rows.Next() {
+		var u models.User
+		if err := rows.Scan(&u.UserID, &u.Email, &u.Password, &u.Username, &u.Firstname, &u.Lastname, &u.Birthdate, &u.Role, &u.ImageURL, &u.CreationDate, &u.Description); err != nil {
+			return nil, fmt.Errorf("failed to scan group member: %w", err)
+		}
+		users = append(users, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating group members: %w", err)
+	}
+	return users, nil
 }
 
 func (r *groupRepositoryImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
-	// TODO: SELECT 1 FROM groups_member WHERE group_id = ? AND user_id = ?
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM groups_member WHERE group_id = ? AND user_id = ?)`
 	err := r.db.QueryRowContext(ctx, query, groupID, userID).Scan(&exists)
