@@ -19,10 +19,10 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 	mux.Handle("/groups/", GroupRouter(groupSvc, authSvc))
 
 	// Rejoindre un groupe
-	mux.HandleFunc("/groups/join/", groups.JoinGroupHandler)
+	mux.Handle("/groups/join/", utils.ChainHTTP(groups.JoinGroup(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Quitter un groupe
-	mux.HandleFunc("/groups/leave/", groups.LeaveGroupHandler)
+	mux.Handle("/groups/leave/", utils.ChainHTTP(groups.LeaveGroupHandler(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir les événements du groupe
 	mux.HandleFunc("/groups/events/", groups.GroupEventsHandler)

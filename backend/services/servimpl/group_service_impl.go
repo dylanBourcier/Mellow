@@ -149,9 +149,31 @@ func (s *groupServiceImpl) AddMember(ctx context.Context, groupID, userID string
 }
 
 func (s *groupServiceImpl) RemoveMember(ctx context.Context, groupID, userID string) error {
-	// TODO: Vérifier que le membre existe et peut être retiré
-	// TODO: Appeler le repository pour supprimer l'entrée
-	return nil
+	if groupID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return utils.ErrGroupNotFound
+	}
+
+	isMember, err := s.groupRepo.IsMember(ctx, groupID, userID)
+	if err != nil {
+		return err
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+
+	if group.UserID.String() == userID {
+		return utils.ErrForbidden
+	}
+
+	return s.groupRepo.RemoveMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) GetGroupMembers(ctx context.Context, groupID string) ([]*models.User, error) {
