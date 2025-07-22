@@ -11,10 +11,7 @@ import (
 
 func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
+		
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
 
 		user, err := userService.GetUserByID(r.Context(), id)
@@ -34,10 +31,6 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 
 func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPut {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
 		uid, err := utils.GetUserIDFromContext(r.Context())
@@ -108,10 +101,6 @@ func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc
 
 func DeleteUserHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
 		uid, err := utils.GetUserIDFromContext(r.Context())
