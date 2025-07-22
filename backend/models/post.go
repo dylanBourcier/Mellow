@@ -17,4 +17,7 @@ type Post struct {
 	ImageURL     *string    `json:"image_url,omitempty"` // nullable
 }
 
-
+type UpdatePostPayload struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}

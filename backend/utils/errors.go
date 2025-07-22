@@ -25,18 +25,22 @@ var (
 	ErrGroupNotFound   = errors.New("GROUP_NOT_FOUND")
 	ErrMessageNotFound = errors.New("MESSAGE_NOT_FOUND")
 	ErrSessionNotFound = errors.New("SESSION_NOT_FOUND")
+	ErrCommentNotFound = errors.New("COMMENT_NOT_FOUND")
 
 	// Conflits
 	ErrUsernameAlreadyExists = errors.New("USERNAME_ALREADY_EXISTS")
 	ErrEmailAlreadyExists    = errors.New("EMAIL_ALREADY_EXISTS")
 	ErrUserAlreadyExists     = errors.New("USER_ALREADY_EXISTS")
 	ErrResourceConflict      = errors.New("RESOURCE_CONFLICT")
+	ErrGroupAlreadyExists    = errors.New("GROUP_ALREADY_EXISTS")
 
 	// Limites et contraintes
 	ErrTooManyRequests = errors.New("TOO_MANY_REQUESTS")
+	ErrContentTooLong  = errors.New("CONTENT_TOO_LONG")
+	ErrContentTooShort = errors.New("CONTENT_TOO_SHORT")
 
 	// Autres
 	ErrInternalServerError = errors.New("INTERNAL_SERVER_ERROR")
 	ErrNotImplemented      = errors.New("NOT_IMPLEMENTED")
-	ErrUUIDGeneration	  = errors.New("UUID_GENERATION_FAILED")
+	ErrUUIDGeneration      = errors.New("UUID_GENERATION_FAILED")
 )

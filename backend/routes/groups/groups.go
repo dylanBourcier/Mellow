@@ -10,7 +10,7 @@ import (
 
 func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, authSvc services.AuthService) {
 	// Créer un groupe / voir tous les groupes
-	mux.HandleFunc("/groups", GroupRootRouter)
+	mux.Handle("/groups", GroupRootRouter(groupSvc, authSvc))
 
 	// Voir les posts ou poster dans un groupe
 	mux.HandleFunc("/groups/posts/", GroupPostsRouter)

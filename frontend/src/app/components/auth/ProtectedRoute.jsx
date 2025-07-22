@@ -3,6 +3,9 @@
 import { useUser } from '@/app/context/UserContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Spinner from '../ui/Spinner';
+import toast from 'react-hot-toast';
+import CustomToast from '../ui/CustomToast';
 
 export default function ProtectedRoute({ children, redirectTo = '/login' }) {
   const { user, loading } = useUser();
@@ -10,7 +13,14 @@ export default function ProtectedRoute({ children, redirectTo = '/login' }) {
 
   useEffect(() => {
     if (!loading && !user) {
+      // If the user is not authenticated, redirect to the login page with a toast message
       router.replace(redirectTo);
+      toast.custom((t) => (
+        <CustomToast
+          type={'error'}
+          message={'You must be logged in to access this page'}
+        ></CustomToast>
+      ));
     }
   }, [user, loading, redirectTo]);
 

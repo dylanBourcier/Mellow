@@ -2,9 +2,12 @@ package servimpl
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
 )
 
 type groupServiceImpl struct {
@@ -17,8 +20,33 @@ func NewGroupService(groupRepo repositories.GroupRepository) services.GroupServi
 }
 
 func (s *groupServiceImpl) CreateGroup(ctx context.Context, group *models.Group) error {
-	// TODO: Vérifier que le nom est unique, valider les données
-	// TODO: Appeler le repository pour insérer le groupe
+	if group == nil || group.Title == "" || group.UserID == uuid.Nil {
+		return utils.ErrInvalidPayload
+	}
+
+	taken, err := s.groupRepo.IsTitleTaken(ctx, group.Title)
+	if err != nil {
+		return err
+	}
+	if taken {
+		return utils.ErrGroupAlreadyExists
+	}
+
+	gid, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	group.GroupID = gid
+	group.CreationDate = time.Now()
+
+	if err := s.groupRepo.InsertGroup(ctx, group); err != nil {
+		return err
+	}
+
+	if err := s.groupRepo.AddMember(ctx, gid.String(), group.UserID.String()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -28,8 +56,11 @@ func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*m
 }
 
 func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
-	// TODO: Appeler le repository pour récupérer tous les groupes
-	return nil, nil
+	groups, err := s.groupRepo.GetAllGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
 
 func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID string) error {
@@ -39,9 +70,17 @@ func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID
 }
 
 func (s *groupServiceImpl) AddMember(ctx context.Context, groupID, userID string) error {
-	// TODO: Vérifier que l'utilisateur n'est pas déjà membre
-	// TODO: Appeler le repository pour insérer la relation dans groups_member
-	return nil
+	if groupID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+	exists, err := s.groupRepo.IsMember(ctx, groupID, userID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return utils.ErrResourceConflict
+	}
+	return s.groupRepo.AddMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) RemoveMember(ctx context.Context, groupID, userID string) error {

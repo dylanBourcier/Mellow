@@ -74,7 +74,6 @@ function PostCreationForm() {
   const onSubmit = async (data) => {
     try {
       const formData = new FormData();
-      console.log('Form Data Before Append:', data);
 
       formData.append('title', data.title);
       formData.append('content', data.content);
@@ -88,15 +87,12 @@ function PostCreationForm() {
         'selectedFollowers',
         JSON.stringify(data.selectedFollowers)
       );
-      console.log('Form Data:', formData);
-
       const res = await fetch('/api/posts', {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
-      const result = res.json();
-      console.log(result);
+      const result = await res.json();
       if (result.status === 'error') {
         throw new Error(result.message);
       }
@@ -112,7 +108,6 @@ function PostCreationForm() {
       toast.custom((t) => (
         <CustomToast t={t} type="error" message="Error creating post!" />
       ));
-      console.log('Error creating post:', error);
     }
   };
 

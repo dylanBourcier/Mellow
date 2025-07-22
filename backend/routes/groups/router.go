@@ -2,20 +2,26 @@ package groups
 
 import (
 	"mellow/controllers/groups"
+	"mellow/middlewares"
+	"mellow/services"
 	"mellow/utils"
 	"net/http"
 	"strings"
 )
 
 // /groups → POST (create), GET (list)
-func GroupRootRouter(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		groups.CreateGroup(w, r)
-	case http.MethodGet:
-		groups.GetAllGroups(w, r)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+func GroupRootRouter(groupSvc services.GroupService, authSvc services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handler := utils.ChainHTTP(groups.CreateGroup(groupSvc), middlewares.RequireAuthMiddleware(authSvc))
+			handler.ServeHTTP(w, r)
+		case http.MethodGet:
+			handler := utils.ChainHTTP(groups.CreateGroup(groupSvc), middlewares.OptionalAuthMiddleware(authSvc))
+			handler.ServeHTTP(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
 	}
 }
 

@@ -3,6 +3,7 @@ package repoimpl
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 )
@@ -16,7 +17,11 @@ func NewGroupRepository(db *sql.DB) repositories.GroupRepository {
 }
 
 func (r *groupRepositoryImpl) InsertGroup(ctx context.Context, group *models.Group) error {
-	// TODO: INSERT INTO groups (id, name, description, creator_id, created_at) VALUES (?, ?, ?, ?, ?)
+	query := `INSERT INTO groups (group_id, user_id, title, description, creation_date) VALUES (?, ?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, group.GroupID, group.UserID, group.Title, group.Description, group.CreationDate)
+	if err != nil {
+		return fmt.Errorf("failed to insert group: %w", err)
+	}
 	return nil
 }
 
@@ -26,8 +31,25 @@ func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) 
 }
 
 func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
-	// TODO: SELECT * FROM groups ORDER BY created_at DESC
-	return nil, nil
+	query := `SELECT group_id, user_id, title, description, creation_date FROM groups ORDER BY creation_date DESC`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []*models.Group
+	for rows.Next() {
+		var g models.Group
+		if err := rows.Scan(&g.GroupID, &g.UserID, &g.Title, &g.Description, &g.CreationDate); err != nil {
+			return nil, err
+		}
+		groups = append(groups, &g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
 
 func (r *groupRepositoryImpl) DeleteGroup(ctx context.Context, groupID string) error {
@@ -37,6 +59,11 @@ func (r *groupRepositoryImpl) DeleteGroup(ctx context.Context, groupID string) e
 
 func (r *groupRepositoryImpl) AddMember(ctx context.Context, groupID, userID string) error {
 	// TODO: INSERT INTO groups_member (group_id, user_id) VALUES (?, ?)
+	query := `INSERT INTO groups_member (group_id, user_id, role, join_date) VALUES (?, ?, 'member', CURRENT_TIMESTAMP)`
+	_, err := r.db.ExecContext(ctx, query, groupID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to add member: %w", err)
+	}
 	return nil
 }
 
@@ -82,4 +109,13 @@ func (r *groupRepositoryImpl) GetGroupsJoinedByUser(ctx context.Context, userID 
 		return nil, err
 	}
 	return groups, nil
+}
+
+func (r *groupRepositoryImpl) IsTitleTaken(ctx context.Context, title string) (bool, error) {
+	var count int
+	err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM groups WHERE title = ?`, title).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to check title: %w", err)
+	}
+	return count > 0, nil
 }

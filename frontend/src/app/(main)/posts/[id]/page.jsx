@@ -7,12 +7,10 @@ const metadata = {
 export { metadata };
 
 export default async function PostDetailsPage(props) {
-  const params=await props.params;
-  const id= params.id;
-  return(
+  const { id } = await props.params;
+  return (
     <div>
-      <PostDetailscreen postid={id} ></PostDetailscreen>
+      <PostDetailscreen postid={id}></PostDetailscreen>
     </div>
-  )
-
+  );
 }
