@@ -56,6 +56,9 @@ func GroupRouter(groupService services.GroupService, authService services.AuthSe
 		case http.MethodPut:
 			handler := utils.ChainHTTP(groups.UpdateGroup(groupService, id), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
+		case http.MethodDelete:
+			handler := utils.ChainHTTP(groups.DeleteGroup(groupService, id), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}

@@ -15,6 +15,9 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 	// Voir les posts ou poster dans un groupe
 	mux.HandleFunc("/groups/posts/", GroupPostsRouter)
 
+	// Supprimer un groupe
+	mux.Handle("/groups/", GroupRouter(groupSvc, authSvc))
+
 	// Rejoindre un groupe
 	mux.HandleFunc("/groups/join/", groups.JoinGroupHandler)
 
