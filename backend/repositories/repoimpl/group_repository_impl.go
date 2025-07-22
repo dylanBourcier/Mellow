@@ -26,8 +26,18 @@ func (r *groupRepositoryImpl) InsertGroup(ctx context.Context, group *models.Gro
 }
 
 func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
-	// TODO: SELECT * FROM groups WHERE id = ?
-	return nil, nil
+	query := `SELECT g.group_id, g.user_id, g.title, g.description, g.creation_date, 
+			  (SELECT COUNT(*) FROM groups_member gm WHERE gm.group_id = g.group_id) AS member_count
+			  FROM groups g WHERE g.group_id = ?`
+	row := r.db.QueryRowContext(ctx, query, groupID)
+	var group models.Group
+	if err := row.Scan(&group.GroupID, &group.UserID, &group.Title, &group.Description, &group.CreationDate, &group.MemberCount); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("group not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to get group: %w", err)
+	}
+	return &group, nil
 }
 
 func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {

@@ -1,7 +1,14 @@
-export default async function GroupLayout({ children }) {
+import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
+import GroupLayoutHeader from '@/app/components/layout/GroupLayoutHeader';
+
+export default async function GroupLayout({ children, params }) {
+  const { groupId } = await params;
   return (
     <div>
-      <div>{children}</div>
+      <ProtectedRoute redirectTo="/login">
+        <GroupLayoutHeader groupId={groupId} />
+        <div>{children}</div>
+      </ProtectedRoute>
     </div>
   );
 }

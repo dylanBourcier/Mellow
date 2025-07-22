@@ -1,11 +1,14 @@
-import EditProfile from "@/app/components/layout/EditProfile";
-import React from "react";
+import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
+import EditProfile from '@/app/components/layout/EditProfile';
+import React from 'react';
 
 function EditPage() {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <EditProfile />
-    </div>
+    <ProtectedRoute redirectTo="/login">
+      <div className="flex flex-col items-center justify-center">
+        <EditProfile />
+      </div>
+    </ProtectedRoute>
   );
 }
 

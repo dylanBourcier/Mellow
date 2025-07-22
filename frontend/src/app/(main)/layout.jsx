@@ -15,10 +15,10 @@ export const metadata = {
 
 export default function MainLayout({ children }) {
   return (
-    <div className="flex relative min-h-[50dvh] h-full  w-screen max-w-7xl justify-center items-start">
+    <div className="flex relative min-h-[50dvh] h-full p-1 lg:p-6  w-screen max-w-7xl justify-center items-start">
       <Sidebar />
       <SidebarMobile />
-      <main className="lg:ml-78 flex-1 flex flex-col h-full px-2 lg:px-3 gap-2">
+      <main className="lg:ml-78 flex-1 flex flex-col h-full px-2 lg:px-3 lg:gap-2">
         <div className=" flex relative justify-center items-center">
           <Link href={'/'}>
             <Image

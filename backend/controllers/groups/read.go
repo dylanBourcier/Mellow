@@ -95,3 +95,21 @@ func GroupChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO: chat du groupe, plutôt à faire dans la partie message ??
 }
+
+func GetGroupByID(groupSvc services.GroupService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		groupID := strings.TrimPrefix(r.URL.Path, "/groups/")
+		if groupID == "" || strings.Contains(groupID, "/") {
+			utils.RespondError(w, http.StatusNotFound, "Group not found", utils.ErrGroupNotFound)
+			return
+		}
+
+		group, err := groupSvc.GetGroupByID(r.Context(), groupID)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to get group: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+
+		utils.RespondJSON(w, http.StatusOK, "Group retrieved successfully", group)
+	}
+}

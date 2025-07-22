@@ -1,3 +1,4 @@
+import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
 import GroupListContainer from '@/app/components/layout/GroupListContainer';
 
 const metadata = {
@@ -11,5 +12,9 @@ const metadata = {
 export { metadata };
 
 export default function GroupsPage() {
-  return <GroupListContainer />;
+  return (
+    <ProtectedRoute redirectTo="/login">
+      <GroupListContainer />
+    </ProtectedRoute>
+  );
 }

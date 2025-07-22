@@ -12,6 +12,9 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 	// Créer un groupe / voir tous les groupes
 	mux.Handle("/groups", GroupRootRouter(groupSvc, authSvc))
 
+	// Voir un groupe spécifique
+	mux.Handle("/groups/", utils.ChainHTTP(groups.GetGroupByID(groupSvc), middlewares.OptionalAuthMiddleware(authSvc)))
+
 	// Voir les posts ou poster dans un groupe
 	mux.HandleFunc("/groups/posts/", GroupPostsRouter)
 
@@ -32,4 +35,5 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 
 	// Voir les groupes auxquels l'utilisateur n'est pas membre
 	mux.Handle("/groups/not-joined", utils.ChainHTTP(groups.GetAllGroupsWithoutUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
 }

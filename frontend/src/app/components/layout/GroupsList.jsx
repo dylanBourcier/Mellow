@@ -21,7 +21,12 @@ export default function GroupsList() {
         if (data.status !== 'success') {
           throw new Error(data.message);
         }
+        if (data.data === null) {
+          setGroups([]); // Handle case where no groups are returned
+          return;
+        }
         setGroups(data.data);
+        console.log('Fetched groups:', data);
       } catch (error) {
         toast.custom((t) => (
           <CustomToast
@@ -64,9 +69,13 @@ export default function GroupsList() {
         <div className="flex gap-2">
           <Spinner></Spinner>Loading...
         </div>
-      ) : filteredGroups.length === 0 ? (
-        <div className="text-light-grey text-center">
+      ) : groups.length === 0 ? (
+        <div className="text-dark-grey-lighter text-center">
           No groups available to join.
+        </div>
+      ) : filteredGroups.length === 0 ? (
+        <div className="text-dark-grey-lighter text-center">
+          No groups match your search.
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">

@@ -1,3 +1,4 @@
+import ProtectedRoute from '../components/auth/ProtectedRoute';
 import PostsContainer from '../components/layout/PostsContainer';
 import PageTitle from '../components/ui/PageTitle';
 
@@ -7,9 +8,11 @@ export const metadata = {
 
 export default function HomePage() {
   return (
-    <div>
-      <PageTitle>Home</PageTitle>
-      <PostsContainer />
-    </div>
+    <ProtectedRoute redirectTo="/login">
+      <div>
+        <PageTitle>Home</PageTitle>
+        <PostsContainer />
+      </div>
+    </ProtectedRoute>
   );
 }

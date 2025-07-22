@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function ProfilePage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute redirectTo="/login">
       <div>
         <ProfileScreen
           firstName="Jhon"
