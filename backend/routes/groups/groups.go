@@ -29,4 +29,7 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 
 	// Voir les groupes auxquels l'utilisateur a adhéré
 	mux.Handle("/groups/joined", utils.ChainHTTP(groups.GetGroupsJoinedByUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
+	// Mettre à jour un groupe
+	mux.HandleFunc("/groups/", GroupRouter(groupSvc, authSvc))
 }

@@ -9,6 +9,9 @@ type GroupRepository interface {
 	// InsertGroup crée un nouveau groupe.
 	InsertGroup(ctx context.Context, group *models.Group) error
 
+	// UpdateGroup met à jour le titre ou la description d'un groupe.
+	UpdateGroup(ctx context.Context, group *models.Group) error
+
 	// GetGroupByID retourne un groupe par son ID.
 	GetGroupByID(ctx context.Context, groupID string) (*models.Group, error)
 

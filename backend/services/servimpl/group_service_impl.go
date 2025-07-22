@@ -50,6 +50,46 @@ func (s *groupServiceImpl) CreateGroup(ctx context.Context, group *models.Group)
 	return nil
 }
 
+func (s *groupServiceImpl) UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error {
+	if groupID == "" || requesterID == "" || title == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	existing, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return utils.ErrGroupNotFound
+	}
+
+	if existing.UserID.String() != requesterID {
+		return utils.ErrForbidden
+	}
+
+	if len(title) > 100 {
+		return utils.ErrContentTooLong
+	}
+	if len(title) < 1 {
+		return utils.ErrContentTooShort
+	}
+	if description != "" && len(description) > 1000 {
+		return utils.ErrContentTooLong
+	}
+
+	gid, err := uuid.Parse(groupID)
+	if err != nil {
+		return utils.ErrInvalidPayload
+	}
+	g := &models.Group{
+		GroupID:     gid,
+		Title:       title,
+		Description: description,
+	}
+
+	return s.groupRepo.UpdateGroup(ctx, g)
+}
+
 func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
 	// TODO: Appeler le repository pour récupérer un groupe par ID
 	return nil, nil

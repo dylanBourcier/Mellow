@@ -13,3 +13,8 @@ type Group struct {
 	Description  string    `json:"description,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
 }
+
+type GroupEditPayload struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}

@@ -26,8 +26,16 @@ func (r *groupRepositoryImpl) InsertGroup(ctx context.Context, group *models.Gro
 }
 
 func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
-	// TODO: SELECT * FROM groups WHERE id = ?
-	return nil, nil
+	query := `SELECT group_id, user_id, title, description, creation_date FROM groups WHERE group_id = ?`
+	var g models.Group
+	err := r.db.QueryRowContext(ctx, query, groupID).Scan(&g.GroupID, &g.UserID, &g.Title, &g.Description, &g.CreationDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &g, nil
 }
 
 func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
@@ -54,6 +62,15 @@ func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group
 
 func (r *groupRepositoryImpl) DeleteGroup(ctx context.Context, groupID string) error {
 	// TODO: DELETE FROM groups WHERE id = ?
+	return nil
+}
+
+func (r *groupRepositoryImpl) UpdateGroup(ctx context.Context, group *models.Group) error {
+	query := `UPDATE groups SET title = ?, description = ? WHERE group_id = ?`
+	_, err := r.db.ExecContext(ctx, query, group.Title, group.Description, group.GroupID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
