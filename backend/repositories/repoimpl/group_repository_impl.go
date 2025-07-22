@@ -52,6 +52,36 @@ func (r *groupRepositoryImpl) GetAllGroups(ctx context.Context) ([]*models.Group
 	return groups, nil
 }
 
+func (r *groupRepositoryImpl) GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	query := `SELECT g.group_id, g.user_id, g.title, g.description, g.creation_date, 
+			  (SELECT COUNT(*) FROM groups_member gm2 WHERE gm2.group_id = g.group_id) AS member_count
+			  FROM groups g
+			  WHERE NOT EXISTS (
+				  SELECT 1 
+				  FROM groups_member gm 
+				  WHERE gm.group_id = g.group_id AND gm.user_id = ?
+			  )
+			  ORDER BY g.creation_date DESC`
+	rows, err := r.db.QueryContext(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []*models.Group
+	for rows.Next() {
+		var g models.Group
+		if err := rows.Scan(&g.GroupID, &g.UserID, &g.Title, &g.Description, &g.CreationDate, &g.MemberCount); err != nil {
+			return nil, err
+		}
+		groups = append(groups, &g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
 func (r *groupRepositoryImpl) DeleteGroup(ctx context.Context, groupID string) error {
 	// TODO: DELETE FROM groups WHERE id = ?
 	return nil
@@ -89,7 +119,9 @@ func (r *groupRepositoryImpl) IsMember(ctx context.Context, groupID, userID stri
 }
 
 func (r *groupRepositoryImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
-	query := `SELECT g.* FROM groups g
+	query := `SELECT g.group_id, g.user_id, g.title, g.description, g.creation_date, 
+			(SELECT COUNT(*) FROM groups_member gm2 WHERE gm2.group_id = g.group_id) AS member_count
+			FROM groups g
 			JOIN groups_member gm ON g.group_id = gm.group_id
 			WHERE gm.user_id = ?`
 	rows, err := r.db.QueryContext(ctx, query, userID)
@@ -100,7 +132,7 @@ func (r *groupRepositoryImpl) GetGroupsJoinedByUser(ctx context.Context, userID 
 	var groups []*models.Group
 	for rows.Next() {
 		var group models.Group
-		if err := rows.Scan(&group.GroupID, &group.Title, &group.Description, &group.UserID, &group.CreationDate); err != nil {
+		if err := rows.Scan(&group.GroupID, &group.UserID, &group.Title, &group.Description, &group.CreationDate, &group.MemberCount); err != nil {
 			return nil, err
 		}
 		groups = append(groups, &group)

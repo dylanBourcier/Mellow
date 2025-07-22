@@ -1,25 +1,80 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import GroupCard from '../ui/GroupCard';
+import CustomToast from '../ui/CustomToast';
+import Spinner from '../ui/Spinner';
 
 export default function GroupsList() {
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch('/api/groups/not-joined');
+        const data = await response.json();
+        if (data.status !== 'success') {
+          throw new Error(data.message);
+        }
+        setGroups(data.data);
+      } catch (error) {
+        toast.custom((t) => (
+          <CustomToast
+            message="Failed to fetch groups. Please try again later."
+            t={t}
+            type="error"
+          />
+        ));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGroups();
+  }, []);
+
+  // Handle search input change
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Filter groups based on search query
+  const filteredGroups = groups.filter((group) =>
+    group.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col bg-white rounded-2xl shadow-(--box-shadow) p-4 h-full flex-1">
       <h2 className="text-lavender-5 text-shadow-(--text-shadow)">
         Join a new group
       </h2>
       <div className="flex items-center gap-2">
-        <Input type="search" placeholder="Search for groups..." />
-        <Button>Search</Button>
+        <Input
+          type="search"
+          placeholder="Search for groups..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
       </div>
-      <GroupCard withButton />
-      <GroupCard withButton />
-      <GroupCard withButton />
-      <GroupCard withButton />
-      <GroupCard withButton />
+      {loading ? (
+        <div className="flex gap-2">
+          <Spinner></Spinner>Loading...
+        </div>
+      ) : filteredGroups.length === 0 ? (
+        <div className="text-light-grey text-center">
+          No groups available to join.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {filteredGroups.map((group) => (
+            <GroupCard key={group.group_id} props={group} withButton />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

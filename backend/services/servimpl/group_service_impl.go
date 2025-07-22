@@ -63,6 +63,17 @@ func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, e
 	return groups, nil
 }
 
+func (s *groupServiceImpl) GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	if userID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+	groups, err := s.groupRepo.GetAllGroupsWithoutUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
 func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID string) error {
 	// TODO: Vérifier que le requester est créateur ou admin
 	// TODO: Appeler le repository pour supprimer le groupe

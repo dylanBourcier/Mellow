@@ -12,4 +12,5 @@ type Group struct {
 	Title        string    `json:"title"`
 	Description  string    `json:"description,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
+	MemberCount int       `json:"member_count,omitempty"` // Optional field to store the number of members in the group
 }
