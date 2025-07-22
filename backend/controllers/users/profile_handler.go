@@ -2,20 +2,20 @@ package users
 
 import (
 	"encoding/json"
+	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := strings.TrimPrefix(r.URL.Path, "/users/")
 		if r.Method != http.MethodGet {
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
 			return
 		}
+		id := strings.TrimPrefix(r.URL.Path, "/users/")
 
 		user, err := userService.GetUserByID(r.Context(), id)
 		if err != nil {
@@ -27,20 +27,8 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 			return
 		}
 
-		data := map[string]interface{}{
-			"user_id":       user.UserID,
-			"email":         user.Email,
-			"username":      user.Username,
-			"firstname":     user.Firstname,
-			"lastname":      user.Lastname,
-			"birthdate":     user.Birthdate,
-			"role":          user.Role,
-			"image_url":     utils.GetFullImageURLAvatar(user.ImageURL),
-			"creation_date": user.CreationDate,
-			"description":   user.Description,
-		}
-
-		utils.RespondJSON(w, http.StatusOK, "User retrieved", data)
+		user.ImageURL = utils.GetFullImageURLAvatar(user.ImageURL)
+		utils.RespondJSON(w, http.StatusOK, "User retrieved", user)
 	}
 }
 
@@ -53,21 +41,20 @@ func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
 		uid, err := utils.GetUserIDFromContext(r.Context())
-		if err != nil || uid.String() != id {
-			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Failed to get user from context", utils.ErrUnauthorized)
 			return
 		}
 
-		var req struct {
-			Username    *string `json:"username"`
-			Password    *string `json:"password"`
-			Firstname   *string `json:"firstname"`
-			Lastname    *string `json:"lastname"`
-			Birthdate   *string `json:"birthdate"`
-			Description *string `json:"description"`
+		if uid.String() != id {
+			utils.RespondError(w, http.StatusNotFound, "You are not authorized to update this user", utils.ErrUserNotFound)
+			return
 		}
+
+		var req models.UpdateUserRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			utils.RespondError(w, http.StatusBadRequest, "Invalid JSON", utils.ErrInvalidJSON)
+			utils.RespondError(w, http.StatusBadRequest,
+				"Invalid JSON", utils.ErrInvalidJSON)
 			return
 		}
 
@@ -101,10 +88,10 @@ func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc
 			}
 			user.Password = hashed
 		}
-		if req.Birthdate != nil && *req.Birthdate != "" {
-			bd, err := time.Parse("2006-01-02", *req.Birthdate)
+		if req.Birthdate != nil {
+			bd := *req.Birthdate
 			if err != nil {
-				utils.RespondError(w, http.StatusBadRequest, "Invalid birthdate format. Expected format: YYYY-MM-DD", utils.ErrInvalidInput)
+				utils.RespondError(w, http.StatusBadRequest, "Invalid birthdate format. Expected format: YYYY-MM-DD", utils.ErrBadRequest)
 				return
 			}
 			user.Birthdate = bd
@@ -128,8 +115,13 @@ func DeleteUserHandler(userService services.UserService) http.HandlerFunc {
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
 		uid, err := utils.GetUserIDFromContext(r.Context())
-		if err != nil || uid.String() != id {
-			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Failed to get user from context", utils.ErrUnauthorized)
+			return
+		}
+
+		if uid.String() != id {
+			utils.RespondError(w, http.StatusNotFound, "You are not authorized to delete this user", utils.ErrUserNotFound)
 			return
 		}
 
@@ -137,6 +129,7 @@ func DeleteUserHandler(userService services.UserService) http.HandlerFunc {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to delete user", utils.ErrInternalServerError)
 			return
 		}
+		defer r.Body.Close()
 
 		utils.RespondJSON(w, http.StatusOK, "User deleted", nil)
 	}
