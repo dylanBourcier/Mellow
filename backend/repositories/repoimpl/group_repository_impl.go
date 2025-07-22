@@ -78,7 +78,6 @@ func (r *groupRepositoryImpl) UpdateGroup(ctx context.Context, group *models.Gro
 }
 
 func (r *groupRepositoryImpl) AddMember(ctx context.Context, groupID, userID string) error {
-	// TODO: INSERT INTO groups_member (group_id, user_id) VALUES (?, ?)
 	query := `INSERT INTO groups_member (group_id, user_id, role, join_date) VALUES (?, ?, 'member', CURRENT_TIMESTAMP)`
 	_, err := r.db.ExecContext(ctx, query, groupID, userID)
 	if err != nil {
@@ -88,7 +87,11 @@ func (r *groupRepositoryImpl) AddMember(ctx context.Context, groupID, userID str
 }
 
 func (r *groupRepositoryImpl) RemoveMember(ctx context.Context, groupID, userID string) error {
-	// TODO: DELETE FROM groups_member WHERE group_id = ? AND user_id = ?
+	query := `DELETE FROM groups_member WHERE group_id = ? AND user_id = ?`
+	_, err := r.db.ExecContext(ctx, query, groupID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to remove member: %w", err)
+	}
 	return nil
 }
 
