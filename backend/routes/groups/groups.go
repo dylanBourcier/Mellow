@@ -13,13 +13,10 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, pos
 	mux.Handle("/groups", GroupRootRouter(groupSvc, authSvc))
 
 	// Voir un groupe spécifique
-	mux.Handle("/groups/", utils.ChainHTTP(groups.GetGroupByID(groupSvc), middlewares.OptionalAuthMiddleware(authSvc)))
+	mux.Handle("/groups/", utils.ChainHTTP(GroupRouter(groupSvc, authSvc), middlewares.OptionalAuthMiddleware(authSvc)))
 
 	// Voir les posts ou poster dans un groupe
 	mux.HandleFunc("/groups/posts/", GroupPostsRouter(groupSvc, postSvc, authSvc))
-
-	// Supprimer un groupe
-	mux.Handle("/groups/", GroupRouter(groupSvc, authSvc))
 
 	// Rejoindre un groupe
 	mux.Handle("/groups/join/", utils.ChainHTTP(groups.JoinGroup(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))

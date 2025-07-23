@@ -56,6 +56,9 @@ func GroupRouter(groupService services.GroupService, authService services.AuthSe
 		}
 
 		switch r.Method {
+		case http.MethodGet:
+			handler := utils.ChainHTTP(groups.GetGroupByID(groupService), middlewares.OptionalAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
 		case http.MethodPut:
 			handler := utils.ChainHTTP(groups.UpdateGroup(groupService, id), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
