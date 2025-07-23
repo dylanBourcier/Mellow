@@ -26,19 +26,22 @@ func GroupRootRouter(groupSvc services.GroupService, authSvc services.AuthServic
 }
 
 // /groups/posts/:id → GET (voir posts groupe), POST (ajouter post)
-func GroupPostsRouter(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/groups/posts/")
-	if id == "" || strings.Contains(id, "/") {
-		utils.RespondError(w, http.StatusNotFound, "Ressource introuvable", utils.ErrGroupNotFound)
-		return
-	}
+func GroupPostsRouter(groupSvc services.GroupService, postSvc services.PostService, authSvc services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimPrefix(r.URL.Path, "/groups/posts/")
+		if id == "" || strings.Contains(id, "/") {
+			utils.RespondError(w, http.StatusNotFound, "Ressource introuvable", utils.ErrGroupNotFound)
+			return
+		}
 
-	switch r.Method {
-	case http.MethodGet:
-		groups.GetGroupPosts(w, r, id)
-	case http.MethodPost:
-		groups.AddGroupPost(w, r, id)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		switch r.Method {
+		case http.MethodGet:
+			handler := utils.ChainHTTP(groups.GetGroupPosts(groupSvc, postSvc, id), middlewares.RequireAuthMiddleware(authSvc))
+			handler.ServeHTTP(w, r)
+		case http.MethodPost:
+			groups.AddGroupPost(w, r, id)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
 	}
 }

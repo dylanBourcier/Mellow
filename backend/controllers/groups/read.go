@@ -1,6 +1,7 @@
 package groups
 
 import (
+	"fmt"
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
@@ -74,8 +75,51 @@ func GetGroupsJoinedByUser(groupSvc services.GroupService) http.HandlerFunc {
 
 }
 
-func GetGroupPosts(w http.ResponseWriter, r *http.Request, id string) {
-	// TODO: posts du groupe
+func GetGroupPosts(groupSvc services.GroupService, postSvc services.PostService, id string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//Verifier que le groupe existe
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		//Verifier que l'utilisateur a accès au groupe
+		isMember, err := groupSvc.IsMember(r.Context(), id, userID.String())
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to check group membership: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+		if !isMember {
+			utils.RespondError(w, http.StatusForbidden, "You are not a member of this group", utils.ErrForbidden)
+			return
+		}
+		limit := 10 // Default limit
+		offset := 0 // Default offset
+		query := r.URL.Query()
+		if l := query.Get("limit"); l != "" {
+			fmt.Sscanf(l, "%d", &limit)
+		}
+		if o := query.Get("offset"); o != "" {
+			fmt.Sscanf(o, "%d", &offset)
+		}
+		if limit <= 0 || offset < 0 {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid limit or offset", utils.ErrInvalidPayload)
+			return
+		}
+		_, err = groupSvc.GetGroupByID(r.Context(), id)
+		if err != nil {
+			utils.RespondError(w, http.StatusNotFound, "Group not found", utils.ErrGroupNotFound)
+			return
+		}
+
+		posts, err := postSvc.GetGroupPosts(r.Context(), id, limit, offset)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to get group posts: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+		utils.RespondJSON(w, http.StatusOK, "Group posts retrieved successfully", posts)
+		return
+	}
 }
 
 func GroupEventsHandler(w http.ResponseWriter, r *http.Request) {

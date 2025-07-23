@@ -27,7 +27,7 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	posts.RegisterPostRoutes(mux, services.PostService, services.AuthService, services.UserService, services.GroupService)
 
 	// Groupes
-	groups.RegisterGroupRoutes(mux, services.GroupService, services.AuthService)
+	groups.RegisterGroupRoutes(mux, services.GroupService, services.PostService, services.AuthService)
 
 	// Notifications
 	notifications.RegisterNotificationRoutes(mux)

@@ -130,6 +130,37 @@ func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID string, limit, 
 	return posts, nil
 }
 
+func (r *postRepositoryImpl) GetGroupPosts(ctx context.Context, groupID string, limit, offset int) ([]*models.PostDetails, error) {
+	query := `
+		SELECT 
+			p.post_id, p.title, p.content, p.creation_date, p.visibility, p.user_id,
+			u.username, u.image_url AS avatar_url,
+			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comment_count
+		FROM posts p
+		JOIN users u ON p.user_id = u.user_id
+		WHERE p.group_id = ?
+		ORDER BY p.creation_date DESC
+		LIMIT ? OFFSET ?`
+	rows, err := r.db.QueryContext(ctx, query, groupID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving group posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []*models.PostDetails
+	for rows.Next() {
+		var post models.PostDetails
+		if err := rows.Scan(&post.PostID, &post.Title, &post.Content, &post.CreationDate,
+			&post.Visibility, &post.UserID, &post.Username, &post.AvatarURL,
+			&post.CommentsCount); err != nil {
+			return nil, fmt.Errorf("error scanning group post: %w", err)
+		}
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
+}
+
 func (r *postRepositoryImpl) GetUserPosts(ctx context.Context, ownerID string) ([]*models.Post, error) {
 	// TODO: SELECT * FROM posts WHERE author_id = ?
 	return nil, nil

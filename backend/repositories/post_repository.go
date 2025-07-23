@@ -21,6 +21,9 @@ type PostRepository interface {
 	// GetFeed récupère les posts visibles par un utilisateur (ex : publics ou des gens suivis).
 	GetFeed(ctx context.Context, userID string, limit, offset int) ([]*models.PostDetails, error)
 
+	//GetGroupPosts retourne tous les posts d’un groupe.
+	GetGroupPosts(ctx context.Context, groupID string, limit, offset int) ([]*models.PostDetails, error)
+
 	// GetUserPosts retourne tous les posts d’un utilisateur.
 	GetUserPosts(ctx context.Context, ownerID string) ([]*models.Post, error)
 
