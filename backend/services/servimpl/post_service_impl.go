@@ -131,7 +131,7 @@ func (s *postServiceImpl) DeletePost(ctx context.Context, postID, requesterID st
 	return nil
 }
 
-func (s *postServiceImpl) GetFeed(ctx context.Context, userID *string, limit, offset int) ([]*models.PostDetails, error) {
+func (s *postServiceImpl) GetFeed(ctx context.Context, userID string, limit, offset int) ([]*models.PostDetails, error) {
 	// Validate limit and offset
 	if limit <= 0 || offset < 0 {
 		return nil, utils.ErrInvalidPayload

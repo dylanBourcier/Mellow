@@ -4,6 +4,8 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import Spinner from '../ui/Spinner';
 import PostCard from '../ui/PostCard';
+import toast from 'react-hot-toast';
+import CustomToast from '../ui/CustomToast';
 
 export default function PostsContainer() {
   const [posts, setPosts] = useState([]);
@@ -12,7 +14,6 @@ export default function PostsContainer() {
   useEffect(() => {
     fetch('/api/posts', { credentials: 'include' }) // adapte l'URL selon ton backend
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch posts');
         return res.json();
       })
       .then((data) => {
@@ -25,7 +26,11 @@ export default function PostsContainer() {
       .catch((err) => {
         setLoading(false);
         toast.custom((t) => (
-          <CustomToast t={t} type="error" message="Error creating post!" />
+          <CustomToast
+            t={t}
+            type="error"
+            message={'Error fetching post! ' + err}
+          />
         ));
       });
   }, []);
