@@ -18,6 +18,7 @@ export default function GroupLayoutHeader({ groupId }) {
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [groupData, setGroupData] = useState(null);
+  const [isMember, setIsMember] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +32,8 @@ export default function GroupLayoutHeader({ groupId }) {
         if (data.data == null) {
           throw new Error('Group not found');
         }
-        setGroupData(data.data);
+        setGroupData(data.data.group);
+        setIsMember(data.data.is_member);
       } catch (error) {
         toast.custom((t) => (
           <CustomToast
@@ -67,30 +69,36 @@ export default function GroupLayoutHeader({ groupId }) {
         <PageTitle className="">{groupData.title}</PageTitle>
       </div>
       <p>{groupData.description}</p>
-      {user?.user_id === groupData.user_id && (
-        <div className="flex gap-2 items-center justify-between w-full">
-          <span className="">
-            {groupData.member_count} member
-            {groupData.member_count > 1 ? 's' : ''}
-          </span>
+      <div className="flex gap-2 items-center justify-between w-full">
+        <span className="flex items-center gap-1">
+          {groupData.member_count} member
+          {groupData.member_count > 1 ? 's' : ''}
           {user && user.user_id === groupData.user_id && (
-            <div className="flex items-center gap-2  self-end ml-auto lg:absolute lg:right-0">
-              <button className="p-1.5 rounded-xl bg-lavender-1 border border-lavender-1 text-white flex gap-2">
-                {icons['add_person']}
-                <span className="">Add People</span>
-              </button>
-              <button className="p-1.5 rounded-xl border border-dark-grey">
-                {icons['edit']}
-              </button>
-              <button className="p-1.5 rounded-xl border text-red-400 bg-red-100 border-red-400">
-                {icons['trash']}
-              </button>
-            </div>
+            <button className="p-1.5 rounded-xl bg-lavender-1 border border-lavender-1 text-white flex gap-2">
+              {icons['add_person']}
+              <span className="">Add People</span>
+            </button>
           )}
-        </div>
-      )}
+          {!isMember && (
+            <button className="p-2 bg-white rounded-2xl border border-dark-grey">
+              Ask to Join
+            </button>
+          )}
+        </span>
+
+        {user && user.user_id === groupData.user_id && (
+          <div className="flex items-center gap-2  self-end ml-auto lg:absolute lg:right-0">
+            <button className="p-1.5 rounded-xl border border-dark-grey">
+              {icons['edit']}
+            </button>
+            <button className="p-1.5 rounded-xl border text-red-400 bg-red-100 border-red-400">
+              {icons['trash']}
+            </button>
+          </div>
+        )}
+      </div>
       <div className="w-[50%] h-[1px] bg-lavender-2 self-center mt-1 mb-1"></div>
-      <GroupNavbar groupId={groupId} />
+      <GroupNavbar groupId={groupId} isMember={isMember} />
     </div>
   );
 }

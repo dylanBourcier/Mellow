@@ -22,34 +22,32 @@ function PostCard({ post }) {
   const displayContent =
     content.length > 100 ? content.substring(0, 100) + '...' : content;
   return (
-    <div>
-      <div className="flex flex-col p-3 lg:p-5 gap-3 bg-white shadow-(--box-shadow) rounded-lg hover:-translate-y-0.5 transition-all duration-300">
-        <UserInfo
-          authorAvatar={avatar_url}
-          userName={username}
-          groupName={group_name}
-          groupId={group_id}
-          userId={user_id}
-        ></UserInfo>
-        <Link className="flex flex-col gap-3" href={`/posts/${post_id}`}>
-          <div>
-            <h3 className="break-all">{title}</h3>
-            <span className="hidden lg:inline">{displayContent}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex gap-0.5 align-bottom">
-              {comments_count}
-              <Image
-                src="/img/comments.svg"
-                alt="Comments Icon"
-                width={16}
-                height={16}
-              ></Image>
-            </span>
-            <span>{formattedDate}</span>
-          </div>
-        </Link>
-      </div>
+    <div className="flex flex-col w-full p-3 lg:p-5 gap-3 bg-white shadow-(--box-shadow) rounded-lg hover:-translate-y-0.5 transition-all duration-300">
+      <UserInfo
+        authorAvatar={avatar_url}
+        userName={username}
+        groupName={group_name}
+        groupId={group_id}
+        userId={user_id}
+      ></UserInfo>
+      <Link className="flex flex-col gap-3" href={`/posts/${post_id}`}>
+        <div>
+          <h3 className="break-all">{title}</h3>
+          <span className="hidden lg:inline">{displayContent}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex gap-0.5 align-bottom">
+            {comments_count}
+            <Image
+              src="/img/comments.svg"
+              alt="Comments Icon"
+              width={16}
+              height={16}
+            ></Image>
+          </span>
+          <span>{formattedDate}</span>
+        </div>
+      </Link>
     </div>
   );
 }
