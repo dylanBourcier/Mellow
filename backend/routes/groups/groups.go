@@ -25,7 +25,7 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, pos
 	mux.Handle("/groups/leave/", utils.ChainHTTP(groups.LeaveGroupHandler(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir les événements du groupe
-	mux.HandleFunc("/groups/events/", groups.GroupEventsHandler)
+	mux.Handle("/groups/events/", utils.ChainHTTP(GroupEventRouter(groupSvc,authSvc),middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir le chat de groupe
 	mux.HandleFunc("/groups/chat/", groups.GroupChatHandler)

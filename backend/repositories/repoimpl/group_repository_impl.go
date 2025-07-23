@@ -25,6 +25,15 @@ func (r *groupRepositoryImpl) InsertGroup(ctx context.Context, group *models.Gro
 	return nil
 }
 
+func (r *groupRepositoryImpl) InsertEvent(ctx context.Context, event *models.Event) error {
+	query := `INSERT INTO events (event_id, user_id, group_id, creation_date, event_date, title) VALUES (?, ?, ?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, event.EventID, event.UserID, event.GroupID, event.CreationDate, event.EventDate, event.Title)
+	if err != nil {
+		return fmt.Errorf("failed to insert event: %w", err)
+	}
+	return nil
+}
+
 func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
 	query := `SELECT g.group_id, g.user_id, g.title, g.description, g.creation_date, 
 			  (SELECT COUNT(*) FROM groups_member gm WHERE gm.group_id = g.group_id) AS member_count

@@ -2,6 +2,7 @@ package servimpl
 
 import (
 	"context"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
@@ -219,4 +220,39 @@ func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID str
 		return nil, err
 	}
 	return groups, nil
+}
+
+func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event) error {
+	fmt.Println("InsertEvent called with event:", event)
+	if event == nil || event.UserID == uuid.Nil || event.GroupID == uuid.Nil || event.EventDate.IsZero() || event.Title == "" {
+		return utils.ErrInvalidPayload
+	}
+	//vérifier si le groupe existe
+	_, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
+	if err != nil {
+		if err == utils.ErrGroupNotFound {
+			return utils.ErrGroupNotFound
+		}
+		return fmt.Errorf("failed to get group: %w", err)
+	}
+	// vérifier si l'utilisateur est membre du groupe
+	isMember, err := s.groupRepo.IsMember(ctx, event.GroupID.String(), event.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+
+	eventID, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	event.EventID = eventID
+	event.CreationDate = time.Now()
+
+	if err := s.groupRepo.InsertEvent(ctx, event); err != nil {
+		return err
+	}
+	return nil
 }
