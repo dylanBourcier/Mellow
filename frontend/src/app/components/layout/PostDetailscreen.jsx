@@ -34,7 +34,6 @@ function PostDetailscreen({ postid }) {
         }
 
         setPost(result.data);
-        console.log('Post fetched successfully:', result.data);
       } catch (err) {
         console.error('Error fetching post:', err);
         setError('Could not load the post. Please try again later.');
@@ -74,6 +73,8 @@ function PostDetailscreen({ postid }) {
             userName={post.username}
             userId={post.user_id}
             authorAvatar={post.avatar_url}
+            groupId={post?.group_id}
+            groupName={post?.group_name}
           ></UserInfo>
           <span className="font-thin text-sm">
             {formatDate(post.creation_date)}
