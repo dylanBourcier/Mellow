@@ -30,18 +30,21 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, postID string) (*m
 			p.post_id, p.group_id, p.user_id, p.title, p.content, 
 			p.creation_date, p.visibility, p.image_url, 
 			u.username, u.image_url, 
+			g.group_id, g.title AS group_title,
 			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comment_count
 		FROM 
 			posts p
 		JOIN 
 			users u ON p.user_id = u.user_id
+		LEFT JOIN 
+			groups g ON p.group_id = g.group_id
 		WHERE 
 			p.post_id = ?`
 	var post models.PostDetails
 	err := r.db.QueryRowContext(ctx, query, postID).Scan(
 		&post.PostID, &post.GroupID, &post.UserID, &post.Title,
 		&post.Content, &post.CreationDate, &post.Visibility, &post.ImageURL,
-		&post.Username, &post.AvatarURL, &post.CommentsCount)
+		&post.Username, &post.AvatarURL, &post.GroupID, &post.GroupName, &post.CommentsCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // Post not found
