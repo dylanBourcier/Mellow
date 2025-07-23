@@ -1,10 +1,15 @@
 import React from 'react';
 import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
+import PostsGroupContainer from '@/app/components/layout/PostsGroupContainer';
 
-export default function GroupPage() {
+export default async function GroupPage({ params }) {
+  console.log('GroupPage params:',await  params);
+  
   return (
     <ProtectedRoute redirectTo="/login">
-      <div>GroupPage</div>
+      <div>
+        <PostsGroupContainer groupId={params.groupId}></PostsGroupContainer>
+      </div>
     </ProtectedRoute>
   );
 }

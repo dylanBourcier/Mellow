@@ -7,7 +7,7 @@ export default function CreateGroupPage() {
   return (
     <ProtectedRoute redirectTo="/login">
       <div className="flex flex-col gap-4">
-        <PageTitle>Create Group</PageTitle>
+        <PageTitle>Create Group </PageTitle>
         <GroupCreationForm></GroupCreationForm>
       </div>
     </ProtectedRoute>
