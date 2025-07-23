@@ -11,6 +11,11 @@ import (
 func GetFeedPosts(postSvc services.PostService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//Recuperer les paramètres de la requête, limit et l'offset
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
 		limit := 10 // Default limit
 		offset := 0 // Default offset
 		query := r.URL.Query()
@@ -26,7 +31,7 @@ func GetFeedPosts(postSvc services.PostService) http.HandlerFunc {
 		}
 		// Format de la requete : /posts?limit=10&offset=0
 		// Appeler le service pour récupérer les posts
-		posts, err := postSvc.GetFeed(r.Context(), nil, limit, offset)
+		posts, err := postSvc.GetFeed(r.Context(), userID.String(), limit, offset)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				utils.RespondError(w, http.StatusNotFound, "No posts found", utils.ErrPostNotFound)

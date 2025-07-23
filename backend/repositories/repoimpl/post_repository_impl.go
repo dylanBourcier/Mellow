@@ -30,18 +30,21 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, postID string) (*m
 			p.post_id, p.group_id, p.user_id, p.title, p.content, 
 			p.creation_date, p.visibility, p.image_url, 
 			u.username, u.image_url, 
+			g.group_id, g.title AS group_title,
 			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comment_count
 		FROM 
 			posts p
 		JOIN 
 			users u ON p.user_id = u.user_id
+		LEFT JOIN 
+			groups g ON p.group_id = g.group_id
 		WHERE 
 			p.post_id = ?`
 	var post models.PostDetails
 	err := r.db.QueryRowContext(ctx, query, postID).Scan(
 		&post.PostID, &post.GroupID, &post.UserID, &post.Title,
 		&post.Content, &post.CreationDate, &post.Visibility, &post.ImageURL,
-		&post.Username, &post.AvatarURL, &post.CommentsCount)
+		&post.Username, &post.AvatarURL, &post.GroupID, &post.GroupName, &post.CommentsCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // Post not found
@@ -68,7 +71,8 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, postID string) erro
 	return nil
 }
 
-func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID *string, limit, offset int) ([]*models.PostDetails, error) {
+func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID string, limit, offset int) ([]*models.PostDetails, error) {
+	fmt.Println("userID:", userID, "limit:", limit, "offset:", offset)
 	query := `
 		WITH user_follows AS (
 			SELECT followed_id
@@ -81,7 +85,7 @@ func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID *string, limit,
 			WHERE user_id = ?
 		)
 		SELECT 
-			p.post_id,p.title, p.content, p.creation_date, p.visibility, p.user_id,
+			p.post_id, p.title, p.content, p.creation_date, p.visibility, p.user_id,
 			u.username, u.image_url AS avatar_url,
 			g.group_id AS group_id, g.title AS group_title,
 			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comment_count
@@ -109,24 +113,6 @@ func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID *string, limit,
 	`
 
 	args := []interface{}{userID, userID, userID, userID, userID, limit, offset}
-	if userID == nil {
-		// Si l'utilisateur n'est pas connecté, ignorer followers/private
-		query = `
-			SELECT 
-				p.post_id, p.title, p.content, p.creation_date, p.visibility, p.user_id,
-				u.username, u.image_url AS avatar_url,
-				g.group_id AS group_id, g.title AS group_title,
-				(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comment_count
-			FROM posts p
-			JOIN users u ON p.user_id = u.user_id
-			LEFT JOIN groups g ON p.group_id = g.group_id
-			WHERE p.group_id IS NULL AND p.visibility = 'public'
-			ORDER BY p.creation_date DESC
-			LIMIT ? OFFSET ?;
-		`
-		args = []interface{}{limit, offset}
-
-	}
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -140,8 +126,39 @@ func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID *string, limit,
 			&p.Username, &p.AvatarURL, &p.GroupID, &p.GroupName, &p.CommentsCount); err != nil {
 			return nil, err
 		}
-
+		fmt.Println(p)
 		posts = append(posts, &p)
+	}
+
+	return posts, nil
+}
+
+func (r *postRepositoryImpl) GetGroupPosts(ctx context.Context, groupID string, limit, offset int) ([]*models.PostDetails, error) {
+	query := `
+		SELECT 
+			p.post_id, p.title, p.content, p.creation_date, p.visibility, p.user_id,
+			u.username, u.image_url AS avatar_url,
+			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comment_count
+		FROM posts p
+		JOIN users u ON p.user_id = u.user_id
+		WHERE p.group_id = ?
+		ORDER BY p.creation_date DESC
+		LIMIT ? OFFSET ?`
+	rows, err := r.db.QueryContext(ctx, query, groupID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving group posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []*models.PostDetails
+	for rows.Next() {
+		var post models.PostDetails
+		if err := rows.Scan(&post.PostID, &post.Title, &post.Content, &post.CreationDate,
+			&post.Visibility, &post.UserID, &post.Username, &post.AvatarURL,
+			&post.CommentsCount); err != nil {
+			return nil, fmt.Errorf("error scanning group post: %w", err)
+		}
+		posts = append(posts, &post)
 	}
 
 	return posts, nil

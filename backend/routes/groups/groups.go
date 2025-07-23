@@ -8,12 +8,15 @@ import (
 	"net/http"
 )
 
-func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, authSvc services.AuthService) {
+func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, postSvc services.PostService, authSvc services.AuthService) {
 	// Créer un groupe / voir tous les groupes
 	mux.Handle("/groups", GroupRootRouter(groupSvc, authSvc))
 
+	// Voir un groupe spécifique
+	mux.Handle("/groups/", utils.ChainHTTP(groups.GetGroupByID(groupSvc), middlewares.OptionalAuthMiddleware(authSvc)))
+
 	// Voir les posts ou poster dans un groupe
-	mux.HandleFunc("/groups/posts/", GroupPostsRouter)
+	mux.HandleFunc("/groups/posts/", GroupPostsRouter(groupSvc, postSvc, authSvc))
 
 	// Supprimer un groupe
 	mux.Handle("/groups/", GroupRouter(groupSvc, authSvc))
@@ -33,6 +36,7 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, aut
 	// Voir les groupes auxquels l'utilisateur a adhéré
 	mux.Handle("/groups/joined", utils.ChainHTTP(groups.GetGroupsJoinedByUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
-	// Mettre à jour un groupe
-	mux.HandleFunc("/groups/", GroupRouter(groupSvc, authSvc))
+	// Voir les groupes auxquels l'utilisateur n'est pas membre
+	mux.Handle("/groups/not-joined", utils.ChainHTTP(groups.GetAllGroupsWithoutUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
 }

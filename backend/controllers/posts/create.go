@@ -38,21 +38,29 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 				return
 			}
 		}
-		groupIdStr := r.FormValue("group_id")
+		groupIdStr := r.FormValue("postOn")
+		var visibility string
 		var groupID *uuid.UUID
 		if groupIdStr != "" {
-			groupIDValue, err := uuid.Parse(groupIdStr)
-			if err != nil {
-				utils.RespondError(w, http.StatusBadRequest, "Invalid group ID", utils.ErrInvalidPayload)
-				return
+			if groupIdStr == "everyone" {
+				groupID = nil // Post visible to everyone
+				visibility = r.FormValue("visibility")
+			} else {
+				groupIDValue, err := uuid.Parse(groupIdStr)
+				if err != nil {
+					utils.RespondError(w, http.StatusBadRequest, "Invalid group ID", utils.ErrInvalidPayload)
+					return
+				}
+				groupID = &groupIDValue
+				visibility = "public"
+
 			}
-			groupID = &groupIDValue
 		}
 
 		post := models.Post{
 			Title:      r.FormValue("title"),
 			Content:    r.FormValue("content"),
-			Visibility: r.FormValue("visibility"),
+			Visibility: visibility,
 			UserID:     userID,
 			ImageURL:   image_url,
 			GroupID:    groupID,

@@ -14,7 +14,6 @@ function Sidebar(props) {
   const pathname = usePathname();
 
   const { user, loading } = useUser();
-  console.log('user in sidebar', user);
 
   return (
     <div
@@ -30,12 +29,18 @@ function Sidebar(props) {
             height={56}
           ></Image>
         </div>
-        <Navlink href="/" icon="home" isActive={pathname === '/'}>
+        <Navlink
+          href="/"
+          icon="home"
+          disabled={!user}
+          isActive={pathname === '/'}
+        >
           Home
         </Navlink>
         <Navlink
           href="/search"
           icon="search"
+          disabled={!user}
           isActive={pathname.startsWith('/search')}
         >
           Search

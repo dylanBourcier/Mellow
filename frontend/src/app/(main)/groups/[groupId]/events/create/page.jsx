@@ -1,5 +1,9 @@
 import React from 'react';
 
 export default function CreateEventPage() {
-  return <div>CreateEventPage</div>;
+  return (
+    <ProtectedRoute redirectTo="/login">
+      <div>CreateEventPage</div>
+    </ProtectedRoute>
+  );
 }

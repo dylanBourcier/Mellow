@@ -18,6 +18,9 @@ type GroupRepository interface {
 	// GetAllGroups retourne tous les groupes.
 	GetAllGroups(ctx context.Context) ([]*models.Group, error)
 
+	// GetAllGroupsWithoutUser retourne tous les groupes auxquels un utilisateur n'est pas membre.
+	GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error) 
+
 	// DeleteGroup supprime un groupe.
 	DeleteGroup(ctx context.Context, groupID string) error
 

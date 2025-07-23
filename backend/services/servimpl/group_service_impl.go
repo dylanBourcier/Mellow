@@ -2,12 +2,13 @@ package servimpl
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
 	"mellow/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type groupServiceImpl struct {
@@ -98,6 +99,7 @@ func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*m
 	if err != nil {
 		return nil, err
 	}
+
 	if group == nil {
 		return nil, utils.ErrGroupNotFound
 	}
@@ -106,6 +108,17 @@ func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*m
 
 func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
 	groups, err := s.groupRepo.GetAllGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
+func (s *groupServiceImpl) GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	if userID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+	groups, err := s.groupRepo.GetAllGroupsWithoutUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

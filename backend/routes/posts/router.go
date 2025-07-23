@@ -17,7 +17,7 @@ func PostRootRouter(PostService services.PostService, authService services.AuthS
 			handler := utils.ChainHTTP(posts.CreatePost(PostService), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
 		case http.MethodGet:
-			handler := utils.ChainHTTP(posts.GetFeedPosts(PostService), middlewares.OptionalAuthMiddleware(authService))
+			handler := utils.ChainHTTP(posts.GetFeedPosts(PostService), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)

@@ -18,6 +18,9 @@ type GroupService interface {
 	// GetAllGroups retourne tous les groupes existants.
 	GetAllGroups(ctx context.Context) ([]*models.Group, error)
 
+	// GetAllGroupsWithoutUser retourne tous les groupes auxquels un utilisateur n'est pas membre.
+	GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error)
+
 	// DeleteGroup supprime un groupe (par son créateur ou un admin).
 	DeleteGroup(ctx context.Context, groupID, requesterID string) error
 

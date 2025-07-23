@@ -131,13 +131,32 @@ func (s *postServiceImpl) DeletePost(ctx context.Context, postID, requesterID st
 	return nil
 }
 
-func (s *postServiceImpl) GetFeed(ctx context.Context, userID *string, limit, offset int) ([]*models.PostDetails, error) {
+func (s *postServiceImpl) GetFeed(ctx context.Context, userID string, limit, offset int) ([]*models.PostDetails, error) {
 	// Validate limit and offset
 	if limit <= 0 || offset < 0 {
 		return nil, utils.ErrInvalidPayload
 	}
 	// Additional validation can be added here if needed
 	posts, err := s.postRepo.GetFeed(ctx, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	for _, post := range posts {
+		if post.ImageURL != nil {
+			post.ImageURL = utils.GetFullImageURL(post.ImageURL)
+		}
+		if post.AvatarURL != nil {
+			post.AvatarURL = utils.GetFullImageURLAvatar(post.AvatarURL)
+		}
+	}
+	return posts, nil
+}
+
+func (s *postServiceImpl) GetGroupPosts(ctx context.Context, groupID string, limit, offset int) ([]*models.PostDetails, error) {
+	if groupID == "" || limit <= 0 || offset < 0 {
+		return nil, utils.ErrInvalidPayload
+	}
+	posts, err := s.postRepo.GetGroupPosts(ctx, groupID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
