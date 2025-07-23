@@ -21,8 +21,7 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	auth.RegisterAuthRoutes(mux, services.UserService, services.AuthService)
 
 	// Utilisateurs
-	users.RegisterUserRoutes(mux, services.UserService)
-
+	users.RegisterUserRoutes(mux, services.UserService, services.AuthService)
 	// Publications (posts)
 	posts.RegisterPostRoutes(mux, services.PostService, services.AuthService, services.UserService, services.GroupService)
 

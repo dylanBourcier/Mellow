@@ -1,44 +1,49 @@
 package users
 
 import (
-	"mellow/controllers/users"
+	ctr "mellow/controllers/users"
+	"mellow/services"
 	"mellow/utils"
 	"net/http"
 	"strings"
 )
 
-func UserRouter(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/users/")
-	if id == "" || strings.Contains(id, "/") {
-		utils.RespondError(w, http.StatusNotFound, "Utilisateur introuvable", utils.ErrUserNotFound)
-		return
-	}
+func UserRouter(userService services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimPrefix(r.URL.Path, "/users/")
+		if id == "" || strings.Contains(id, "/") {
+			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
+			return
+		}
 
-	switch r.Method {
-	case http.MethodGet:
-		users.GetUserProfileHandler(w, r, id)
-	case http.MethodPut:
-		users.UpdateUserProfileHandler(w, r, id)
-	case http.MethodDelete:
-		users.DeleteUserHandler(w, r, id)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		switch r.Method {
+		case http.MethodGet:
+			ctr.GetUserProfileHandler(userService)(w, r)
+		case http.MethodPut:
+			ctr.UpdateUserProfileHandler(userService)(w, r)
+		case http.MethodDelete:
+			ctr.DeleteUserHandler(userService)(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrBadRequest)
+		}
 	}
 }
 
-func FollowRouter(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/users/follow/")
-	if id == "" || strings.Contains(id, "/") {
-		utils.RespondError(w, http.StatusNotFound, "Utilisateur introuvable", utils.ErrUserNotFound)
-		return
-	}
+func FollowRouter(userService services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimPrefix(r.URL.Path, "/users/follow/")
+		if id == "" || strings.Contains(id, "/") {
+			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
+			return
+		}
 
-	switch r.Method {
-	case http.MethodPost:
-		users.FollowUser(w, r, id)
-	case http.MethodDelete:
-		users.UnfollowUser(w, r, id)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		switch r.Method {
+		case http.MethodPost:
+			ctr.FollowUser(userService)(w, r)
+		case http.MethodDelete:
+			ctr.UnfollowUser(userService)(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrBadRequest)
+		}
 	}
 }

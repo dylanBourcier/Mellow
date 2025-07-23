@@ -51,6 +51,46 @@ func (s *groupServiceImpl) CreateGroup(ctx context.Context, group *models.Group)
 	return nil
 }
 
+func (s *groupServiceImpl) UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error {
+	if groupID == "" || requesterID == "" || title == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	existing, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return utils.ErrGroupNotFound
+	}
+
+	if existing.UserID.String() != requesterID {
+		return utils.ErrForbidden
+	}
+
+	if len(title) > 100 {
+		return utils.ErrContentTooLong
+	}
+	if len(title) < 1 {
+		return utils.ErrContentTooShort
+	}
+	if description != "" && len(description) > 1000 {
+		return utils.ErrContentTooLong
+	}
+
+	gid, err := uuid.Parse(groupID)
+	if err != nil {
+		return utils.ErrInvalidPayload
+	}
+	g := &models.Group{
+		GroupID:     gid,
+		Title:       title,
+		Description: description,
+	}
+
+	return s.groupRepo.UpdateGroup(ctx, g)
+}
+
 func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
 	if groupID == "" {
 		return nil, utils.ErrInvalidPayload
@@ -58,6 +98,10 @@ func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*m
 	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
 	if err != nil {
 		return nil, err
+	}
+
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
 	}
 	return group, nil
 }
@@ -82,8 +126,24 @@ func (s *groupServiceImpl) GetAllGroupsWithoutUser(ctx context.Context, userID s
 }
 
 func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID string) error {
-	// TODO: Vérifier que le requester est créateur ou admin
-	// TODO: Appeler le repository pour supprimer le groupe
+	if groupID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return utils.ErrGroupNotFound
+	}
+	if group.UserID.String() != requesterID {
+		return utils.ErrUnauthorized
+	}
+
+	if err := s.groupRepo.DeleteGroup(ctx, groupID); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -102,23 +162,58 @@ func (s *groupServiceImpl) AddMember(ctx context.Context, groupID, userID string
 }
 
 func (s *groupServiceImpl) RemoveMember(ctx context.Context, groupID, userID string) error {
-	// TODO: Vérifier que le membre existe et peut être retiré
-	// TODO: Appeler le repository pour supprimer l'entrée
-	return nil
+	if groupID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return utils.ErrGroupNotFound
+	}
+
+	isMember, err := s.groupRepo.IsMember(ctx, groupID, userID)
+	if err != nil {
+		return err
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+
+	if group.UserID.String() == userID {
+		return utils.ErrForbidden
+	}
+
+	return s.groupRepo.RemoveMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) GetGroupMembers(ctx context.Context, groupID string) ([]*models.User, error) {
-	// TODO: Appeler le repository pour récupérer les membres du groupe
-	return nil, nil
+	if groupID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+
+	members, err := s.groupRepo.GetGroupMembers(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	return members, nil
 }
 
 func (s *groupServiceImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
-	// TODO: Appeler le repository pour vérifier la relation d’appartenance
 	return s.groupRepo.IsMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
-	// Call the repository function to get groups joined by the user
 	groups, err := s.groupRepo.GetGroupsJoinedByUser(ctx, userID)
 	if err != nil {
 		return nil, err

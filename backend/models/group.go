@@ -14,3 +14,8 @@ type Group struct {
 	CreationDate time.Time `json:"creation_date"`
 	MemberCount int       `json:"member_count,omitempty"` // Optional field to store the number of members in the group
 }
+
+type GroupEditPayload struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
