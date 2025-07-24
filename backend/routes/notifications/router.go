@@ -15,7 +15,7 @@ func NotificationRootRouter(notificationService services.NotificationService, au
 			handler := utils.ChainHTTP(notifications.CreateNotification(notificationService), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
 		case http.MethodGet:
-			handler := utils.ChainHTTP(http.HandlerFunc(notifications.GetNotificationsHandler), middlewares.RequireAuthMiddleware(authService))
+			handler := utils.ChainHTTP(notifications.GetNotifications(notificationService), middlewares.RequireAuthMiddleware(authService))
 			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
