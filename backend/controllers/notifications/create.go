@@ -14,10 +14,6 @@ import (
 func CreateNotification(notificationService services.NotificationService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		if r.Method != http.MethodPost {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
 
 		var payload models.CreateNotificationPayload
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
