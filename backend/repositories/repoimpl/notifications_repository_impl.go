@@ -3,6 +3,7 @@ package repoimpl
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 )
@@ -16,7 +17,11 @@ func NewNotificationRepository(db *sql.DB) repositories.NotificationRepository {
 }
 
 func (r *notificationRepositoryImpl) InsertNotification(ctx context.Context, notif *models.Notification) error {
-	// TODO: INSERT INTO notifications (id, user_id, message, is_read, created_at) VALUES (?, ?, ?, ?, ?)
+	query := `INSERT INTO notifications (notification_id, user_id, type, seen, creation_date) VALUES (?, ?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, notif.NotificationID, notif.UserID, notif.Type, notif.Seen, notif.CreationDate)
+	if err != nil {
+		return fmt.Errorf("failed to insert notification: %w", err)
+	}
 	return nil
 }
 
