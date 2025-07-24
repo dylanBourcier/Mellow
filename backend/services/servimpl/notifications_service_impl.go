@@ -68,9 +68,23 @@ func (s *notificationServiceImpl) GetUserNotifications(ctx context.Context, user
 	return notifs, nil
 }
 
-func (s *notificationServiceImpl) MarkAsRead(ctx context.Context, notificationID string) error {
-	// TODO: Appeler le repository pour mettre à jour le statut de lecture
-	return nil
+func (s *notificationServiceImpl) MarkAsRead(ctx context.Context, notificationID, userID string) error {
+	if notificationID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	notif, err := s.notifRepo.GetNotificationByID(ctx, notificationID)
+	if err != nil {
+		return err
+	}
+	if notif == nil {
+		return utils.ErrNotificationNotFound
+	}
+	if notif.UserID.String() != userID {
+		return utils.ErrForbidden
+	}
+
+	return s.notifRepo.MarkAsRead(ctx, notificationID)
 }
 
 func (s *notificationServiceImpl) DeleteNotification(ctx context.Context, notificationID string) error {

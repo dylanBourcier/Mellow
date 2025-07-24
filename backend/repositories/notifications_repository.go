@@ -12,6 +12,9 @@ type NotificationRepository interface {
 	// GetUserNotifications récupère toutes les notifications d’un utilisateur.
 	GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error)
 
+	// GetNotificationByID récupère une notification par son ID.
+	GetNotificationByID(ctx context.Context, notificationID string) (*models.Notification, error)
+
 	// MarkAsRead met à jour le statut d’une notification.
 	MarkAsRead(ctx context.Context, notificationID string) error
 
