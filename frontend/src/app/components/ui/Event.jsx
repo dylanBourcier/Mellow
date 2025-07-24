@@ -8,7 +8,7 @@ import { formatDate } from '@/app/utils/date';
 import toast from 'react-hot-toast';
 import { useUser } from '@/app/context/UserContext';
 import { useEffect } from 'react';
-import {icons} from '@/app/lib/icons'; // Assurez-vous que le chemin est correct
+import { icons } from '@/app/lib/icons'; // Assurez-vous que le chemin est correct
 
 function Event({ event }) {
   const [vote, setVote] = useState(null);
@@ -41,7 +41,7 @@ function Event({ event }) {
     setNoCount(noVotes);
   }, [event.event_responses, user?.user_id]);
 
-  const { creation_date, event_date, title, username, avatar_url } = event;
+  const { event_date, title, username, avatar_url } = event;
   const getButtonStyle = (type) =>
     `flex flex-1 hover:cursor-pointer px-4 py-1 rounded-xl font-light border transition-all duration-200 ${
       vote === type
@@ -51,7 +51,6 @@ function Event({ event }) {
 
   const handleVoteSubmit = () => {
     if (!vote) {
-      alert('Please select Yes or No before voting.');
       return;
     }
 
@@ -83,7 +82,7 @@ function Event({ event }) {
       });
     setVote(null); // Réinitialiser le vote après soumission
     setHasVoted(true); // Marquer l'utilisateur comme ayant voté
-    setUserVote(vote); // Enregistrer le vote de l'utilisateur
+    setUserVote(vote === 'yes' ? true : false); // Enregistrer le vote de l'utilisateur
     // Mettre à jour les compteurs de votes
     if (vote === 'yes') {
       setYesCount((prev) => prev + 1);

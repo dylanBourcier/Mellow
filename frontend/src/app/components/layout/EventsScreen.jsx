@@ -77,9 +77,13 @@ export default function EventsScreen({ groupId }) {
             >
               Create Event
             </Button>
-            {events.map((evt) => (
-              <Event key={evt.event_id} event={evt} />
-            ))}
+            {events
+              .sort(
+                (a, b) => new Date(b.creation_date) - new Date(a.creation_date)
+              )
+              .map((evt) => (
+                <Event key={evt.event_id} event={evt} />
+              ))}
           </>
         ) : (
           <span className="text-dark-grey-lighter">
