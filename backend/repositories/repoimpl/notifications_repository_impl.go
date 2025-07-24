@@ -26,8 +26,31 @@ func (r *notificationRepositoryImpl) InsertNotification(ctx context.Context, not
 }
 
 func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error) {
-	// TODO: SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC
-	return nil, nil
+	query := `SELECT notification_id, user_id, type, seen, creation_date
+                  FROM notifications
+                  WHERE user_id = ?
+                  ORDER BY creation_date DESC`
+
+	rows, err := r.db.QueryContext(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query notifications: %w", err)
+	}
+	defer rows.Close()
+
+	var notifs []*models.Notification
+	for rows.Next() {
+		var n models.Notification
+		if err := rows.Scan(&n.NotificationID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate); err != nil {
+			return nil, fmt.Errorf("failed to scan notification: %w", err)
+		}
+		notifs = append(notifs, &n)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return notifs, nil
 }
 
 func (r *notificationRepositoryImpl) MarkAsRead(ctx context.Context, notificationID string) error {
