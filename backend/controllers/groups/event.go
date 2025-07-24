@@ -1,7 +1,6 @@
 package groups
 
 import (
-	"fmt"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -26,13 +25,11 @@ func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.Handl
 		}
 
 		eventTitle := r.FormValue("title")
-		fmt.Println("Received event title:", eventTitle)
 		if eventTitle == "" {
 			utils.RespondError(w, http.StatusBadRequest, "Event title is required", utils.ErrInvalidPayload)
 			return
 		}
 		eventDateStr := r.FormValue("event_date")
-		fmt.Println("Received event date string:", eventDateStr)
 		var eventDate time.Time
 		if eventDateStr != "" {
 			// Parse the event date from the form value
@@ -63,8 +60,6 @@ func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.Handl
 			Title:     eventTitle,
 			EventDate: eventDate,
 		}
-		fmt.Println("event.EventDate:", event.EventDate)
-		fmt.Println("Received event date:", event)
 
 		err = groupSvc.InsertEvent(r.Context(), &event)
 		if err != nil {
@@ -76,7 +71,7 @@ func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.Handl
 	}
 }
 
-func InsertEventResponse(groupSvc services.GroupService)http.HandlerFunc{
+func InsertEventResponse(groupSvc services.GroupService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
@@ -89,7 +84,7 @@ func InsertEventResponse(groupSvc services.GroupService)http.HandlerFunc{
 			return
 		}
 		//recupere l'id de l'url
-		eventId:=strings.TrimPrefix(r.URL.Path, "/groups/events/vote/")
+		eventId := strings.TrimPrefix(r.URL.Path, "/groups/events/vote/")
 		if eventId == "" {
 			utils.RespondError(w, http.StatusBadRequest, "Event ID is required", utils.ErrInvalidPayload)
 			return
@@ -99,7 +94,6 @@ func InsertEventResponse(groupSvc services.GroupService)http.HandlerFunc{
 			utils.RespondError(w, http.StatusBadRequest, "Invalid event ID format", utils.ErrInvalidPayload)
 			return
 		}
-
 
 		vote := r.FormValue("vote")
 		if vote == "" {
@@ -113,11 +107,12 @@ func InsertEventResponse(groupSvc services.GroupService)http.HandlerFunc{
 			return
 		}
 		var voteBool bool
-		if vote == "yes" {
+		switch vote {
+		case "yes":
 			voteBool = true
-		} else if vote == "no" {
+		case "no":
 			voteBool = false
-		} else {
+		default:
 			utils.RespondError(w, http.StatusBadRequest, "Invalid vote value, must be 'yes' or 'no'", utils.ErrInvalidPayload)
 			return
 		}
@@ -140,11 +135,6 @@ func InsertEventResponse(groupSvc services.GroupService)http.HandlerFunc{
 
 func GetGroupEvents(groupSvc services.GroupService, groupID string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
-			return
-		}
-
 		if groupID == "" {
 			utils.RespondError(w, http.StatusBadRequest, "Group ID is required", utils.ErrInvalidPayload)
 			return

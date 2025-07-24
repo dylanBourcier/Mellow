@@ -121,15 +121,6 @@ func GetGroupPosts(groupSvc services.GroupService, postSvc services.PostService,
 	}
 }
 
-// func GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
-// 	id := strings.TrimPrefix(r.URL.Path, "/groups/events/")
-// 	if r.Method != http.MethodGet || id == "" || strings.Contains(id, "/") {
-// 		http.NotFound(w, r)
-// 		return
-// 	}
-// 	// TODO: événements du groupe
-// }
-
 func GroupChatHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/groups/chat/")
 	if r.Method != http.MethodGet || id == "" || strings.Contains(id, "/") {
