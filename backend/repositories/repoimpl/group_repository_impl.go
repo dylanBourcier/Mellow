@@ -25,6 +25,36 @@ func (r *groupRepositoryImpl) InsertGroup(ctx context.Context, group *models.Gro
 	return nil
 }
 
+func (r *groupRepositoryImpl) InsertEvent(ctx context.Context, event *models.Event) error {
+	query := `INSERT INTO events (event_id, user_id, group_id, creation_date, event_date, title) VALUES (?, ?, ?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, event.EventID, event.UserID, event.GroupID, event.CreationDate, event.EventDate, event.Title)
+	if err != nil {
+		return fmt.Errorf("failed to insert event: %w", err)
+	}
+	return nil
+}
+func (r *groupRepositoryImpl) GetEventById(ctx context.Context, eventID string) (*models.Event, error) {
+	query := `SELECT event_id, user_id, group_id, creation_date, event_date, title FROM events WHERE event_id = ?`
+	row := r.db.QueryRowContext(ctx, query, eventID)
+	var event models.Event
+	if err := row.Scan(&event.EventID, &event.UserID, &event.GroupID, &event.CreationDate, &event.EventDate, &event.Title); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("event not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to get event: %w", err)
+	}
+	return &event, nil
+}
+
+func (r *groupRepositoryImpl) InsertEventResponse(ctx context.Context, response *models.EventResponse) error {
+	query := `INSERT INTO events_response (event_id, user_id, group_id, vote) VALUES (?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, response.EventID, response.UserID, response.GroupID, response.Vote)
+	if err != nil {
+		return fmt.Errorf("failed to insert event response: %w", err)
+	}
+	return nil
+}
+
 func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
 	query := `SELECT g.group_id, g.user_id, g.title, g.description, g.creation_date, 
 			  (SELECT COUNT(*) FROM groups_member gm WHERE gm.group_id = g.group_id) AS member_count
@@ -195,4 +225,81 @@ func (r *groupRepositoryImpl) IsTitleTaken(ctx context.Context, title string) (b
 		return false, fmt.Errorf("failed to check title: %w", err)
 	}
 	return count > 0, nil
+}
+
+func (r *groupRepositoryImpl) GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error) {
+	query := `
+		SELECT e.event_id, e.user_id, e.group_id, e.creation_date, e.event_date, e.title, 
+		       u.username AS creator_username, u.image_url AS creator_avatar
+		FROM events e
+		JOIN users u ON e.user_id = u.user_id
+		WHERE e.group_id = ?
+		ORDER BY e.event_date ASC
+	`
+	rows, err := r.db.QueryContext(ctx, query, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group events: %w", err)
+	}
+	defer rows.Close()
+
+	var events []*models.EventDetails
+
+	for rows.Next() {
+		var event models.EventDetails
+		if err := rows.Scan(
+			&event.EventID,
+			&event.UserID,
+			&event.GroupID,
+			&event.CreationDate,
+			&event.EventDate,
+			&event.Title,
+			&event.Username,
+			&event.AvatarURL,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan event: %w", err)
+		}
+
+		// Charge les réponses pour l'événement
+		responses, err := r.getEventResponses(ctx, event.EventID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get responses for event %s: %w", event.EventID, err)
+		}
+		event.EventResponses = &responses
+
+		events = append(events, &event)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over events: %w", err)
+	}
+
+	return events, nil
+}
+
+func (r *groupRepositoryImpl) getEventResponses(ctx context.Context, eventID string) ([]models.EventResponse, error) {
+	query := `
+		SELECT user_id, event_id, vote
+		FROM events_response
+		WHERE event_id = ?
+	`
+	rows, err := r.db.QueryContext(ctx, query, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var responses []models.EventResponse
+	for rows.Next() {
+		var response models.EventResponse
+		if err := rows.Scan(&response.UserID, &response.EventID, &response.Vote); err != nil {
+			return nil, err
+		}
+		responses = append(responses, response)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return responses, nil
 }

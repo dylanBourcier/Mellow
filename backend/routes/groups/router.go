@@ -33,7 +33,6 @@ func GroupPostsRouter(groupSvc services.GroupService, postSvc services.PostServi
 			utils.RespondError(w, http.StatusNotFound, "Ressource introuvable", utils.ErrGroupNotFound)
 			return
 		}
-
 		switch r.Method {
 		case http.MethodGet:
 			handler := utils.ChainHTTP(groups.GetGroupPosts(groupSvc, postSvc, id), middlewares.RequireAuthMiddleware(authSvc))
@@ -54,7 +53,6 @@ func GroupRouter(groupService services.GroupService, authService services.AuthSe
 			utils.RespondError(w, http.StatusNotFound, "Groupe introuvable", utils.ErrGroupNotFound)
 			return
 		}
-
 		switch r.Method {
 		case http.MethodGet:
 			handler := utils.ChainHTTP(groups.GetGroupByID(groupService), middlewares.OptionalAuthMiddleware(authService))
@@ -64,6 +62,26 @@ func GroupRouter(groupService services.GroupService, authService services.AuthSe
 			handler.ServeHTTP(w, r)
 		case http.MethodDelete:
 			handler := utils.ChainHTTP(groups.DeleteGroup(groupService, id), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
+	}
+}
+
+func GroupEventRouter(groupSvc services.GroupService, authSvc services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimPrefix(r.URL.Path, "/groups/events/")
+		if id == "" || strings.Contains(id, "/") {
+			utils.RespondError(w, http.StatusNotFound, "Groupe introuvable", utils.ErrGroupNotFound)
+			return
+		}
+		switch r.Method {
+		case http.MethodPost:
+			handler := utils.ChainHTTP(groups.InsertGroupEvent(groupSvc, id), middlewares.RequireAuthMiddleware(authSvc))
+			handler.ServeHTTP(w, r)
+		case http.MethodGet:
+			handler := utils.ChainHTTP(groups.GetGroupEvents(groupSvc, id), middlewares.RequireAuthMiddleware(authSvc))
 			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)

@@ -9,6 +9,12 @@ type GroupService interface {
 	// CreateGroup crée un nouveau groupe.
 	CreateGroup(ctx context.Context, group *models.Group) error
 
+	// InsertEvent crée un nouvel événement dans un groupe.
+	InsertEvent(ctx context.Context, event *models.Event) error
+
+	// InsertEventResponse crée une réponse d'un utilisateur à un événement.
+	InsertEventResponse(ctx context.Context,eventResponse *models.EventResponse)error
+
 	// UpdateGroup met à jour le titre ou la description d'un groupe.
 	UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error
 
@@ -38,4 +44,7 @@ type GroupService interface {
 
 	// GetGroupsJoinedByUser retourne les groupes auxquels un utilisateur a adhéré.
 	GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error)
+
+	//GetGroupEvents retourne les événements d’un groupe.
+	GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error)
 }

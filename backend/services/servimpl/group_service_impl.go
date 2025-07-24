@@ -2,6 +2,7 @@ package servimpl
 
 import (
 	"context"
+	"fmt"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
@@ -219,4 +220,93 @@ func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID str
 		return nil, err
 	}
 	return groups, nil
+}
+
+func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event) error {
+	fmt.Println("InsertEvent called with event:", event)
+	if event == nil || event.UserID == uuid.Nil || event.GroupID == uuid.Nil || event.EventDate.IsZero() || event.Title == "" {
+		return utils.ErrInvalidPayload
+	}
+	//vérifier si le groupe existe
+	_, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
+	if err != nil {
+		if err == utils.ErrGroupNotFound {
+			return utils.ErrGroupNotFound
+		}
+		return fmt.Errorf("failed to get group: %w", err)
+	}
+	// vérifier si l'utilisateur est membre du groupe
+	isMember, err := s.groupRepo.IsMember(ctx, event.GroupID.String(), event.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+
+	eventID, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	event.EventID = eventID
+	event.CreationDate = time.Now()
+
+	if err := s.groupRepo.InsertEvent(ctx, event); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *groupServiceImpl) InsertEventResponse(ctx context.Context, eventResponse *models.EventResponse) error {
+	if eventResponse == nil || eventResponse.UserID == uuid.Nil || eventResponse.EventID == uuid.Nil {
+		return utils.ErrInvalidPayload
+	}
+	// Vérifier si l'événement existe
+	event, err := s.groupRepo.GetEventById(ctx, eventResponse.EventID.String())
+	if err != nil {
+		return fmt.Errorf("failed to get event: %w", err)
+	}
+	if event == nil {
+		return utils.ErrEventNotFound
+	}
+
+	// Vérifier si l'utilisateur est membre du groupe
+	isMember, err := s.groupRepo.IsMember(ctx, event.GroupID.String(), eventResponse.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+	if err := s.groupRepo.InsertEventResponse(ctx, eventResponse); err != nil {
+		return fmt.Errorf("failed to insert event response: %w", err)
+	}
+	// Si l'insertion réussit, on peut retourner nil
+
+	return nil
+}
+
+func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error) {
+
+	// Vérifier si le groupe existe
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group: %w", err)
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+
+	// Récupérer les événements du groupe
+	events, err := s.groupRepo.GetGroupEvents(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group events: %w", err)
+	}
+	for _, event := range events {
+		if event.AvatarURL != nil {
+			event.AvatarURL = utils.GetFullImageURLAvatar(event.AvatarURL)
+		}
+	}
+
+	return events, nil
 }

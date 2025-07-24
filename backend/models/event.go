@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Event struct {
@@ -11,4 +12,5 @@ type Event struct {
 	GroupID      uuid.UUID `json:"group_id"`
 	CreationDate time.Time `json:"creation_date"`
 	EventDate    time.Time `json:"event_date"`
+	Title        string    `json:"title"`
 }

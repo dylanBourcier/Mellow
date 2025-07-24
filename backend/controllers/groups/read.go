@@ -77,7 +77,6 @@ func GetGroupsJoinedByUser(groupSvc services.GroupService) http.HandlerFunc {
 
 func GetGroupPosts(groupSvc services.GroupService, postSvc services.PostService, id string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//Verifier que le groupe existe
 		userID, err := utils.GetUserIDFromContext(r.Context())
 		if err != nil {
 			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
@@ -90,7 +89,7 @@ func GetGroupPosts(groupSvc services.GroupService, postSvc services.PostService,
 			return
 		}
 		if !isMember {
-			utils.RespondError(w, http.StatusForbidden, "You are not a member of this group", utils.ErrForbidden)
+			utils.RespondJSON(w, http.StatusOK, "Not member", nil)
 			return
 		}
 		limit := 10 // Default limit
@@ -122,15 +121,6 @@ func GetGroupPosts(groupSvc services.GroupService, postSvc services.PostService,
 	}
 }
 
-func GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/groups/events/")
-	if r.Method != http.MethodGet || id == "" || strings.Contains(id, "/") {
-		http.NotFound(w, r)
-		return
-	}
-	// TODO: événements du groupe
-}
-
 func GroupChatHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/groups/chat/")
 	if r.Method != http.MethodGet || id == "" || strings.Contains(id, "/") {
@@ -153,7 +143,22 @@ func GetGroupByID(groupSvc services.GroupService) http.HandlerFunc {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get group: "+err.Error(), utils.ErrInternalServerError)
 			return
 		}
+		// Check if the user is a member of the group
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		isMember, err := groupSvc.IsMember(r.Context(), groupID, userID.String())
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to check group membership: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
 
-		utils.RespondJSON(w, http.StatusOK, "Group retrieved successfully", group)
+		response := map[string]interface{}{
+			"group":     group,
+			"is_member": isMember,
+		}
+		utils.RespondJSON(w, http.StatusOK, "Group retrieved successfully", response)
 	}
 }

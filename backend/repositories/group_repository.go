@@ -9,6 +9,15 @@ type GroupRepository interface {
 	// InsertGroup crée un nouveau groupe.
 	InsertGroup(ctx context.Context, group *models.Group) error
 
+	// InsertEvent crée un nouvel événement dans un groupe.
+	InsertEvent(ctx context.Context, event *models.Event) error
+
+	// InsertEventResponse enregistre la réponse d'un utilisateur à un événement.
+	InsertEventResponse(ctx context.Context, response *models.EventResponse) error
+	
+	// GetEventById retourne un événement par son ID.
+	GetEventById(ctx context.Context, eventID string) (*models.Event, error)
+
 	// UpdateGroup met à jour le titre ou la description d'un groupe.
 	UpdateGroup(ctx context.Context, group *models.Group) error
 
@@ -19,7 +28,7 @@ type GroupRepository interface {
 	GetAllGroups(ctx context.Context) ([]*models.Group, error)
 
 	// GetAllGroupsWithoutUser retourne tous les groupes auxquels un utilisateur n'est pas membre.
-	GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error) 
+	GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error)
 
 	// DeleteGroup supprime un groupe.
 	DeleteGroup(ctx context.Context, groupID string) error
@@ -41,4 +50,7 @@ type GroupRepository interface {
 
 	// IsTitleTaken vérifie si un titre de groupe est déjà utilisé.
 	IsTitleTaken(ctx context.Context, title string) (bool, error)
+
+	//GetGroupEvents retourne les événements d’un groupe.
+	GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error)
 }
