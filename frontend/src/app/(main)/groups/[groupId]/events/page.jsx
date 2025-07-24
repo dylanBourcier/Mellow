@@ -1,10 +1,11 @@
 import React from 'react';
 import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
+import EventScreenPage from '@/app/components/layout/EventScreenPage';
 
-function GroupEventsPage() {
+function GroupEventsPage(event) {
   return (
     <ProtectedRoute redirectTo="/login">
-      <div>GroupEventsPage</div>
+      <EventScreenPage event={event}/>
     </ProtectedRoute>
   );
 }
