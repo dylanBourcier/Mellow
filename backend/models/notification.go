@@ -12,3 +12,8 @@ type Notification struct {
 	Seen           bool      `gorm:"default:false" json:"seen"`
 	CreationDate   time.Time `gorm:"autoCreateTime" json:"creation_date"`
 }
+
+type CreateNotificationPayload struct {
+	UserID string `json:"user_id"`
+	Type   string `json:"type"`
+}

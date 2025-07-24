@@ -2,23 +2,56 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
+	"github.com/google/uuid"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
 )
 
 type notificationServiceImpl struct {
-	db *sql.DB
+	notifRepo repositories.NotificationRepository
+	userRepo  repositories.UserRepository
 }
 
 // NewNotificationService crée une nouvelle instance de NotificationService.
-func NewNotificationService(db *sql.DB) services.NotificationService {
-	return &notificationServiceImpl{db: db}
+func NewNotificationService(notifRepo repositories.NotificationRepository, userRepo repositories.UserRepository) services.NotificationService {
+	return &notificationServiceImpl{notifRepo: notifRepo, userRepo: userRepo}
 }
 
 func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif *models.Notification) error {
-	// TODO: Vérifier que le destinataire existe
-	// TODO: Appeler le repository pour insérer la notification
+	if notif == nil || notif.UserID == uuid.Nil || notif.Type == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	switch notif.Type {
+	case "follow", "group_invite", "event_created":
+	default:
+		return utils.ErrInvalidPayload
+	}
+
+	// verify user exists
+	user, err := s.userRepo.FindUserByID(ctx, notif.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check user existence: %w", err)
+	}
+	if user == nil {
+		return utils.ErrUserNotFound
+	}
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	notif.NotificationID = id
+	notif.Seen = false
+	notif.CreationDate = time.Now()
+
+	if err := s.notifRepo.InsertNotification(ctx, notif); err != nil {
+		return err
+	}
 	return nil
 }
 
