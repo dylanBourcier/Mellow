@@ -11,6 +11,7 @@ type Message struct {
 	ReceiverID   uuid.UUID `json:"receiver_id"`
 	Content      *string   `json:"content,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
+	IsRead       bool      `json:"is_read"`
 }
 
 type ConversationPreview struct {
