@@ -53,11 +53,27 @@ func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, u
 	return notifs, nil
 }
 
-func (r *notificationRepositoryImpl) MarkAsRead(ctx context.Context, notificationID string) error {
-	// TODO: UPDATE notifications SET is_read = true WHERE id = ?
-	return nil
+func (r *notificationRepositoryImpl) GetNotificationByID(ctx context.Context, notificationID string) (*models.Notification, error) {
+	query := `SELECT notification_id, user_id, type, seen, creation_date FROM notifications WHERE notification_id = ?`
+	var n models.Notification
+	err := r.db.QueryRowContext(ctx, query, notificationID).Scan(&n.NotificationID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get notification: %w", err)
+	}
+	return &n, nil
 }
 
+func (r *notificationRepositoryImpl) MarkAsRead(ctx context.Context, notificationID string) error {
+	query := `UPDATE notifications SET seen = 1 WHERE notification_id = ?`
+	_, err := r.db.ExecContext(ctx, query, notificationID)
+	if err != nil {
+		return fmt.Errorf("failed to mark notification as read: %w", err)
+	}
+	return nil
+}
 func (r *notificationRepositoryImpl) DeleteNotification(ctx context.Context, notificationID string) error {
 	// TODO: DELETE FROM notifications WHERE id = ?
 	return nil
