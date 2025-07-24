@@ -56,8 +56,16 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 }
 
 func (s *notificationServiceImpl) GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error) {
-	// TODO: Appeler le repository pour récupérer les notifications d’un utilisateur
-	return nil, nil
+	if userID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	notifs, err := s.notifRepo.GetUserNotifications(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return notifs, nil
 }
 
 func (s *notificationServiceImpl) MarkAsRead(ctx context.Context, notificationID string) error {
