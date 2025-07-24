@@ -256,3 +256,25 @@ func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event)
 	}
 	return nil
 }
+func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error) {
+	if groupID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	// Vérifier si le groupe existe
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group: %w", err)
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+
+	// Récupérer les événements du groupe
+	events, err := s.groupRepo.GetGroupEvents(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group events: %w", err)
+	}
+
+	return events, nil
+}

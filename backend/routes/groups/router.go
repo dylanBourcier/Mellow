@@ -80,6 +80,9 @@ func GroupEventRouter(groupSvc services.GroupService, authSvc services.AuthServi
 		case http.MethodPost:
 			handler := utils.ChainHTTP(groups.InsertGroupEvent(groupSvc, id), middlewares.RequireAuthMiddleware(authSvc))
 			handler.ServeHTTP(w, r)
+		case http.MethodGet:
+			handler := utils.ChainHTTP(groups.GetGroupEvents(groupSvc, id), middlewares.RequireAuthMiddleware(authSvc))
+			handler.ServeHTTP(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}

@@ -13,7 +13,7 @@ import (
 
 func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
 			utils.RespondError(w, http.StatusBadRequest, "Invalid form data", utils.ErrInvalidPayload)
 			return
 		}
@@ -31,12 +31,13 @@ func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.Handl
 			return
 		}
 		eventDateStr := r.FormValue("event_date")
+		fmt.Println("Received event date string:", eventDateStr)
 		var eventDate time.Time
 		if eventDateStr != "" {
 			// Parse the event date from the form value
-			eventDate, err = time.Parse(time.RFC3339, eventDateStr)
+			eventDate, err = time.Parse("2006-01-02T15:04", eventDateStr)
 			if err != nil {
-				utils.RespondError(w, http.StatusBadRequest, "Invalid event date format", utils.ErrInvalidPayload)
+				utils.RespondError(w, http.StatusBadRequest, "Invalid event date format : "+err.Error(), utils.ErrInvalidPayload)
 				return
 			}
 			if eventDate.Before(time.Now()) {
@@ -71,5 +72,47 @@ func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.Handl
 		}
 
 		utils.RespondJSON(w, http.StatusCreated, "Event created successfully", nil)
+	}
+}
+
+func GetGroupEvents(groupSvc services.GroupService, groupID string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
+			return
+		}
+
+		if groupID == "" {
+			utils.RespondError(w, http.StatusBadRequest, "Group ID is required", utils.ErrInvalidPayload)
+			return
+		}
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		//Verifier que l'utilisateur a accès au groupe
+		isMember, err := groupSvc.IsMember(r.Context(), groupID, userID.String())
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to check group membership: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+		if !isMember {
+			utils.RespondJSON(w, http.StatusOK, "Not member", nil)
+			return
+		}
+
+		events, err := groupSvc.GetGroupEvents(r.Context(), groupID)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to get events: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+
+		if len(events) == 0 {
+			utils.RespondJSON(w, http.StatusOK, "No events found for this group", nil)
+			return
+		}
+
+		utils.RespondJSON(w, http.StatusOK, "Events retrieved successfully", events)
 	}
 }

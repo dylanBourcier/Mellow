@@ -77,7 +77,6 @@ func GetGroupsJoinedByUser(groupSvc services.GroupService) http.HandlerFunc {
 
 func GetGroupPosts(groupSvc services.GroupService, postSvc services.PostService, id string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//Verifier que le groupe existe
 		userID, err := utils.GetUserIDFromContext(r.Context())
 		if err != nil {
 			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)

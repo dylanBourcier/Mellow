@@ -1,11 +1,12 @@
 import React from 'react';
 import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
-import EventScreenPage from '@/app/components/layout/EventScreenPage';
+import EventScreen from '@/app/components/layout/EventsScreen';
 
-function GroupEventsPage(event) {
+async function GroupEventsPage({ params }) {
+  const { groupId } = await params;
   return (
     <ProtectedRoute redirectTo="/login">
-      <EventScreenPage event={event}/>
+      <EventScreen groupId={groupId} />
     </ProtectedRoute>
   );
 }

@@ -41,4 +41,7 @@ type GroupService interface {
 
 	// GetGroupsJoinedByUser retourne les groupes auxquels un utilisateur a adhéré.
 	GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error)
+
+	//GetGroupEvents retourne les événements d’un groupe.
+	GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error)
 }
