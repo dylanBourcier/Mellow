@@ -12,6 +12,9 @@ type GroupService interface {
 	// InsertEvent crée un nouvel événement dans un groupe.
 	InsertEvent(ctx context.Context, event *models.Event) error
 
+	// InsertEventResponse crée une réponse d'un utilisateur à un événement.
+	InsertEventResponse(ctx context.Context,eventResponse *models.EventResponse)error
+
 	// UpdateGroup met à jour le titre ou la description d'un groupe.
 	UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error
 

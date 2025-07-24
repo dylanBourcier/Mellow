@@ -6,6 +6,7 @@ import (
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -72,6 +73,68 @@ func InsertGroupEvent(groupSvc services.GroupService, groupID string) http.Handl
 		}
 
 		utils.RespondJSON(w, http.StatusCreated, "Event created successfully", nil)
+	}
+}
+
+func InsertEventResponse(groupSvc services.GroupService)http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
+			return
+		}
+
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		//recupere l'id de l'url
+		eventId:=strings.TrimPrefix(r.URL.Path, "/groups/events/vote/")
+		if eventId == "" {
+			utils.RespondError(w, http.StatusBadRequest, "Event ID is required", utils.ErrInvalidPayload)
+			return
+		}
+		// Vérifier si l'ID de l'événement est un UUID valide
+		if _, err := uuid.Parse(eventId); err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid event ID format", utils.ErrInvalidPayload)
+			return
+		}
+
+
+		vote := r.FormValue("vote")
+		if vote == "" {
+			utils.RespondError(w, http.StatusBadRequest, "Vote is required", utils.ErrInvalidPayload)
+			return
+		}
+
+		eventIdValue, err := uuid.Parse(eventId)
+		if err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid event ID", utils.ErrInvalidPayload)
+			return
+		}
+		var voteBool bool
+		if vote == "yes" {
+			voteBool = true
+		} else if vote == "no" {
+			voteBool = false
+		} else {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid vote value, must be 'yes' or 'no'", utils.ErrInvalidPayload)
+			return
+		}
+
+		response := models.EventResponse{
+			EventID: eventIdValue,
+			UserID:  userID,
+			Vote:    voteBool,
+		}
+
+		err = groupSvc.InsertEventResponse(r.Context(), &response)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to insert event response: "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+
+		utils.RespondJSON(w, http.StatusOK, "Event response recorded successfully", nil)
 	}
 }
 

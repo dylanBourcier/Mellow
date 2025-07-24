@@ -256,10 +256,37 @@ func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event)
 	}
 	return nil
 }
-func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error) {
-	if groupID == "" {
-		return nil, utils.ErrInvalidPayload
+
+func (s *groupServiceImpl) InsertEventResponse(ctx context.Context, eventResponse *models.EventResponse) error {
+	if eventResponse == nil || eventResponse.UserID == uuid.Nil || eventResponse.EventID == uuid.Nil {
+		return utils.ErrInvalidPayload
 	}
+	// Vérifier si l'événement existe
+	event, err := s.groupRepo.GetEventById(ctx, eventResponse.EventID.String())
+	if err != nil {
+		return fmt.Errorf("failed to get event: %w", err)
+	}
+	if event == nil {
+		return utils.ErrEventNotFound
+	}
+
+	// Vérifier si l'utilisateur est membre du groupe
+	isMember, err := s.groupRepo.IsMember(ctx, event.GroupID.String(), eventResponse.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+	if err := s.groupRepo.InsertEventResponse(ctx, eventResponse); err != nil {
+		return fmt.Errorf("failed to insert event response: %w", err)
+	}
+	// Si l'insertion réussit, on peut retourner nil
+
+	return nil
+}
+
+func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error) {
 
 	// Vérifier si le groupe existe
 	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
@@ -274,6 +301,11 @@ func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) (
 	events, err := s.groupRepo.GetGroupEvents(ctx, groupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get group events: %w", err)
+	}
+	for _, event := range events {
+		if event.AvatarURL != nil {
+			event.AvatarURL = utils.GetFullImageURLAvatar(event.AvatarURL)
+		}
 	}
 
 	return events, nil

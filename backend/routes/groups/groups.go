@@ -36,4 +36,6 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, pos
 	// Voir les groupes auxquels l'utilisateur n'est pas membre
 	mux.Handle("/groups/not-joined", utils.ChainHTTP(groups.GetAllGroupsWithoutUser(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
+	mux.Handle("/groups/events/vote/", utils.ChainHTTP(groups.InsertEventResponse(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
 }

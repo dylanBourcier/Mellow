@@ -26,6 +26,7 @@ var (
 	ErrMessageNotFound      = errors.New("MESSAGE_NOT_FOUND")
 	ErrSessionNotFound      = errors.New("SESSION_NOT_FOUND")
 	ErrCommentNotFound      = errors.New("COMMENT_NOT_FOUND")
+	ErrEventNotFound   = errors.New("EVENT_NOT_FOUND")
 	ErrNotificationNotFound = errors.New("NOTIFICATION_NOT_FOUND")
 
 	// Conflits

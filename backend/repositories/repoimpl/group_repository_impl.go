@@ -33,6 +33,27 @@ func (r *groupRepositoryImpl) InsertEvent(ctx context.Context, event *models.Eve
 	}
 	return nil
 }
+func (r *groupRepositoryImpl) GetEventById(ctx context.Context, eventID string) (*models.Event, error) {
+	query := `SELECT event_id, user_id, group_id, creation_date, event_date, title FROM events WHERE event_id = ?`
+	row := r.db.QueryRowContext(ctx, query, eventID)
+	var event models.Event
+	if err := row.Scan(&event.EventID, &event.UserID, &event.GroupID, &event.CreationDate, &event.EventDate, &event.Title); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("event not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to get event: %w", err)
+	}
+	return &event, nil
+}
+
+func (r *groupRepositoryImpl) InsertEventResponse(ctx context.Context, response *models.EventResponse) error {
+	query := `INSERT INTO events_response (event_id, user_id, group_id, vote) VALUES (?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, response.EventID, response.UserID, response.GroupID, response.Vote)
+	if err != nil {
+		return fmt.Errorf("failed to insert event response: %w", err)
+	}
+	return nil
+}
 
 func (r *groupRepositoryImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
 	query := `SELECT g.group_id, g.user_id, g.title, g.description, g.creation_date, 
@@ -213,7 +234,7 @@ func (r *groupRepositoryImpl) GetGroupEvents(ctx context.Context, groupID string
 		FROM events e
 		JOIN users u ON e.user_id = u.user_id
 		WHERE e.group_id = ?
-		ORDER BY e.event_date DESC
+		ORDER BY e.event_date ASC
 	`
 	rows, err := r.db.QueryContext(ctx, query, groupID)
 	if err != nil {
@@ -254,6 +275,7 @@ func (r *groupRepositoryImpl) GetGroupEvents(ctx context.Context, groupID string
 
 	return events, nil
 }
+
 func (r *groupRepositoryImpl) getEventResponses(ctx context.Context, eventID string) ([]models.EventResponse, error) {
 	query := `
 		SELECT user_id, event_id, vote

@@ -63,6 +63,7 @@ export default function CreateEventForm({ groupId }) {
 
   return (
     <div className="flex flex-col items-center ">
+      <h2 className="text-2xl font-semibold mb-4">Create Event</h2>
       <form
         className="flex flex-col gap-2.5 max-w-[600px] w-full"
         onSubmit={handleSubmit(onSubmit)}

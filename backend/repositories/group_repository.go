@@ -12,6 +12,12 @@ type GroupRepository interface {
 	// InsertEvent crée un nouvel événement dans un groupe.
 	InsertEvent(ctx context.Context, event *models.Event) error
 
+	// InsertEventResponse enregistre la réponse d'un utilisateur à un événement.
+	InsertEventResponse(ctx context.Context, response *models.EventResponse) error
+	
+	// GetEventById retourne un événement par son ID.
+	GetEventById(ctx context.Context, eventID string) (*models.Event, error)
+
 	// UpdateGroup met à jour le titre ou la description d'un groupe.
 	UpdateGroup(ctx context.Context, group *models.Group) error
 
