@@ -10,5 +10,5 @@ import (
 
 func RegisterNotificationRoutes(mux *http.ServeMux, notificationService services.NotificationService, authService services.AuthService) {
 	mux.Handle("/notifications", utils.ChainHTTP(NotificationRootRouter(notificationService, authService), middlewares.RequireAuthMiddleware(authService)))
-	mux.Handle("/notifications/read/", utils.ChainHTTP(http.HandlerFunc(notifications.MarkAsReadHandler), middlewares.RequireAuthMiddleware(authService)))
+	mux.Handle("/notifications/read/", utils.ChainHTTP(notifications.MarkAsRead(notificationService), middlewares.RequireAuthMiddleware(authService)))
 }
