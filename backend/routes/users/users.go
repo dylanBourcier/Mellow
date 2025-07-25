@@ -1,6 +1,7 @@
 package users
 
 import (
+	"mellow/controllers/posts"
 	ctr "mellow/controllers/users"
 	"mellow/middlewares"
 	"mellow/services"
@@ -8,9 +9,12 @@ import (
 	"net/http"
 )
 
-func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService, authSvc services.AuthService) {
+func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService, authSvc services.AuthService, postSvc services.PostService) {
 	// Profil utilisateur : GET, PUT, DELETE
-	mux.Handle("/users/", utils.ChainHTTP(UserRouter(userService), middlewares.OptionalAuthMiddleware(authSvc)))
+	mux.Handle("/users/", utils.ChainHTTP(UserRouter(userService), middlewares.RequireAuthMiddleware(authSvc)))
+
+	// Posts d'un utilisateur : GET
+	mux.Handle("/users/posts/", utils.ChainHTTP(posts.GetUserPosts(postSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Follow / Unfollow
 	mux.Handle("/users/follow/", utils.ChainHTTP(FollowRouter(userService), middlewares.RequireAuthMiddleware(authSvc)))

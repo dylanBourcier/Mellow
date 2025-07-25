@@ -71,8 +71,9 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, postID string) erro
 	return nil
 }
 
-func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID string, limit, offset int) ([]*models.PostDetails, error) {
-	fmt.Println("userID:", userID, "limit:", limit, "offset:", offset)
+func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID, targetUserID string, limit, offset int) ([]*models.PostDetails, error) {
+	fmt.Println("userID:", userID, "targetUserID:", targetUserID, "limit:", limit, "offset:", offset)
+
 	query := `
 		WITH user_follows AS (
 			SELECT followed_id
@@ -93,26 +94,33 @@ func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID string, limit, 
 		JOIN users u ON p.user_id = u.user_id
 		LEFT JOIN groups g ON p.group_id = g.group_id
 		WHERE
-			-- Si post de groupe, visible uniquement par les membres
+			-- Si targetUserID est vide, on affiche tout le feed autorisé
 			(
-				p.group_id IS NOT NULL AND EXISTS (
+				? = '' OR p.user_id = ?
+			)
+			AND (
+				(p.group_id IS NOT NULL AND EXISTS (
 					SELECT 1 FROM groups_member gm
 					WHERE gm.group_id = p.group_id AND gm.user_id = ?
-				)
-			)
-			OR
-			(
-				p.group_id IS NULL AND (
+				))
+				OR
+				(p.group_id IS NULL AND (
 					p.visibility = 'public'
 					OR (p.visibility = 'followers' AND (p.user_id IN (SELECT followed_id FROM user_follows) OR p.user_id = ?))
 					OR (p.visibility = 'private' AND (p.post_id IN (SELECT post_id FROM authorized_private) OR p.user_id = ?))
-				)
+				))
 			)
 		ORDER BY p.creation_date DESC
 		LIMIT ? OFFSET ?;
 	`
 
-	args := []interface{}{userID, userID, userID, userID, userID, limit, offset}
+	args := []interface{}{
+		userID, userID, // user_follows, authorized_private
+		targetUserID, targetUserID, // filtre par auteur
+		userID, userID, userID, // groupes, followers, private
+		limit, offset,
+	}
+
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -126,7 +134,6 @@ func (r *postRepositoryImpl) GetFeed(ctx context.Context, userID string, limit, 
 			&p.Username, &p.AvatarURL, &p.GroupID, &p.GroupName, &p.CommentsCount); err != nil {
 			return nil, err
 		}
-		fmt.Println(p)
 		posts = append(posts, &p)
 	}
 

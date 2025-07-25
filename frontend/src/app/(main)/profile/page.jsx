@@ -11,18 +11,7 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute redirectTo="/login">
       <div>
-        <ProfileScreen
-          firstName="Jhon"
-          lastName="Doe"
-          username="Doedoe"
-          email="JhonDoe@mail.com"
-          birthdate="25/09/1970"
-          followers="22"
-          following="10"
-          authorAvatar="/img/DefaultAvatar.svg"
-          description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-          userId={12}
-        />
+        <ProfileScreen />
       </div>
     </ProtectedRoute>
   );

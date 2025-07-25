@@ -25,7 +25,7 @@ type PostService interface {
 	GetGroupPosts(ctx context.Context, groupID string, limit, offset int) ([]*models.PostDetails, error)
 
 	// GetUserPosts retourne les posts publics ou privés d’un utilisateur (en fonction du rôle).
-	GetUserPosts(ctx context.Context, ownerID, requesterID string) ([]*models.Post, error)
+	GetUserPosts(ctx context.Context, userID, requesterID string, limit, offset int) ([]*models.PostDetails, error)
 
 	// ReportPost permet de signaler un post inapproprié.
 	ReportPost(ctx context.Context, report *models.Report) error

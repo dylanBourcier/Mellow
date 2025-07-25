@@ -74,3 +74,48 @@ func GetPostByID(postService services.PostService) http.HandlerFunc {
 	}
 
 }
+
+func GetUserPosts(postSvc services.PostService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//Recuperer les paramètres de la requête, limit et l'offset
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		id := r.URL.Path[len("/users/posts/"):]
+		if id == "" || len(id) < 36 { // Assuming UUID length
+			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
+			return
+		}
+		limit := 10 // Default limit
+		offset := 0 // Default offset
+		query := r.URL.Query()
+		if l := query.Get("limit"); l != "" {
+			fmt.Sscanf(l, "%d", &limit)
+		}
+		if o := query.Get("offset"); o != "" {
+			fmt.Sscanf(o, "%d", &offset)
+		}
+		if limit <= 0 || offset < 0 {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid limit or offset", utils.ErrInvalidPayload)
+			return
+		}
+		// Format de la requete : /posts?limit=10&offset=0
+		// Appeler le service pour récupérer les posts
+		posts, err := postSvc.GetUserPosts(r.Context(), userID.String(), id, limit, offset)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				utils.RespondError(w, http.StatusNotFound, "No posts found", utils.ErrPostNotFound)
+				return
+			}
+			utils.RespondError(w, http.StatusInternalServerError, "Internal Server Error", err)
+			return
+		}
+		if len(posts) == 0 {
+			utils.RespondJSON(w, http.StatusOK, "No posts found", nil)
+			return
+		}
+		utils.RespondJSON(w, http.StatusOK, "Posts retrieved successfully", posts)
+	}
+}

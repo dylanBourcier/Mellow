@@ -193,3 +193,21 @@ func (s *userServiceImpl) SearchUsers(ctx context.Context, query string) ([]*mod
 func (s *userServiceImpl) IsFollowing(ctx context.Context, followerID, targetID string) (bool, error) {
 	return s.userRepo.IsFollowing(ctx, followerID, targetID)
 }
+
+func (s *userServiceImpl) GetUserProfileData(ctx context.Context, userID string) (*models.UserProfileData, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("%s: empty id", utils.ErrInvalidUserData)
+	}
+	userProfileData, err := s.userRepo.GetUserProfile(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve user profile: %w", err)
+	}
+	if userProfileData == nil {
+		return nil, utils.ErrUserNotFound
+	}
+	if userProfileData.ImageURL != nil {
+		userProfileData.ImageURL = utils.GetFullImageURLAvatar(userProfileData.ImageURL)
+	}
+	return userProfileData, nil
+
+}

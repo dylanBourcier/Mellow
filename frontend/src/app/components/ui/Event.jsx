@@ -41,7 +41,7 @@ function Event({ event }) {
     setNoCount(noVotes);
   }, [event.event_responses, user?.user_id]);
 
-  const { event_date, title, username, avatar_url } = event;
+  const { event_date, title, username, avatar_url, user_id } = event;
   const getButtonStyle = (type) =>
     `flex flex-1 hover:cursor-pointer px-4 py-1 rounded-xl font-light border transition-all duration-200 ${
       vote === type
@@ -95,7 +95,11 @@ function Event({ event }) {
   return (
     <div className="flex flex-col w-full bg-white shadow-(--box-shadow) rounded-lg hover:-translate-y-0.5 transition-all duration-300">
       <div className="flex  w-full p-3 gap-3 items-center justify-between">
-        <UserInfo userName={username} authorAvatar={avatar_url} />
+        <UserInfo
+          userName={username}
+          authorAvatar={avatar_url}
+          userId={user_id}
+        />
       </div>
       <div className="flex flex-col w-full px-3 mb-2 items-start justify-between">
         <h4 className="text-dark-grey p-0 text-xl font-heading leading-tight">

@@ -19,7 +19,7 @@ type PostRepository interface {
 	DeletePost(ctx context.Context, postID string) error
 
 	// GetFeed récupère les posts visibles par un utilisateur (ex : publics ou des gens suivis).
-	GetFeed(ctx context.Context, userID string, limit, offset int) ([]*models.PostDetails, error)
+	GetFeed(ctx context.Context, userID string, targetUserID string, limit, offset int) ([]*models.PostDetails, error)
 
 	//GetGroupPosts retourne tous les posts d’un groupe.
 	GetGroupPosts(ctx context.Context, groupID string, limit, offset int) ([]*models.PostDetails, error)

@@ -31,7 +31,7 @@ type UpdateUserRequest struct {
 	Firstname   *string    `json:"firstname,omitempty"`
 	Lastname    *string    `json:"lastname,omitempty"`
 	Birthdate   *time.Time `json:"birthdate,omitempty"`
-	Avatar      *string    `json:"avatar,omitempty"`
+	ImageURL    *string    `json:"image_url,omitempty"`
 	Description *string    `json:"description,omitempty"`
 }
 
@@ -42,14 +42,15 @@ type ReportRequest struct {
 }
 
 type UserProfileData struct {
-	UserID         string    `json:"uuid"`
+	UserID         string    `json:"user_id"`
 	Username       string    `json:"username"`
 	Firstname      string    `json:"firstname"`
 	Lastname       string    `json:"lastname"`
 	Email          string    `json:"email"`
 	Birthdate      time.Time `json:"birthdate"`
-	Avatar         *string   `json:"avatar,omitempty"`
-	FollowersCount int       `json:"followersCount"`
-	FollowedCount  int       `json:"followedCount"`
+	ImageURL       *string   `json:"image_url,omitempty"`
+	FollowersCount int       `json:"followers_count"`
+	FollowedCount  int       `json:"followed_count"`
+	Description    *string   `json:"description,omitempty"`
 	Posts          []Post    `json:"posts"`
 }

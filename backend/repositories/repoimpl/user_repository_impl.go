@@ -194,3 +194,21 @@ func (r *userRepositoryImpl) IsFollowing(ctx context.Context, followerID, target
 	}
 	return exists, nil
 }
+func (r *userRepositoryImpl) GetUserProfile(ctx context.Context, userID string) (*models.UserProfileData, error) {
+	query := `SELECT u.user_id, u.username, u.firstname, u.lastname, u.email, u.birthdate, u.image_url, u.description, 
+					 (SELECT COUNT(*) FROM follows f WHERE f.followed_id = u.user_id) AS followers_count,
+					 (SELECT COUNT(*) FROM follows f WHERE f.follower_id = u.user_id) AS followed_count
+			  FROM users u WHERE u.user_id = ?`
+	var profile models.UserProfileData
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&profile.UserID, &profile.Username, &profile.Firstname,
+		&profile.Lastname, &profile.Email, &profile.Birthdate,
+		&profile.ImageURL, &profile.Description, &profile.FollowersCount, &profile.FollowedCount)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // User not found
+		}
+		return nil, fmt.Errorf("error retrieving user profile: %w", err)
+	}
+	return &profile, nil
+}

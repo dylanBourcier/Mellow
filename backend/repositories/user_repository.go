@@ -21,5 +21,7 @@ type UserRepository interface {
 	GetFollowers(ctx context.Context, userID string) ([]*models.User, error)
 	GetFollowing(ctx context.Context, userID string) ([]*models.User, error)
 
+	GetUserProfile(ctx context.Context, userID string) (*models.UserProfileData, error)
+
 	SearchUsers(ctx context.Context, query string) ([]*models.User, error)
 }
