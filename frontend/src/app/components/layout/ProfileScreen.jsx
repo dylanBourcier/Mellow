@@ -13,7 +13,7 @@ import { formatDateShort } from '@/app/utils/date';
 import { useUser } from '@/app/context/UserContext';
 import { useRouter } from 'next/navigation';
 import UserPostsContainer from './UserPostsContainer';
-import Folows from '../ui/Folows';
+import FollowButton from '../ui/FollowButton';
 
 function ProfileScreen({ userId }) {
   const router = useRouter();
@@ -86,7 +86,6 @@ function ProfileScreen({ userId }) {
               <span>{icons['report']}</span>{' '}
               <span className="hidden lg:block cursor-pointer">Report</span>
             </button>
-
           </div>
         )}
 
@@ -140,9 +139,8 @@ function ProfileScreen({ userId }) {
                 Following: <span>{userData.followed_count}</span>
               </Link>
             </div>
-
           </div>
-          <Folows></Folows>
+          {userData.user_id !== user.user_id && <FollowButton followStatus={userData.follow_status} targetID={userId}></FollowButton>}
 
           {userData.user_id === user.user_id && (
             <div>
