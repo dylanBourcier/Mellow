@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({ isOpen, onClose, message }) => {
+const Modal = ({ isOpen, onClose,title, message }) => {
   if (!isOpen) return null;
 
   return (
@@ -28,7 +28,7 @@ const Modal = ({ isOpen, onClose, message }) => {
             margin: 0,
           }}
         >
-          Confirmation
+          {title}
         </h2>
         <p
           style={{
