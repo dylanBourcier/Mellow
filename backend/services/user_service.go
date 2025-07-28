@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"mellow/models"
+
+	"github.com/google/uuid"
 )
 
 // UserService définit les méthodes liées à la gestion des utilisateurs.
@@ -28,8 +30,8 @@ type UserService interface {
 	// Authenticate vérifie les identifiants et retourne l'utilisateur si valide.
 	Authenticate(ctx context.Context, username, password string) (*models.User, error)
 
-	// FollowUser permet à un utilisateur d'en suivre un autre.
-	FollowUser(ctx context.Context, followerID, targetID string) error
+	//SendFollowRequest envoie une demande de suivi à un utilisateur.
+	SendFollowRequest(ctx context.Context, senderID, receiverID string) (uuid.UUID, error)
 
 	// UnfollowUser permet à un utilisateur d'arrêter de suivre un autre.
 	UnfollowUser(ctx context.Context, followerID, targetID string) error
@@ -48,4 +50,10 @@ type UserService interface {
 
 	// GetUserProfileData retourne les données de profil d'un utilisateur.
 	GetUserProfileData(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error)
+
+	// InsertFollow insère une relation de suivi entre deux utilisateurs.
+	InsertFollow(ctx context.Context, followerID, followedID string) error
+
+	// GetUserPrivacy retourne la confidentialité d'un utilisateur.
+	GetUserPrivacy(ctx context.Context, userID string) (string, error)
 }

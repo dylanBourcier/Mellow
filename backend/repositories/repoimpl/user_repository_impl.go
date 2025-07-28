@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mellow/models"
 	"mellow/repositories"
+	"time"
 )
 
 type userRepositoryImpl struct {
@@ -101,10 +102,18 @@ func (r *userRepositoryImpl) DeleteUser(ctx context.Context, userID string) erro
 	return nil
 }
 
-func (r *userRepositoryImpl) Follow(ctx context.Context, followerID, targetID string) error {
-	// TODO: INSERT INTO follow (follower_id, target_id) VALUES (?, ?)
-	query := `INSERT INTO follow_requests (sender_id,receiver_id, status, creation_date, type) VALUES (?, ?, 1, CURRENT_TIMESTAMP, 'user')`
-	_, err := r.db.ExecContext(ctx, query, followerID, targetID)
+func (r *userRepositoryImpl) InsertFollow(ctx context.Context, follower_id, followed_id string) error {
+	query := `INSERT INTO follows (follower_id, followed_id, creation_date) VALUES (?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, follower_id, followed_id, time.Now())
+	if err != nil {
+		return fmt.Errorf("error inserting follow: %w", err)
+	}
+	return nil
+}
+
+func (r *userRepositoryImpl) SendFollowRequest(ctx context.Context, followRequest models.FollowRequest) error {
+	query := `INSERT INTO follow_requests (request_id,sender_id,receiver_id, status, creation_date, type) VALUES (?,?, ?, 1, CURRENT_TIMESTAMP, 'user')`
+	_, err := r.db.ExecContext(ctx, query, followRequest.RequestID, followRequest.SenderID, followRequest.ReceiverID)
 	if err != nil {
 		return fmt.Errorf("error following user: %w", err)
 	}
@@ -187,7 +196,7 @@ func (r *userRepositoryImpl) SearchUsers(ctx context.Context, query string) ([]*
 
 func (r *userRepositoryImpl) IsFollowing(ctx context.Context, followerID, targetID string) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND target_id = ?)`
+	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?)`
 	err := r.db.QueryRowContext(ctx, query, followerID, targetID).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("error checking following status: %w", err)
@@ -210,24 +219,46 @@ func (r *userRepositoryImpl) GetUserProfile(ctx context.Context, viewerID, userI
 		}
 		return nil, fmt.Errorf("error retrieving user profile: %w", err)
 	}
+
 	// Determine follow status
-	if viewerID == userID {
-		profile.FollowStatus = "yourself"
-	} else {
-		var followStatus string
-		followQuery := `SELECT 'follows' AS status FROM follows WHERE follower_id = ? AND followed_id = ?
-							UNION ALL
-							SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ?
-							LIMIT 1`
-		err = r.db.QueryRowContext(ctx, followQuery, viewerID, userID, viewerID, userID).Scan(&followStatus)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				followStatus = "not_follow"
-			} else {
-				return nil, fmt.Errorf("error determining follow status: %w", err)
-			}
-		}
-		profile.FollowStatus = followStatus
+	followStatus, err := r.getFollowStatus(ctx, viewerID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("error determining follow status: %w", err)
 	}
+	profile.FollowStatus = followStatus
+
 	return &profile, nil
+}
+
+func (r *userRepositoryImpl) GetUserPrivacy(ctx context.Context, userID string) (string, error) {
+	query := `SELECT privacy FROM users WHERE user_id = ?`
+	var privacy string
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&privacy)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", fmt.Errorf("user privacy not found")
+		}
+		return "", fmt.Errorf("error retrieving user privacy: %w", err)
+	}
+	return privacy, nil
+}
+
+func (r *userRepositoryImpl) getFollowStatus(ctx context.Context, viewerID, userID string) (string, error) {
+	if viewerID == userID {
+		return "yourself", nil
+	}
+
+	var followStatus string
+	followQuery := `SELECT 'follows' AS status FROM follows WHERE follower_id = ? AND followed_id = ?
+					UNION ALL
+					SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ?
+					LIMIT 1`
+	err := r.db.QueryRowContext(ctx, followQuery, viewerID, userID, viewerID, userID).Scan(&followStatus)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "not_follow", nil
+		}
+		return "", err
+	}
+	return followStatus, nil
 }

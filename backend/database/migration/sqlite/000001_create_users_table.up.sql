@@ -12,5 +12,6 @@ CREATE TABLE IF NOT EXISTS "users" (
     "creation_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- optionnelle
     "description" VARCHAR,
+    "privacy" TEXT CHECK("privacy" IN ('public', 'private')) NOT NULL DEFAULT 'public',
     PRIMARY KEY("user_id")
 );

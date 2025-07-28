@@ -14,7 +14,9 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, user *models.User) error
 	DeleteUser(ctx context.Context, userID string) error
 
-	Follow(ctx context.Context, followerID, targetID string) error
+	SendFollowRequest(ctx context.Context, followRequest models.FollowRequest) error
+
+	InsertFollow(ctx context.Context, follower_id, followed_id string) error
 	Unfollow(ctx context.Context, followerID, targetID string) error
 	IsFollowing(ctx context.Context, followerID, targetID string) (bool, error)
 
@@ -23,5 +25,6 @@ type UserRepository interface {
 
 	GetUserProfile(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error)
 
+	GetUserPrivacy(ctx context.Context, userID string) (string, error)
 	SearchUsers(ctx context.Context, query string) ([]*models.User, error)
 }

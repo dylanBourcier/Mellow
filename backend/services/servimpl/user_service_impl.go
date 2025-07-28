@@ -137,14 +137,33 @@ func (s *userServiceImpl) Authenticate(ctx context.Context, username, password s
 	return user, nil
 }
 
-func (s *userServiceImpl) FollowUser(ctx context.Context, followerID, targetID string) error {
-	if followerID == "" || targetID == "" || followerID == targetID {
-		return fmt.Errorf("%s: invalid follow", utils.ErrInvalidUserData)
+func (s *userServiceImpl) SendFollowRequest(ctx context.Context, senderID, receiverID string) (uuid.UUID, error) {
+	if senderID == "" || receiverID == "" || senderID == receiverID {
+		return uuid.Nil, fmt.Errorf("%s: invalid follow request", utils.ErrInvalidUserData)
 	}
-	if err := s.userRepo.Follow(ctx, followerID, targetID); err != nil {
-		return fmt.Errorf("failed to follow user: %w", err)
+	var followRequest models.FollowRequest
+	followRequest.SenderID = uuid.MustParse(senderID)
+	followRequest.ReceiverID = uuid.MustParse(receiverID)
+	if followRequest.SenderID == uuid.Nil || followRequest.ReceiverID == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("%s: invalid user IDs", utils.ErrInvalidUserData)
 	}
-	return nil
+	// Vérifier si la demande de suivi existe déjà
+	exists, err := s.userRepo.IsFollowing(ctx, senderID, receiverID)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to check if follow request exists: %w", err)
+	}
+	if exists {
+		return uuid.Nil, fmt.Errorf("%s: follow request already exists", utils.ErrFollowRequestExists)
+	}
+	// Genereration de l'ID de la demande de suivi
+	followRequest.RequestID = uuid.New()
+	followRequest.CreationDate = time.Now() // Par défaut, la demande est en attente
+
+	if err := s.userRepo.SendFollowRequest(ctx, followRequest); err != nil {
+		return uuid.Nil, fmt.Errorf("failed to send follow request: %w", err)
+	}
+	fmt.Println("Follow request sent successfully: (service)", followRequest.RequestID)
+	return followRequest.RequestID, nil
 }
 
 func (s *userServiceImpl) UnfollowUser(ctx context.Context, followerID, targetID string) error {
@@ -210,4 +229,31 @@ func (s *userServiceImpl) GetUserProfileData(ctx context.Context, viewerID, user
 	}
 	return userProfileData, nil
 
+}
+
+func (s *userServiceImpl) InsertFollow(ctx context.Context, followerID, followedID string) error {
+	if followerID == "" || followedID == "" || followerID == followedID {
+		return fmt.Errorf("%s: invalid follow", utils.ErrInvalidUserData)
+	}
+	if err := s.userRepo.InsertFollow(ctx, followerID, followedID); err != nil {
+		return fmt.Errorf("failed to insert follow: %w", err)
+	}
+	return nil
+}
+
+func (s *userServiceImpl) GetUserPrivacy(ctx context.Context, userID string) (string, error) {
+	if userID == "" {
+		return "", fmt.Errorf("%s: empty id", utils.ErrInvalidUserData)
+	}
+	privacy, err := s.userRepo.GetUserPrivacy(ctx, userID)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve user privacy settings: %w", err)
+	}
+	if privacy == "" {
+		return "", utils.ErrUserNotFound
+	}
+	if privacy != "public" && privacy != "private" {
+		return "", fmt.Errorf("%s: invalid privacy setting", utils.ErrInvalidUserData)
+	}
+	return privacy, nil
 }

@@ -3,12 +3,13 @@ package servimpl
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
 	"mellow/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type notificationServiceImpl struct {
@@ -27,7 +28,7 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 	}
 
 	switch notif.Type {
-	case "follow", "group_invite", "event_created":
+	case "follow_request", "group_invite", "group_request", "event_created", "new_follower":
 	default:
 		return utils.ErrInvalidPayload
 	}
@@ -63,6 +64,12 @@ func (s *notificationServiceImpl) GetUserNotifications(ctx context.Context, user
 	notifs, err := s.notifRepo.GetUserNotifications(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+	for _, notif := range notifs {
+		if notif.SenderAvatarURL != nil && *notif.SenderAvatarURL != "" {
+			notif.SenderAvatarURL = utils.GetFullImageURLAvatar(notif.SenderAvatarURL)
+		}
+
 	}
 
 	return notifs, nil

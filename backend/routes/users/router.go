@@ -29,7 +29,7 @@ func UserRouter(userService services.UserService) http.HandlerFunc {
 	}
 }
 
-func FollowRouter(userService services.UserService) http.HandlerFunc {
+func FollowRouter(userService services.UserService, notificationSvc services.NotificationService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := strings.TrimPrefix(r.URL.Path, "/users/follow/")
 		if id == "" || strings.Contains(id, "/") {
@@ -39,7 +39,7 @@ func FollowRouter(userService services.UserService) http.HandlerFunc {
 
 		switch r.Method {
 		case http.MethodPost:
-			ctr.FollowUser(userService)(w, r)
+			ctr.SendFollowRequest(userService, notificationSvc)(w, r)
 		case http.MethodDelete:
 			ctr.UnfollowUser(userService)(w, r)
 		default:

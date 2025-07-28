@@ -1,29 +1,34 @@
 'use client';
 
 import React from 'react';
+
 import Button from '../ui/Button';
 import Link from 'next/link';
+import Image from 'next/image';
+import { formatDate } from '@/app/utils/date';
 
 function NotificationsCard({ notification, onAccept, onDecline }) {
   // Déterminer dynamiquement le message
   let message = '';
+  console.log(notification);
+
   if (notification.type === 'follow_request') {
     message = (
       <span>
         <Link href="/profile">
           <span className="text-lavender-5 italic hover:underline">
-            {notification.username}
+            {notification.sender_username}
           </span>
         </Link>{' '}
         <span className=" italic">has sent you a follow request</span>
       </span>
     );
-  } else if (notification.type === 'followed') {
+  } else if (notification.type === 'new_follower') {
     message = (
       <span>
         <Link href="/profile">
           <span className="text-lavender-5 italic hover:underline">
-            {notification.username}
+            {notification.sender_username}
           </span>
         </Link>{' '}
         <span className=" italic">has followed you</span>
@@ -35,8 +40,10 @@ function NotificationsCard({ notification, onAccept, onDecline }) {
     <div className="bg-white flex justify-between items-center shadow-md rounded-lg w-full">
       <div className="flex items-center px-3 py-3">
         <div className="flex items-center">
-          <img
-            src={notification.avatarUrl}
+          <Image
+            width={44}
+            height={44}
+            src={notification.sender_avatar_url || '/img/DefaultAvatar.svg'}
             alt="Avatar"
             className="w-11 h-11 rounded-full inline-block mr-2"
           />
@@ -57,7 +64,7 @@ function NotificationsCard({ notification, onAccept, onDecline }) {
         </div>
       </div>
       <div className="flex flex-row items-end text-inter text-dark-grey text-sm mr-2">
-        <span>{notification.timestamp}</span>
+        <span>{formatDate(notification.creation_date)}</span>
       </div>
     </div>
   );

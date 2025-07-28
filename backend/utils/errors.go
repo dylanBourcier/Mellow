@@ -26,7 +26,7 @@ var (
 	ErrMessageNotFound      = errors.New("MESSAGE_NOT_FOUND")
 	ErrSessionNotFound      = errors.New("SESSION_NOT_FOUND")
 	ErrCommentNotFound      = errors.New("COMMENT_NOT_FOUND")
-	ErrEventNotFound   = errors.New("EVENT_NOT_FOUND")
+	ErrEventNotFound        = errors.New("EVENT_NOT_FOUND")
 	ErrNotificationNotFound = errors.New("NOTIFICATION_NOT_FOUND")
 
 	// Conflits
@@ -35,6 +35,7 @@ var (
 	ErrUserAlreadyExists     = errors.New("USER_ALREADY_EXISTS")
 	ErrResourceConflict      = errors.New("RESOURCE_CONFLICT")
 	ErrGroupAlreadyExists    = errors.New("GROUP_ALREADY_EXISTS")
+	ErrFollowRequestExists   = errors.New("FOLLOW_REQUEST_EXISTS")
 
 	// Limites et contraintes
 	ErrTooManyRequests = errors.New("TOO_MANY_REQUESTS")

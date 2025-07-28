@@ -2,9 +2,10 @@ CREATE INDEX IF NOT EXISTS "groups_member_index_0" ON "groups_member" ("group_id
 CREATE TABLE IF NOT EXISTS "notifications" (
     "notification_id" VARCHAR PRIMARY KEY,
     "user_id" VARCHAR NOT NULL,
+    "sender_id" VARCHAR NOT NULL,
     "request_id" VARCHAR,
     "type" TEXT NOT NULL CHECK(
-        "type" IN ('follow', 'group_invite', 'event_created')
+        "type" IN ('follow_request', 'group_invite','group_request', 'event_created', 'new_follower')
     ),
     "seen" BOOLEAN NOT NULL DEFAULT false,
     "creation_date" DATETIME NOT NULL,
