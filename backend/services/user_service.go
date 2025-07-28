@@ -45,4 +45,7 @@ type UserService interface {
 
 	// IsFollowing vérifie si un utilisateur suit un autre.
 	IsFollowing(ctx context.Context, followerID, targetID string) (bool, error)
+
+	// GetUserProfileData retourne les données de profil d'un utilisateur.
+	GetUserProfileData(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error)
 }

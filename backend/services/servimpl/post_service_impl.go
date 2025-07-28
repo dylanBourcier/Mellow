@@ -137,7 +137,7 @@ func (s *postServiceImpl) GetFeed(ctx context.Context, userID string, limit, off
 		return nil, utils.ErrInvalidPayload
 	}
 	// Additional validation can be added here if needed
-	posts, err := s.postRepo.GetFeed(ctx, userID, limit, offset)
+	posts, err := s.postRepo.GetFeed(ctx, userID, "", limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -171,10 +171,25 @@ func (s *postServiceImpl) GetGroupPosts(ctx context.Context, groupID string, lim
 	return posts, nil
 }
 
-func (s *postServiceImpl) GetUserPosts(ctx context.Context, ownerID, requesterID string) ([]*models.Post, error) {
-	// TODO: Vérifier si le requester peut voir les posts privés
-	// TODO: Retourner les posts via le repository
-	return nil, nil
+func (s *postServiceImpl) GetUserPosts(ctx context.Context, userID, requesterID string, limit, offset int) ([]*models.PostDetails, error) {
+	// Validate limit and offset
+	if limit <= 0 || offset < 0 {
+		return nil, utils.ErrInvalidPayload
+	}
+	// Additional validation can be added here if needed
+	posts, err := s.postRepo.GetFeed(ctx, userID, requesterID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	for _, post := range posts {
+		if post.ImageURL != nil {
+			post.ImageURL = utils.GetFullImageURL(post.ImageURL)
+		}
+		if post.AvatarURL != nil {
+			post.AvatarURL = utils.GetFullImageURLAvatar(post.AvatarURL)
+		}
+	}
+	return posts, nil
 }
 
 func (s *postServiceImpl) ReportPost(ctx context.Context, report *models.Report) error {

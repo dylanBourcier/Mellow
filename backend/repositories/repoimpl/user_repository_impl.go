@@ -194,3 +194,40 @@ func (r *userRepositoryImpl) IsFollowing(ctx context.Context, followerID, target
 	}
 	return exists, nil
 }
+func (r *userRepositoryImpl) GetUserProfile(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error) {
+	query := `SELECT u.user_id, u.username, u.firstname, u.lastname, u.email, u.birthdate, u.image_url, u.description, 
+					 (SELECT COUNT(*) FROM follows f WHERE f.followed_id = u.user_id) AS followers_count,
+					 (SELECT COUNT(*) FROM follows f WHERE f.follower_id = u.user_id) AS followed_count
+			  FROM users u WHERE u.user_id = ?`
+	var profile models.UserProfileData
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&profile.UserID, &profile.Username, &profile.Firstname,
+		&profile.Lastname, &profile.Email, &profile.Birthdate,
+		&profile.ImageURL, &profile.Description, &profile.FollowersCount, &profile.FollowedCount)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // User not found
+		}
+		return nil, fmt.Errorf("error retrieving user profile: %w", err)
+	}
+	// Determine follow status
+	if viewerID == userID {
+		profile.FollowStatus = "yourself"
+	} else {
+		var followStatus string
+		followQuery := `SELECT 'follows' AS status FROM follows WHERE follower_id = ? AND followed_id = ?
+							UNION ALL
+							SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ?
+							LIMIT 1`
+		err = r.db.QueryRowContext(ctx, followQuery, viewerID, userID, viewerID, userID).Scan(&followStatus)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				followStatus = "not_follow"
+			} else {
+				return nil, fmt.Errorf("error determining follow status: %w", err)
+			}
+		}
+		profile.FollowStatus = followStatus
+	}
+	return &profile, nil
+}

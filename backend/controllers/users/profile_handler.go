@@ -11,10 +11,19 @@ import (
 
 func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
-		id := strings.TrimPrefix(r.URL.Path, "/users/")
 
-		user, err := userService.GetUserByID(r.Context(), id)
+		id := strings.TrimPrefix(r.URL.Path, "/users/")
+		if id == "" || len(id) < 36 { // Assuming UUID length
+			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
+			return
+		}
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+
+		user, err := userService.GetUserProfileData(r.Context(), userID.String(), id)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get user", utils.ErrInternalServerError)
 			return
@@ -23,8 +32,6 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
 			return
 		}
-
-		user.ImageURL = utils.GetFullImageURLAvatar(user.ImageURL)
 		utils.RespondJSON(w, http.StatusOK, "User retrieved", user)
 	}
 }
@@ -83,10 +90,6 @@ func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc
 		}
 		if req.Birthdate != nil {
 			bd := *req.Birthdate
-			if err != nil {
-				utils.RespondError(w, http.StatusBadRequest, "Invalid birthdate format. Expected format: YYYY-MM-DD", utils.ErrBadRequest)
-				return
-			}
 			user.Birthdate = bd
 		}
 

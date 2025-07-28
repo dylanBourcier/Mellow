@@ -17,6 +17,7 @@ function PostCard({ post }) {
     comments_count,
     user_id,
   } = post;
+
   const formattedDate = formatDate(creation_date);
   // Ensure that the content is not too long for display
   const displayContent =
