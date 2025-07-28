@@ -194,11 +194,11 @@ func (s *userServiceImpl) IsFollowing(ctx context.Context, followerID, targetID 
 	return s.userRepo.IsFollowing(ctx, followerID, targetID)
 }
 
-func (s *userServiceImpl) GetUserProfileData(ctx context.Context, userID string) (*models.UserProfileData, error) {
+func (s *userServiceImpl) GetUserProfileData(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error) {
 	if userID == "" {
 		return nil, fmt.Errorf("%s: empty id", utils.ErrInvalidUserData)
 	}
-	userProfileData, err := s.userRepo.GetUserProfile(ctx, userID)
+	userProfileData, err := s.userRepo.GetUserProfile(ctx, viewerID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve user profile: %w", err)
 	}

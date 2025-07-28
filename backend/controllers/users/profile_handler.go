@@ -13,8 +13,17 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
+		if id == "" || len(id) < 36 { // Assuming UUID length
+			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
+			return
+		}
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
 
-		user, err := userService.GetUserProfileData(r.Context(), id)
+		user, err := userService.GetUserProfileData(r.Context(), userID.String(), id)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get user", utils.ErrInternalServerError)
 			return
