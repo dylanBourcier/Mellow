@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({ isOpen, onClose,title, message }) => {
+const Modal = ({ isOpen, onClose, title, message, actions = [] }) => {
   if (!isOpen) return null;
 
   return (
@@ -41,26 +41,60 @@ const Modal = ({ isOpen, onClose,title, message }) => {
         >
           {message}
         </p>
-        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end" }}>
-          <button
-            onClick={onClose}
-            style={{
-              background: "var(--color-primary, #6C63FF)",
-              color: "var(--color-background, #fff)",
-              padding: "0.5rem 1.5rem",
-              borderRadius: "0.75rem",
-              border: "none",
-              fontFamily: "var(--font-inter), sans-serif",
-              fontWeight: 500,
-              fontSize: "1rem",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={e => (e.currentTarget.style.background = "var(--color-primary-hover, #574fd6)")}
-            onMouseOut={e => (e.currentTarget.style.background = "var(--color-primary, #6C63FF)")}
-          >
-            Fermer
-          </button>
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+          {actions.length > 0 ? (
+            actions.map((action, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  action.onClick?.();
+                  if (action.closeOnClick !== false) onClose();
+                }}
+                disabled={action.disabled}
+                style={{
+                  background: "var(--color-primary, #6C63FF)",
+                  color: "var(--color-background, #fff)",
+                  padding: "0.5rem 1.5rem",
+                  borderRadius: "0.75rem",
+                  border: "none",
+                  fontFamily: "var(--font-inter), sans-serif",
+                  fontWeight: 500,
+                  fontSize: "1rem",
+                  cursor: action.disabled ? "not-allowed" : "pointer",
+                  opacity: action.disabled ? 0.6 : 1,
+                  transition: "background 0.2s",
+                }}
+                onMouseOver={e => {
+                  if (!action.disabled) e.currentTarget.style.background = "var(--color-primary-hover, #574fd6)";
+                }}
+                onMouseOut={e => {
+                  if (!action.disabled) e.currentTarget.style.background = "var(--color-primary, #6C63FF)";
+                }}
+              >
+                {action.label}
+              </button>
+            ))
+          ) : (
+            <button
+              onClick={onClose}
+              style={{
+                background: "var(--color-primary, #6C63FF)",
+                color: "var(--color-background, #fff)",
+                padding: "0.5rem 1.5rem",
+                borderRadius: "0.75rem",
+                border: "none",
+                fontFamily: "var(--font-inter), sans-serif",
+                fontWeight: 500,
+                fontSize: "1rem",
+                cursor: "pointer",
+                transition: "background 0.2s",
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = "var(--color-primary-hover, #574fd6)")}
+              onMouseOut={e => (e.currentTarget.style.background = "var(--color-primary, #6C63FF)")}
+            >
+              Fermer
+            </button>
+          )}
         </div>
       </div>
     </div>
