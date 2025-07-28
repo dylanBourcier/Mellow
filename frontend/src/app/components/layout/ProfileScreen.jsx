@@ -14,6 +14,7 @@ import { useUser } from '@/app/context/UserContext';
 import { useRouter } from 'next/navigation';
 import UserPostsContainer from './UserPostsContainer';
 import Folows from '../ui/Folows';
+import FollowButton from '../ui/FollowButton';
 
 function ProfileScreen({ userId }) {
   const router = useRouter();
@@ -142,7 +143,9 @@ function ProfileScreen({ userId }) {
             </div>
 
           </div>
-          <Folows></Folows>
+          {userData.user_id !== user.user_id && (
+            <FollowButton targetID={userData.user_id} followStatus={userData.follow_status}/>
+          )}
 
           {userData.user_id === user.user_id && (
             <div>
