@@ -1,43 +1,110 @@
-import React from 'react';
+'use client';
+
+import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import UserInfo from '../ui/UserInfo';
 import { icons } from '@/app/lib/icons';
 import PageTitle from '../ui/PageTitle';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
-import CommentCard from '../ui/CommentCard';
+import Spinner from '../ui/Spinner';
+import Image from 'next/image';
+import { formatDate } from '@/app/utils/date';
 
-function PostDetailscreen() {
-  
-    const Created_at = '15h 2023-10-01';
-    const postContent="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-    const postTitle = "Post’s title with some useless characters to see the result in a more realistic way";
-    const postId = 1;
-    const nbComments = 5;
+import CommentSection from './CommentSection';
+
+function PostDetailscreen({ postid }) {
+  const [post, setPost] = useState(null);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    if (!postid) return;
+
+    const fetchPost = async () => {
+      try {
+        const response = await fetch(`/api/posts/${postid}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch post (status: ${response.status})`);
+        }
+
+        const result = await response.json();
+        if (result.status == 'error') {
+          throw new Error(result.message || 'Failed to fetch post data');
+        }
+
+        if (!result?.data) {
+          throw new Error('No post data returned from server');
+        }
+
+        setPost(result.data);
+      } catch (err) {
+        console.error('Error fetching post:', err);
+        setError('Could not load the post. Please try again later.');
+      }
+    };
+
+    fetchPost();
+  }, [postid]);
+
+  if (error) {
+    return <div className="text-red-600">{error}</div>;
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center gap-2 justify-center">
+        <Spinner></Spinner>Loading...
+      </div>
+    );
+  }
+
   return (
-  <div className='flex flex-col gap-3'>
-  <div className='flex flex-col gap-3 p-4 bg-white shadow-(--box-shadow) rounded-lg'>
-    <Link href={"/"} className='group flex items-center hover:underline hover:text-lavender-3 text-sm'> <span className='group-hover:animate-bounce'>{icons["back_arrow"]}</span> <span>Back to home</span></Link>
-    <div className='flex items-center justify-between gap-1'>
-      <UserInfo></UserInfo><span className='font-thin text-sm'>{Created_at}</span>
+    <div className="flex flex-col gap-3 w-full">
+      <div className="flex flex-col gap-3 p-4 bg-white shadow-(--box-shadow) rounded-lg">
+        <Link
+          href={'/'}
+          className="group flex items-center hover:underline hover:text-lavender-3 text-sm"
+        >
+          {' '}
+          <span className="group-hover:animate-bounce">
+            {icons['back_arrow']}
+          </span>{' '}
+          <span>Back to home</span>
+        </Link>
+        <div className="flex items-center justify-between gap-1">
+          <UserInfo
+            userName={post.username}
+            userId={post.user_id}
+            authorAvatar={post.avatar_url}
+            groupId={post?.group_id}
+            groupName={post?.group_name}
+          ></UserInfo>
+          <span className="font-thin text-sm">
+            {formatDate(post.creation_date)}
+          </span>
+        </div>
+        <div className="flex flex-col gap-2">
+          <PageTitle className="text-left">{post.title}</PageTitle>
+          <pre className="whitespace-pre-wrap break-words font-sans font-inter leading-relaxed">
+            {post.content}
+          </pre>
+        </div>
+        {post.image_url && (
+          <div>
+            <Image
+              src={post.image_url}
+              alt="Post Image"
+              className="w-full h-auto rounded-lg object-cover"
+              width={600}
+              height={400}
+              loading="lazy"
+            ></Image>
+          </div>
+        )}
+      </div>
+      <CommentSection
+        postid={postid}
+        commentCount={post.comment_count + 1}
+      ></CommentSection>
     </div>
-    <div className='flex flex-col gap-2'>
-    <PageTitle className='text-left'>{postTitle}</PageTitle><pre className='whitespace-pre-wrap break-words font-sans font-inter leading-relaxed'>{postContent}</pre>
-    </div>
-  </div>
-  <div className='flex flex-col gap-3 px-2 lg:px-8 py-2.5'>
-    <PageTitle className='flex text-left'>Comments ({nbComments})</PageTitle>
-    <div className='flex gap-1 items-center'>
-    <Input type="text" placeholder="Post a comment..."className='border border-lavender-5'></Input>
-    <Button>Comment</Button>
-    </div>
-    <CommentCard></CommentCard>
-    <CommentCard></CommentCard>
-    <CommentCard></CommentCard>
-    <CommentCard></CommentCard>
-  </div>
-  </div>
-);
+  );
 }
 
 export default PostDetailscreen;

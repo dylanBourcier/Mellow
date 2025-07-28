@@ -14,4 +14,10 @@ type Post struct {
 	Content      string     `json:"content"`
 	CreationDate time.Time  `json:"creation_date"`
 	Visibility   string     `json:"visibility"`
+	ImageURL     *string    `json:"image_url,omitempty"` // nullable
+}
+
+type UpdatePostPayload struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }

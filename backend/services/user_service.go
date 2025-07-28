@@ -42,4 +42,10 @@ type UserService interface {
 
 	// SearchUsers retourne une liste d'utilisateurs correspondant à un mot-clé.
 	SearchUsers(ctx context.Context, query string) ([]*models.User, error)
+
+	// IsFollowing vérifie si un utilisateur suit un autre.
+	IsFollowing(ctx context.Context, followerID, targetID string) (bool, error)
+
+	// GetUserProfileData retourne les données de profil d'un utilisateur.
+	GetUserProfileData(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error)
 }

@@ -2,60 +2,311 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type groupServiceImpl struct {
-	db *sql.DB
+	groupRepo repositories.GroupRepository
 }
 
 // NewGroupService crée une nouvelle instance de GroupService.
-func NewGroupService(db *sql.DB) services.GroupService {
-	return &groupServiceImpl{db: db}
+func NewGroupService(groupRepo repositories.GroupRepository) services.GroupService {
+	return &groupServiceImpl{groupRepo: groupRepo}
 }
 
 func (s *groupServiceImpl) CreateGroup(ctx context.Context, group *models.Group) error {
-	// TODO: Vérifier que le nom est unique, valider les données
-	// TODO: Appeler le repository pour insérer le groupe
+	if group == nil || group.Title == "" || group.UserID == uuid.Nil {
+		return utils.ErrInvalidPayload
+	}
+
+	taken, err := s.groupRepo.IsTitleTaken(ctx, group.Title)
+	if err != nil {
+		return err
+	}
+	if taken {
+		return utils.ErrGroupAlreadyExists
+	}
+
+	gid, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	group.GroupID = gid
+	group.CreationDate = time.Now()
+
+	if err := s.groupRepo.InsertGroup(ctx, group); err != nil {
+		return err
+	}
+
+	if err := s.groupRepo.AddMember(ctx, gid.String(), group.UserID.String()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
+func (s *groupServiceImpl) UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error {
+	if groupID == "" || requesterID == "" || title == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	existing, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return utils.ErrGroupNotFound
+	}
+
+	if existing.UserID.String() != requesterID {
+		return utils.ErrForbidden
+	}
+
+	if len(title) > 100 {
+		return utils.ErrContentTooLong
+	}
+	if len(title) < 1 {
+		return utils.ErrContentTooShort
+	}
+	if description != "" && len(description) > 1000 {
+		return utils.ErrContentTooLong
+	}
+
+	gid, err := uuid.Parse(groupID)
+	if err != nil {
+		return utils.ErrInvalidPayload
+	}
+	g := &models.Group{
+		GroupID:     gid,
+		Title:       title,
+		Description: description,
+	}
+
+	return s.groupRepo.UpdateGroup(ctx, g)
+}
+
 func (s *groupServiceImpl) GetGroupByID(ctx context.Context, groupID string) (*models.Group, error) {
-	// TODO: Appeler le repository pour récupérer un groupe par ID
-	return nil, nil
+	if groupID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+	return group, nil
 }
 
 func (s *groupServiceImpl) GetAllGroups(ctx context.Context) ([]*models.Group, error) {
-	// TODO: Appeler le repository pour récupérer tous les groupes
-	return nil, nil
+	groups, err := s.groupRepo.GetAllGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
+func (s *groupServiceImpl) GetAllGroupsWithoutUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	if userID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+	groups, err := s.groupRepo.GetAllGroupsWithoutUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
 
 func (s *groupServiceImpl) DeleteGroup(ctx context.Context, groupID, requesterID string) error {
-	// TODO: Vérifier que le requester est créateur ou admin
-	// TODO: Appeler le repository pour supprimer le groupe
+	if groupID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return utils.ErrGroupNotFound
+	}
+	if group.UserID.String() != requesterID {
+		return utils.ErrUnauthorized
+	}
+
+	if err := s.groupRepo.DeleteGroup(ctx, groupID); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (s *groupServiceImpl) AddMember(ctx context.Context, groupID, userID string) error {
-	// TODO: Vérifier que l'utilisateur n'est pas déjà membre
-	// TODO: Appeler le repository pour insérer la relation dans groups_member
-	return nil
+	if groupID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+	exists, err := s.groupRepo.IsMember(ctx, groupID, userID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return utils.ErrResourceConflict
+	}
+	return s.groupRepo.AddMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) RemoveMember(ctx context.Context, groupID, userID string) error {
-	// TODO: Vérifier que le membre existe et peut être retiré
-	// TODO: Appeler le repository pour supprimer l'entrée
-	return nil
+	if groupID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return utils.ErrGroupNotFound
+	}
+
+	isMember, err := s.groupRepo.IsMember(ctx, groupID, userID)
+	if err != nil {
+		return err
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+
+	if group.UserID.String() == userID {
+		return utils.ErrForbidden
+	}
+
+	return s.groupRepo.RemoveMember(ctx, groupID, userID)
 }
 
 func (s *groupServiceImpl) GetGroupMembers(ctx context.Context, groupID string) ([]*models.User, error) {
-	// TODO: Appeler le repository pour récupérer les membres du groupe
-	return nil, nil
+	if groupID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+
+	members, err := s.groupRepo.GetGroupMembers(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+	return members, nil
 }
 
 func (s *groupServiceImpl) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
-	// TODO: Appeler le repository pour vérifier la relation d’appartenance
-	return false, nil
+	return s.groupRepo.IsMember(ctx, groupID, userID)
+}
+
+func (s *groupServiceImpl) GetGroupsJoinedByUser(ctx context.Context, userID string) ([]*models.Group, error) {
+	groups, err := s.groupRepo.GetGroupsJoinedByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
+func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event) error {
+	fmt.Println("InsertEvent called with event:", event)
+	if event == nil || event.UserID == uuid.Nil || event.GroupID == uuid.Nil || event.EventDate.IsZero() || event.Title == "" {
+		return utils.ErrInvalidPayload
+	}
+	//vérifier si le groupe existe
+	_, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
+	if err != nil {
+		if err == utils.ErrGroupNotFound {
+			return utils.ErrGroupNotFound
+		}
+		return fmt.Errorf("failed to get group: %w", err)
+	}
+	// vérifier si l'utilisateur est membre du groupe
+	isMember, err := s.groupRepo.IsMember(ctx, event.GroupID.String(), event.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+
+	eventID, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+	event.EventID = eventID
+	event.CreationDate = time.Now()
+
+	if err := s.groupRepo.InsertEvent(ctx, event); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *groupServiceImpl) InsertEventResponse(ctx context.Context, eventResponse *models.EventResponse) error {
+	if eventResponse == nil || eventResponse.UserID == uuid.Nil || eventResponse.EventID == uuid.Nil {
+		return utils.ErrInvalidPayload
+	}
+	// Vérifier si l'événement existe
+	event, err := s.groupRepo.GetEventById(ctx, eventResponse.EventID.String())
+	if err != nil {
+		return fmt.Errorf("failed to get event: %w", err)
+	}
+	if event == nil {
+		return utils.ErrEventNotFound
+	}
+
+	// Vérifier si l'utilisateur est membre du groupe
+	isMember, err := s.groupRepo.IsMember(ctx, event.GroupID.String(), eventResponse.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if !isMember {
+		return utils.ErrForbidden
+	}
+	if err := s.groupRepo.InsertEventResponse(ctx, eventResponse); err != nil {
+		return fmt.Errorf("failed to insert event response: %w", err)
+	}
+	// Si l'insertion réussit, on peut retourner nil
+
+	return nil
+}
+
+func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error) {
+
+	// Vérifier si le groupe existe
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group: %w", err)
+	}
+	if group == nil {
+		return nil, utils.ErrGroupNotFound
+	}
+
+	// Récupérer les événements du groupe
+	events, err := s.groupRepo.GetGroupEvents(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group events: %w", err)
+	}
+	for _, event := range events {
+		if event.AvatarURL != nil {
+			event.AvatarURL = utils.GetFullImageURLAvatar(event.AvatarURL)
+		}
+	}
+
+	return events, nil
 }
