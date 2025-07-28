@@ -13,6 +13,7 @@ import { formatDateShort } from '@/app/utils/date';
 import { useUser } from '@/app/context/UserContext';
 import { useRouter } from 'next/navigation';
 import UserPostsContainer from './UserPostsContainer';
+import Folows from '../ui/Folows';
 
 function ProfileScreen({ userId }) {
   const router = useRouter();
@@ -83,8 +84,9 @@ function ProfileScreen({ userId }) {
             </Button>
             <button className="flex items-center gap-1 px-2 py-2 rounded-2xl bg-red-100 text-error hover:bg-red-200 border border-red-300 ">
               <span>{icons['report']}</span>{' '}
-              <span className="hidden lg:block">Report</span>
+              <span className="hidden lg:block cursor-pointer">Report</span>
             </button>
+
           </div>
         )}
 
@@ -127,7 +129,7 @@ function ProfileScreen({ userId }) {
           </span>
         </div>
         <div className="flex gap-2.5 font-inter text-sm justify-between w-full">
-          <div className="flex gap-2.5 underline cursor-pointer font-inter text-sm">
+          <div className="flex gap-2.5 underline cursor-pointer font-inter text-sm items-center ">
             <div>
               <Link href={`/user/${userId}/followers`}>
                 Followers: <span>{userData.followers_count}</span>
@@ -138,7 +140,9 @@ function ProfileScreen({ userId }) {
                 Following: <span>{userData.followed_count}</span>
               </Link>
             </div>
+
           </div>
+          <Folows></Folows>
 
           {userData.user_id === user.user_id && (
             <div>
