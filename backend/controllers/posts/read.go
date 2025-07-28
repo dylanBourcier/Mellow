@@ -101,7 +101,7 @@ func GetUserPosts(postSvc services.PostService) http.HandlerFunc {
 			utils.RespondError(w, http.StatusBadRequest, "Invalid limit or offset", utils.ErrInvalidPayload)
 			return
 		}
-		// Format de la requete : /posts?limit=10&offset=0
+		// Format de la requete : /users/posts/userid/?limit=10&offset=0
 		// Appeler le service pour récupérer les posts
 		posts, err := postSvc.GetUserPosts(r.Context(), userID.String(), id, limit, offset)
 		if err != nil {
