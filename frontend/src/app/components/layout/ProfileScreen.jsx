@@ -19,7 +19,7 @@ function ProfileScreen({ userId }) {
   const router = useRouter();
   const { user } = useUser();
   if (user.user_id === userId) {
-    router.replace('/profile');
+    router.push('/profile');
   }
   if (!userId) {
     userId = user.user_id; // Fallback to current user if no ID is provided

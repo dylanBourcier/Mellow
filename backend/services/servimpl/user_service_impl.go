@@ -176,22 +176,22 @@ func (s *userServiceImpl) UnfollowUser(ctx context.Context, followerID, targetID
 	return nil
 }
 
-func (s *userServiceImpl) GetFollowers(ctx context.Context, userID string) ([]*models.User, error) {
+func (s *userServiceImpl) GetFollowers(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error) {
 	if userID == "" {
 		return nil, fmt.Errorf("%s: empty id", utils.ErrUserNotFound)
 	}
-	users, err := s.userRepo.GetFollowers(ctx, userID)
+	users, err := s.userRepo.GetFollowers(ctx, viewerID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve followers: %w", err)
 	}
 	return users, nil
 }
 
-func (s *userServiceImpl) GetFollowing(ctx context.Context, userID string) ([]*models.User, error) {
+func (s *userServiceImpl) GetFollowing(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error) {
 	if userID == "" {
 		return nil, fmt.Errorf("%s: empty id", utils.ErrUserNotFound)
 	}
-	users, err := s.userRepo.GetFollowing(ctx, userID)
+	users, err := s.userRepo.GetFollowing(ctx, viewerID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve following: %w", err)
 	}

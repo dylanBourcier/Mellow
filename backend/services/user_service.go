@@ -37,10 +37,10 @@ type UserService interface {
 	UnfollowUser(ctx context.Context, followerID, targetID string) error
 
 	// GetFollowers retourne la liste des utilisateurs qui suivent un utilisateur donné.
-	GetFollowers(ctx context.Context, userID string) ([]*models.User, error)
+	GetFollowers(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
 
 	// GetFollowing retourne la liste des utilisateurs suivis par un utilisateur donné.
-	GetFollowing(ctx context.Context, userID string) ([]*models.User, error)
+	GetFollowing(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
 
 	// SearchUsers retourne une liste d'utilisateurs correspondant à un mot-clé.
 	SearchUsers(ctx context.Context, query string) ([]*models.User, error)

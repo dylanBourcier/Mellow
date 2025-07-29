@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 function FollowButton({ followStatus: initialStatus, targetID }) {
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleFollow = async (e) => {
     e.preventDefault();
 
-    if (status === 'requested') return; // Pas d'action sur "pending"
+    if (status === 'requested') return;
+    if (status === 'yourself') return;
 
     setLoading(true);
 
@@ -30,7 +32,7 @@ function FollowButton({ followStatus: initialStatus, targetID }) {
         });
         const data = await res.json();
         if (data.status === 'success') {
-          setStatus('follows'); // ou 'requested' si tu veux une validation
+          setStatus('follows');
         } else {
           throw new Error(data.message || 'Failed to follow user');
         }
@@ -45,18 +47,32 @@ function FollowButton({ followStatus: initialStatus, targetID }) {
 
   const renderButtonText = () => {
     if (loading) return 'Loading...';
-    if (status === 'follows') return 'Unfollow';
+    if (status === 'follows') return isHovered ? 'Unfollow' : 'Following';
     if (status === 'not_follow') return 'Follow';
     if (status === 'requested') return 'Pending';
+    if (status === 'yourself') return 'You';
     return 'Follow';
+  };
+
+  const statusClassNames = {
+    follows:
+      'bg-transparent text-lavender-5 border border-lavender-5 hover:bg-red-100 hover:text-red-500 hover:border-red-400',
+    not_follow: 'bg-lavender-3 hover:bg-lavender-5 text-white cursor-pointer',
+    requested:
+      'bg-transparent text-dark-gray cursor-not-allowed border border-dark-gray',
+    yourself: 'bg-gray-500 cursor-not-allowed',
   };
 
   return (
     <button
       type="button"
       onClick={handleFollow}
-      className="px-4 py-2 gap-2.5 text-white border-lavender-3 bg-lavender-3 rounded-xl cursor-pointer hover:bg-lavender-5 shadow-(--box-shadow)"
-      disabled={loading || status === 'requested'}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`px-4 py-2 gap-2.5 rounded-xl shadow-(--box-shadow) ${
+        statusClassNames[status] || ''
+      } ${status === 'yourself' ? 'hidden' : ''}`}
+      disabled={loading || status === 'requested' || status === 'yourself'}
     >
       {renderButtonText()}
     </button>

@@ -51,7 +51,7 @@ type UserProfileData struct {
 	ImageURL       *string   `json:"image_url,omitempty"`
 	FollowersCount int       `json:"followers_count"`
 	FollowedCount  int       `json:"followed_count"`
-	FollowStatus   string    `json:"follow_status"` // "not_following", "following", "requested"
+	FollowStatus   string    `json:"follow_status"` // "not_follow", "follows", "requested"
 	Description    *string   `json:"description,omitempty"`
 	Posts          []Post    `json:"posts"`
 }

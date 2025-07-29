@@ -125,10 +125,21 @@ func GetFollowersHandler(userService services.UserService) http.HandlerFunc {
 		}
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/followers/")
-		followers, err := userService.GetFollowers(r.Context(), id)
+		//Get the viewer ID from the context
+		viewerID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		followers, err := userService.GetFollowers(r.Context(), viewerID.String(), id)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get followers", utils.ErrInternalServerError)
 			return
+		}
+		for _, follower := range followers {
+			if follower.ImageURL != nil && *follower.ImageURL != "" {
+				follower.ImageURL = utils.GetFullImageURLAvatar(follower.ImageURL)
+			}
 		}
 
 		utils.RespondJSON(w, http.StatusOK, "Followers retrieved", followers)
@@ -143,10 +154,21 @@ func GetFollowingHandler(userService services.UserService) http.HandlerFunc {
 		}
 
 		id := strings.TrimPrefix(r.URL.Path, "/users/following/")
-		following, err := userService.GetFollowing(r.Context(), id)
+		//Get the viewer ID from the context
+		viewerID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		following, err := userService.GetFollowing(r.Context(), viewerID.String(), id)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get following", utils.ErrInternalServerError)
 			return
+		}
+		for _, follower := range following {
+			if follower.ImageURL != nil && *follower.ImageURL != "" {
+				follower.ImageURL = utils.GetFullImageURLAvatar(follower.ImageURL)
+			}
 		}
 
 		utils.RespondJSON(w, http.StatusOK, "Following retrieved", following)

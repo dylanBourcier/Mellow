@@ -20,8 +20,8 @@ type UserRepository interface {
 	Unfollow(ctx context.Context, followerID, targetID string) error
 	IsFollowing(ctx context.Context, followerID, targetID string) (bool, error)
 
-	GetFollowers(ctx context.Context, userID string) ([]*models.User, error)
-	GetFollowing(ctx context.Context, userID string) ([]*models.User, error)
+	GetFollowers(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
+	GetFollowing(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
 
 	GetUserProfile(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error)
 
