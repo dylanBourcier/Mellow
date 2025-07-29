@@ -18,6 +18,7 @@ type User struct {
 	ImageURL     *string   `json:"image_url,omitempty"`
 	CreationDate time.Time `json:"creation_date"`
 	Description  *string   `json:"description,omitempty"`
+	Privacy      string    `json:"privacy"` // "public", "private"
 }
 
 type LoginRequest struct {
@@ -49,6 +50,7 @@ type UserProfileData struct {
 	Email          string    `json:"email"`
 	Birthdate      time.Time `json:"birthdate"`
 	ImageURL       *string   `json:"image_url,omitempty"`
+	Privacy        string    `json:"privacy"` // "public", "private"
 	FollowersCount int       `json:"followers_count"`
 	FollowedCount  int       `json:"followed_count"`
 	FollowStatus   string    `json:"follow_status"` // "not_follow", "follows", "requested"

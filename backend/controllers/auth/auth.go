@@ -62,7 +62,7 @@ func SignUpHandler(userService services.UserService) http.HandlerFunc {
 		file, header, err := r.FormFile("avatar")
 		var image_url *string
 		if err == nil {
-			image_url, err = utils.HandleImageUpload(header, file, []string{"uploads","avatars"})
+			image_url, err = utils.HandleImageUpload(header, file, []string{"uploads", "avatars"})
 			if err != nil {
 				utils.RespondError(w, http.StatusInternalServerError, "Failed to upload image", err)
 				return
@@ -180,6 +180,7 @@ func MeHandler(authSvc services.AuthService, userService services.UserService) h
 			"image_url":     user.ImageURL,
 			"creation_date": user.CreationDate,
 			"description":   user.Description,
+			"privacy":       user.Privacy,
 		}
 
 		utils.RespondJSON(w, http.StatusOK, "User retrieved successfully", data)

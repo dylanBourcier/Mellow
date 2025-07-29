@@ -1,14 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Input from '../ui/Input';
 import Label from '../ui/Label';
 import Button from '../ui/Button';
 import FileInput from '../ui/FileInput';
 import { useForm } from 'react-hook-form';
+import { useUser } from '@/app/context/UserContext';
 
 function EditProfile() {
+  const { user } = useUser();
+  console.log('user in EditProfile:', user);
+
   const { register, setValue } = useForm();
+
+  useEffect(() => {
+    if (user) {
+      setValue('firstname', user.firstname || '');
+      setValue('lastname', user.lastname || '');
+      setValue('username', user.username || '');
+      setValue(
+        'birthdate',
+        user.birthdate
+          ? new Date(user.birthdate).toISOString().split('T')[0]
+          : ''
+      );
+      setValue('about', user.description || '');
+      setValue('privacy', user.privacy || 'public');
+    }
+  }, [user, setValue]);
 
   return (
     <form className="flex flex-col gap-2.5 max-w-[600px] w-full">
@@ -20,16 +40,28 @@ function EditProfile() {
       <div className="flex flex-col lg:flex-row gap-2.5 w-full">
         <Label htmlFor={'firstname'}>
           FirstName* :
-          <Input id="firstname" placeholder="Enter your firstname..."></Input>
+          <Input
+            id="firstname"
+            placeholder="Enter your firstname..."
+            {...register('firstname')}
+          />
         </Label>
         <Label htmlFor={'lastname'}>
           LastName* :
-          <Input id="lastname" placeholder="Enter your lastname..."></Input>
+          <Input
+            id="lastname"
+            placeholder="Enter your lastname..."
+            {...register('lastname')}
+          />
         </Label>
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
         <Label htmlFor={'username'}>Username* :</Label>
-        <Input id="username" placeholder="Enter your username..."></Input>
+        <Input
+          id="username"
+          placeholder="Enter your username..."
+          {...register('username')}
+        />
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
         <Label htmlFor={'birthdate'}>Birthdate* :</Label>
@@ -37,14 +69,14 @@ function EditProfile() {
           type="date"
           id="birthdate"
           name="birthdate"
-          placeholder="********"
           required
+          {...register('birthdate')}
         />
       </div>
       <div className="flex flex-col lg:flex-row w-full gap-2">
         <div className="flex-1">
           <Label htmlFor="password" className="block mb-2">
-            Password* :
+            Password :
           </Label>
           <Input
             type="password"
@@ -52,11 +84,12 @@ function EditProfile() {
             name="password"
             placeholder="********"
             required
+            {...register('password')}
           />
         </div>
         <div className="flex-1">
           <Label htmlFor="confirm_password" className="block mb-2">
-            Confirm Password* :
+            Confirm Password :
           </Label>
           <Input
             type="password"
@@ -64,6 +97,7 @@ function EditProfile() {
             name="confirm_password"
             placeholder="********"
             required
+            {...register('confirm_password')}
           />
         </div>
       </div>
@@ -75,6 +109,7 @@ function EditProfile() {
           name="about"
           placeholder="Tell us about yourself..."
           className="h-24"
+          {...register('about')}
         />
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
@@ -85,9 +120,11 @@ function EditProfile() {
           <div className="flex-1">
             <input
               type="radio"
-              name="visibility"
+              name="privacy"
               id="public"
               className="hidden peer"
+              value="public"
+              {...register('privacy')}
             />
             <label
               htmlFor="public"
@@ -99,9 +136,11 @@ function EditProfile() {
           <div className="flex-1">
             <input
               type="radio"
-              name="visibility"
+              name="privacy"
               id="private"
               className="hidden peer"
+              value="private"
+              {...register('privacy')}
             />
             <label
               htmlFor="private"
