@@ -119,6 +119,38 @@ func (r *userRepositoryImpl) SendFollowRequest(ctx context.Context, followReques
 	}
 	return nil
 }
+func (r *userRepositoryImpl) GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error) {
+	query := `SELECT request_id, sender_id, receiver_id, status, creation_date FROM follow_requests WHERE request_id = ?`
+	var followRequest models.FollowRequest
+	err := r.db.QueryRowContext(ctx, query, requestID).Scan(
+		&followRequest.RequestID, &followRequest.SenderID, &followRequest.ReceiverID,
+		&followRequest.Status, &followRequest.CreationDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Follow request not found
+		}
+		return nil, fmt.Errorf("error retrieving follow request: %w", err)
+	}
+	return &followRequest, nil
+}
+func (r *userRepositoryImpl) AnswerFollowRequest(ctx context.Context, request models.FollowRequest, userId, action string) error {
+	if action != "accept" && action != "reject" {
+		return fmt.Errorf("invalid action: %s", action)
+	}
+	// If the action is "accept", we insert the follow relationship
+	if action == "accept" {
+		if err := r.InsertFollow(ctx, request.SenderID.String(), request.ReceiverID.String()); err != nil {
+			return fmt.Errorf("error accepting follow request: %w", err)
+		}
+	}
+	// Delete the follow request regardless of the action
+	query := `DELETE FROM follow_requests WHERE request_id = ?`
+	_, err := r.db.ExecContext(ctx, query, request.RequestID)
+	if err != nil {
+		return fmt.Errorf("error deleting follow request: %w", err)
+	}
+	return nil
+}
 
 func (r *userRepositoryImpl) Unfollow(ctx context.Context, followerID, targetID string) error {
 	// TODO: DELETE FROM follow WHERE follower_id = ? AND target_id = ?
@@ -288,4 +320,14 @@ func (r *userRepositoryImpl) getFollowStatus(ctx context.Context, viewerID, user
 		return "", err
 	}
 	return followStatus, nil
+}
+
+func (r *userRepositoryImpl) IsFollowRequestExists(ctx context.Context, senderID, receiverID string) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM follow_requests WHERE sender_id = ? AND receiver_id = ?)`
+	var exists bool
+	err := r.db.QueryRowContext(ctx, query, senderID, receiverID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error checking follow request existence: %w", err)
+	}
+	return exists, nil
 }

@@ -47,8 +47,8 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 				limitedProfile.UserID = user.UserID
 				limitedProfile.Username = user.Username
 				limitedProfile.ImageURL = user.ImageURL
-				limitedProfile.FollowStatus = "not_follow"
-				limitedProfile.Privacy = "private"
+				limitedProfile.FollowStatus = user.FollowStatus
+				limitedProfile.Privacy = user.Privacy
 				description := "This profile is private. Follow to see more."
 				limitedProfile.Description = &description
 				utils.RespondJSON(w, http.StatusOK, "Limited", limitedProfile)

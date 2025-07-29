@@ -33,6 +33,16 @@ func SendFollowRequest(userService services.UserService, notificationService ser
 
 		var notif *models.Notification
 		if privacy == "private" {
+			// Check if the follow request already exists
+			exists, err := userService.IsFollowRequestExists(r.Context(), senderID.String(), targetID)
+			if err != nil {
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to check follow request existence"+err.Error(), utils.ErrInternalServerError)
+				return
+			}
+			if exists {
+				utils.RespondError(w, http.StatusBadRequest, "Follow request already exists", utils.ErrFollowRequestExists)
+				return
+			}
 
 			requestID, err := userService.SendFollowRequest(r.Context(), senderID.String(), targetID)
 			if err != nil {
@@ -173,4 +183,70 @@ func GetFollowingHandler(userService services.UserService) http.HandlerFunc {
 
 		utils.RespondJSON(w, http.StatusOK, "Following retrieved", following)
 	}
+}
+
+func FollowRequestAnswerHandler(userService services.UserService, notificationService services.NotificationService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
+			return
+		}
+
+		requestId := strings.TrimPrefix(r.URL.Path, "/users/follow/request/")
+		// Get the request details to find the sender
+		request, err := userService.GetFollowRequestByID(r.Context(), requestId)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to get follow request details", utils.ErrInternalServerError)
+			return
+		}
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+		user, err := userService.GetUserByID(r.Context(), userID.String())
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to get user details", utils.ErrInternalServerError)
+			return
+		}
+
+		action := r.URL.Query().Get("action")
+		if action != "accept" && action != "reject" {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid action", utils.ErrBadRequest)
+			return
+		}
+
+		var notifType string
+		switch action {
+		case "reject":
+			notifType = models.NotificationTypeRejectedFollowRequest
+		case "accept":
+			notifType = models.NotificationTypeAcceptedFollowRequest
+		default:
+			utils.RespondError(w, http.StatusBadRequest, "Invalid action", utils.ErrBadRequest)
+			return
+		}
+		if err := userService.AnswerFollowRequest(r.Context(), *request, userID.String(), action); err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to answer follow request", utils.ErrInternalServerError)
+			return
+		}
+
+		// Create notification for the sender of the follow request
+		notif := &models.Notification{
+			NotificationID:  uuid.New(),
+			UserID:          request.SenderID,
+			Type:            notifType,
+			Seen:            false,
+			CreationDate:    time.Now(),
+			SenderID:        userID.String(),
+			SenderUsername:  &user.Username,
+			SenderAvatarURL: utils.GetFullImageURLAvatar(user.ImageURL),
+		}
+		if err := notificationService.CreateNotification(r.Context(), notif); err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to create notification "+err.Error(), utils.ErrInternalServerError)
+			return
+		}
+		utils.RespondJSON(w, http.StatusOK, "Follow request "+action+"ed", nil)
+	}
+
 }

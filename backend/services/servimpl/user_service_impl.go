@@ -256,3 +256,56 @@ func (s *userServiceImpl) GetUserPrivacy(ctx context.Context, userID string) (st
 	}
 	return privacy, nil
 }
+
+func (s *userServiceImpl) GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error) {
+	if requestID == "" {
+		return nil, fmt.Errorf("%s: empty request ID", utils.ErrInvalidUserData)
+	}
+	request, err := s.userRepo.GetFollowRequestByID(ctx, requestID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve follow request: %w", err)
+	}
+	if request == nil {
+		return nil, utils.ErrFollowRequestNotFound
+	}
+	return request, nil
+}
+
+func (s *userServiceImpl) AnswerFollowRequest(ctx context.Context, request models.FollowRequest, userId, action string) error {
+	if request.RequestID == uuid.Nil || userId == "" {
+		return fmt.Errorf("%s: invalid request or user ID", utils.ErrInvalidUserData)
+	}
+	if request.ReceiverID != uuid.MustParse(userId) {
+		return fmt.Errorf("%s: user not authorized to answer this request", utils.ErrUnauthorized)
+	}
+
+	if action != "accept" && action != "reject" {
+		return fmt.Errorf("%s: invalid action", utils.ErrInvalidUserData)
+	}
+
+	if err := s.userRepo.AnswerFollowRequest(ctx, request, userId, action); err != nil {
+		return fmt.Errorf("failed to answer follow request: %w", err)
+	}
+
+	return nil
+}
+
+func (s *userServiceImpl) IsFollowRequestExists(ctx context.Context, senderID, targetID string) (bool, error) {
+	if senderID == "" || targetID == "" || senderID == targetID {
+		return false, fmt.Errorf("%s: invalid follow request", utils.ErrInvalidUserData)
+	}
+	exists, err := s.userRepo.IsFollowRequestExists(ctx, senderID, targetID)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if follow request exists: %w", err)
+	}
+	// Also check if the follow relationship already exists
+	isFollowing, err := s.userRepo.IsFollowing(ctx, senderID, targetID)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if user is following: %w", err)
+	}
+	if isFollowing || exists {
+		return true, nil // If the user is already following or follow request already exists
+	}
+	return false, nil // No follow request or follow relationship exists
+
+}

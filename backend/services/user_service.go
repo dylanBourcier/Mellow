@@ -56,4 +56,13 @@ type UserService interface {
 
 	// GetUserPrivacy retourne la confidentialité d'un utilisateur.
 	GetUserPrivacy(ctx context.Context, userID string) (string, error)
+
+	// GetFollowRequestById retourne une demande de suivi par son ID.
+	GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error)
+
+	//AnswerFollowRequest permet à un utilisateur d'accepter ou de rejeter une demande de suivi.
+	AnswerFollowRequest(ctx context.Context, request models.FollowRequest, userId, action string) error
+
+	// IsFollowRequestExists vérifie si une demande de suivi existe déjà.
+	IsFollowRequestExists(ctx context.Context, senderID, targetID string) (bool, error)
 }

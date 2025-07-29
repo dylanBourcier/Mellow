@@ -4,9 +4,7 @@ CREATE TABLE IF NOT EXISTS "notifications" (
     "user_id" VARCHAR NOT NULL,
     "sender_id" VARCHAR NOT NULL,
     "request_id" VARCHAR,
-    "type" TEXT NOT NULL CHECK(
-        "type" IN ('follow_request', 'group_invite','group_request', 'event_created', 'new_follower')
-    ),
+    "type" TEXT NOT NULL,
     "seen" BOOLEAN NOT NULL DEFAULT false,
     "creation_date" DATETIME NOT NULL,
     FOREIGN KEY("user_id") REFERENCES "users"("user_id") ON UPDATE NO ACTION ON DELETE NO ACTION

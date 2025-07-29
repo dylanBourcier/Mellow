@@ -15,6 +15,9 @@ type UserRepository interface {
 	DeleteUser(ctx context.Context, userID string) error
 
 	SendFollowRequest(ctx context.Context, followRequest models.FollowRequest) error
+	GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error)
+	AnswerFollowRequest(ctx context.Context, request models.FollowRequest, userId, action string) error
+	IsFollowRequestExists(ctx context.Context, senderID, receiverID string) (bool, error)
 
 	InsertFollow(ctx context.Context, follower_id, followed_id string) error
 	Unfollow(ctx context.Context, followerID, targetID string) error

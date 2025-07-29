@@ -40,6 +40,8 @@ function ProfileScreen({ userId }) {
         }
 
         setUserData(data.data);
+        console.log('User data fetched successfully:', data.data);
+
         setIsLimited(data.message === 'Limited');
       } catch (err) {
         toast.custom((t) => (

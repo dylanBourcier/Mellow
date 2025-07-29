@@ -26,7 +26,7 @@ func (r *notificationRepositoryImpl) InsertNotification(ctx context.Context, not
 }
 
 func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error) {
-	query := `SELECT n.notification_id, n.user_id, n.type, n.seen, n.creation_date, 
+	query := `SELECT n.notification_id,n.request_id, n.user_id, n.type, n.seen, n.creation_date, 
 					 COALESCE(u.username, '') AS sender_username,
 					 COALESCE(u.image_url, '') AS sender_avatar_url,
 					 n.sender_id
@@ -45,7 +45,7 @@ func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, u
 	for rows.Next() {
 		var n models.Notification
 		var senderUsername, senderAvatarURL string
-		if err := rows.Scan(&n.NotificationID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate, &senderUsername, &senderAvatarURL, &n.SenderID); err != nil {
+		if err := rows.Scan(&n.NotificationID, &n.RequestID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate, &senderUsername, &senderAvatarURL, &n.SenderID); err != nil {
 			return nil, fmt.Errorf("failed to scan notification: %w", err)
 		}
 		n.SenderUsername = &senderUsername   // Assuming Notification model has a SenderUsername field

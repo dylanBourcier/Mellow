@@ -19,6 +19,9 @@ func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService, au
 	// Follow / Unfollow
 	mux.Handle("/users/follow/", utils.ChainHTTP(FollowRouter(userService, notificationSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
+	// Handlers pour les demandes de suivi
+	mux.Handle("/users/follow/request/", utils.ChainHTTP(ctr.FollowRequestAnswerHandler(userService, notificationSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
 	// Voir followers / following
 	mux.Handle("/users/followers/", utils.ChainHTTP(ctr.GetFollowersHandler(userService), middlewares.OptionalAuthMiddleware(authSvc)))
 	mux.Handle("/users/following/", utils.ChainHTTP(ctr.GetFollowingHandler(userService), middlewares.OptionalAuthMiddleware(authSvc)))

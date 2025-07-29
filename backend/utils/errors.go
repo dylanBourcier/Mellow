@@ -20,14 +20,15 @@ var (
 	ErrMethodNotAllowed = errors.New("METHOD_NOT_ALLOWED")
 
 	// Ressources manquantes
-	ErrUserNotFound         = errors.New("USER_NOT_FOUND")
-	ErrPostNotFound         = errors.New("POST_NOT_FOUND")
-	ErrGroupNotFound        = errors.New("GROUP_NOT_FOUND")
-	ErrMessageNotFound      = errors.New("MESSAGE_NOT_FOUND")
-	ErrSessionNotFound      = errors.New("SESSION_NOT_FOUND")
-	ErrCommentNotFound      = errors.New("COMMENT_NOT_FOUND")
-	ErrEventNotFound        = errors.New("EVENT_NOT_FOUND")
-	ErrNotificationNotFound = errors.New("NOTIFICATION_NOT_FOUND")
+	ErrUserNotFound          = errors.New("USER_NOT_FOUND")
+	ErrPostNotFound          = errors.New("POST_NOT_FOUND")
+	ErrGroupNotFound         = errors.New("GROUP_NOT_FOUND")
+	ErrMessageNotFound       = errors.New("MESSAGE_NOT_FOUND")
+	ErrSessionNotFound       = errors.New("SESSION_NOT_FOUND")
+	ErrCommentNotFound       = errors.New("COMMENT_NOT_FOUND")
+	ErrEventNotFound         = errors.New("EVENT_NOT_FOUND")
+	ErrNotificationNotFound  = errors.New("NOTIFICATION_NOT_FOUND")
+	ErrFollowRequestNotFound = errors.New("FOLLOW_REQUEST_NOT_FOUND")
 
 	// Conflits
 	ErrUsernameAlreadyExists = errors.New("USERNAME_ALREADY_EXISTS")

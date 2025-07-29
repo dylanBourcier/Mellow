@@ -24,9 +24,13 @@ type CreateNotificationPayload struct {
 }
 
 const (
-	NotificationTypeFollowRequest = "follow_request"
-	NotificationTypeNewFollower   = "new_follower"
-	NotificationTypeGroupInvite   = "group_invite"
-	NotificationTypeGroupRequest  = "group_request"
-	NotificationTypeEventCreated  = "event_created"
+	NotificationTypeFollowRequest         = "follow_request"
+	NotificationTypeNewFollower           = "new_follower"
+	NotificationTypeGroupInvite           = "group_invite"
+	NotificationTypeGroupRequest          = "group_request"
+	NotificationTypeEventCreated          = "event_created"
+	NotificationTypeAcceptedFollowRequest = "accepted_follow_request"
+	NotificationTypeAcceptedGroupRequest  = "accepted_group_request"
+	NotificationTypeRejectedFollowRequest = "rejected_follow_request"
+	NotificationTypeRejectedGroupRequest  = "rejected_group_request"
 )

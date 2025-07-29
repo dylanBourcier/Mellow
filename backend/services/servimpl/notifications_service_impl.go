@@ -27,9 +27,19 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 		return utils.ErrInvalidPayload
 	}
 
-	switch notif.Type {
-	case "follow_request", "group_invite", "group_request", "event_created", "new_follower":
-	default:
+	validTypes := map[string]bool{
+		models.NotificationTypeFollowRequest:         true,
+		models.NotificationTypeGroupInvite:           true,
+		models.NotificationTypeGroupRequest:          true,
+		models.NotificationTypeEventCreated:          true,
+		models.NotificationTypeNewFollower:           true,
+		models.NotificationTypeAcceptedFollowRequest: true,
+		models.NotificationTypeAcceptedGroupRequest:  true,
+		models.NotificationTypeRejectedFollowRequest: true,
+		models.NotificationTypeRejectedGroupRequest:  true,
+	}
+
+	if !validTypes[notif.Type] {
 		return utils.ErrInvalidPayload
 	}
 
