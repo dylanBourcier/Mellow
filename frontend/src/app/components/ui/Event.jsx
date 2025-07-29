@@ -54,7 +54,6 @@ function Event({ event }) {
       return;
     }
 
-    // 👉 Remplace ceci par ton appel API ensuite
     //Fetch API pour soumettre le vote
     const formData = new URLSearchParams();
     formData.append('vote', vote);
@@ -70,9 +69,23 @@ function Event({ event }) {
       .then((res) => res.json())
       .then((data) => {
         if (data.status === 'success') {
-          toast.success('Vote submitted successfully!');
+          //Toast custom
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="success"
+              message="Vote submitted successfully!"
+            />
+          ));
         } else {
-          toast.error(data.message || 'Failed to submit vote.');
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={data.message || 'Failed to submit vote.'}
+            />
+          ));
+          throw new Error(data.message || 'Failed to submit vote.');
         }
       })
       .catch((err) => {

@@ -72,7 +72,7 @@ export default function EventsScreen({ groupId }) {
           <>
             <Button
               wFull={true}
-              className="w-full"
+              className="flex justify-center w-full"
               href={`/groups/${groupId}/events/create`}
             >
               Create Event

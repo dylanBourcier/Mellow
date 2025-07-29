@@ -7,10 +7,10 @@ import Button from '../ui/Button';
 import FileInput from '../ui/FileInput';
 import { useForm } from 'react-hook-form';
 import { useUser } from '@/app/context/UserContext';
+import PageTitle from '../ui/PageTitle';
 
 function EditProfile() {
   const { user } = useUser();
-  console.log('user in EditProfile:', user);
 
   const { register, setValue } = useForm();
 
@@ -32,14 +32,12 @@ function EditProfile() {
 
   return (
     <form className="flex flex-col gap-2.5 max-w-[600px] w-full">
-      <div className="flex items-center justify-center mb-12">
-        <h1 className=" text-lavender-3 text-shadow-(--text-shadow) w-full text-center">
-          Edit Profile
-        </h1>
+      <div className="flex items-center justify-center">
+        <PageTitle>Edit Profile</PageTitle>
       </div>
       <div className="flex flex-col lg:flex-row gap-2.5 w-full">
         <Label htmlFor={'firstname'}>
-          FirstName* :
+          First Name* :
           <Input
             id="firstname"
             placeholder="Enter your firstname..."
@@ -47,7 +45,7 @@ function EditProfile() {
           />
         </Label>
         <Label htmlFor={'lastname'}>
-          LastName* :
+          Last Name* :
           <Input
             id="lastname"
             placeholder="Enter your lastname..."
@@ -83,7 +81,6 @@ function EditProfile() {
             id="password"
             name="password"
             placeholder="********"
-            required
             {...register('password')}
           />
         </div>
@@ -96,7 +93,6 @@ function EditProfile() {
             id="confirm_password"
             name="confirm_password"
             placeholder="********"
-            required
             {...register('confirm_password')}
           />
         </div>
