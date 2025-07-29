@@ -24,7 +24,7 @@ func NewUserService(userRepo repositories.UserRepository) services.UserService {
 
 func (s *userServiceImpl) CreateUser(ctx context.Context, user *models.User) error {
 	// Validation simple
-	if user.Email == "" || user.Username == "" || user.Password == "" || user.Firstname == "" || user.Lastname == "" || user.Birthdate.IsZero() {
+	if user.Email == "" || user.Username == "" || user.Password == "" || user.Firstname == "" || user.Lastname == "" || user.Birthdate.IsZero() || user.Privacy == "" {
 		return fmt.Errorf("%s: missing required fields", utils.ErrInvalidUserData)
 	}
 	// Vérifier si l'utilisateur existe déjà par email ou nom d'utilisateur
@@ -75,7 +75,6 @@ func (s *userServiceImpl) GetUserByID(ctx context.Context, userID string) (*mode
 }
 
 func (s *userServiceImpl) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
-	// TODO: Appliquer les éventuelles règles métier (ex: autorisations)
 	if username == "" {
 		return nil, fmt.Errorf("%s: empty username", utils.ErrUserNotFound)
 	}

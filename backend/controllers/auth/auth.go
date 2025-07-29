@@ -35,6 +35,7 @@ func SignUpHandler(userService services.UserService) http.HandlerFunc {
 		user.Username = r.FormValue("username")
 		user.Firstname = r.FormValue("firstname")
 		user.Lastname = r.FormValue("lastname")
+		user.Privacy = r.FormValue("privacy")
 		user.Description = nil
 		if desc := r.FormValue("description"); desc != "" {
 			user.Description = &desc
