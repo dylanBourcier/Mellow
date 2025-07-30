@@ -19,7 +19,11 @@ export default function UserCard({ user }) {
         />
         <span className="group-hover:underline">{user.username}</span>
       </Link>
-      <FollowButton followStatus={user.follow_status} targetID={user.user_id} />
+      <FollowButton
+        followStatus={user.follow_status}
+        targetID={user.user_id}
+        privacy={user.privacy}
+      />
     </div>
   );
 }

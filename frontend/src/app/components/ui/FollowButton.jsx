@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function FollowButton({ followStatus: initialStatus, targetID }) {
+function FollowButton({ followStatus: initialStatus, targetID, privacy }) {
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -32,7 +32,13 @@ function FollowButton({ followStatus: initialStatus, targetID }) {
         });
         const data = await res.json();
         if (data.status === 'success') {
-          setStatus('follows');
+          if (privacy === 'private') {
+            setStatus('requested');
+          } else {
+            setStatus('follows');
+          }
+
+          console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', data.status);
         } else {
           throw new Error(data.message || 'Failed to follow user');
         }
@@ -56,7 +62,7 @@ function FollowButton({ followStatus: initialStatus, targetID }) {
 
   const statusClassNames = {
     follows:
-      'bg-transparent text-lavender-5 border border-lavender-5 hover:bg-red-100 hover:text-red-500 hover:border-red-400',
+      'bg-transparent text-lavender-5 border border-lavender-5 hover:bg-red-100 hover:text-red-500 hover:border-red-400 cursor-pointer',
     not_follow: 'bg-lavender-3 hover:bg-lavender-5 text-white cursor-pointer',
     requested:
       'bg-transparent text-dark-gray cursor-not-allowed border border-dark-gray',

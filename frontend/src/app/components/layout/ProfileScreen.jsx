@@ -113,6 +113,7 @@ function ProfileScreen({ userId }) {
               <FollowButton
                 targetID={userData.user_id}
                 followStatus={userData.follow_status}
+                privacy={userData.privacy}
               />
             )}
           </div>
@@ -207,6 +208,7 @@ function ProfileScreen({ userId }) {
                 <FollowButton
                   targetID={userData.user_id}
                   followStatus={userData.follow_status}
+                  privacy={userData.privacy}
                 />
               )}
 
