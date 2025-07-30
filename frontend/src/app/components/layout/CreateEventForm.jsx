@@ -24,10 +24,8 @@ export default function CreateEventForm({ groupId }) {
 
       // Champs texte
       formData.append('title', data.title);
-      console.log('Title:', data.title);
 
       formData.append('event_date', data.event_date);
-      console.log('Form data:', formData);
 
       const res = await fetch(`/api/groups/events/${groupId}`, {
         method: 'POST',

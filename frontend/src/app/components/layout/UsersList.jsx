@@ -39,8 +39,6 @@ export default function UsersList({ userId, type }) {
 
         setUserList(usersData.data);
         setUserInfo(userInfoData.data); // Set user info
-        console.log('User Info:', userInfoData.data);
-        console.log('Users List:', usersData.data);
 
         setLoading(false);
       } catch (error) {

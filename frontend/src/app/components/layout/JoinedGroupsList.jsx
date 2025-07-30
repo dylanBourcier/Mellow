@@ -16,8 +16,6 @@ function JoinedGroupsList(props) {
         const response = await fetch('/api/groups/joined');
         const data = await response.json();
         if (data.status !== 'success') {
-          console.log('Error fetching groups:', data.message);
-
           throw new Error('Failed to fetch groups');
         }
         if (data.data === null) {

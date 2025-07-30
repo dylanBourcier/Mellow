@@ -24,13 +24,10 @@ export default function EventsScreen({ groupId }) {
 
     fetch(`/api/groups/events/${groupId}`, { credentials: 'include' }) // adapte l'URL selon ton backend
       .then((res) => {
-        console.log(res);
-
         // if (!res.ok) throw new Error('Failed to fetch group posts');
         return res.json();
       })
       .then((data) => {
-        console.log(data);
         if (data.status == 'error') {
           throw new Error(data.message || 'Failed to fetch group posts');
         }
@@ -41,7 +38,6 @@ export default function EventsScreen({ groupId }) {
         }
         setIsMember(true);
         setEvents(data.data || []);
-        console.log('Events fetched successfully:', data.data);
 
         setLoading(false);
       })

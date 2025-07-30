@@ -40,7 +40,6 @@ function ProfileScreen({ userId }) {
         }
 
         setUserData(data.data);
-        console.log('User data fetched successfully:', data.data);
 
         setIsLimited(data.message === 'Limited');
       } catch (err) {
@@ -209,6 +208,12 @@ function ProfileScreen({ userId }) {
                   targetID={userData.user_id}
                   followStatus={userData.follow_status}
                   privacy={userData.privacy}
+                  onFollowChange={(delta) => {
+                    setUserData((prevData) => ({
+                      ...prevData,
+                      followers_count: prevData.followers_count + delta,
+                    }));
+                  }}
                 />
               )}
 

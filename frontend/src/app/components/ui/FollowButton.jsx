@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 
-function FollowButton({ followStatus: initialStatus, targetID, privacy }) {
+function FollowButton({
+  followStatus: initialStatus,
+  targetID,
+  privacy,
+  onFollowChange,
+}) {
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -22,6 +27,7 @@ function FollowButton({ followStatus: initialStatus, targetID, privacy }) {
         const data = await res.json();
         if (data.status === 'success') {
           setStatus('not_follow');
+          onFollowChange?.(-1);
         } else {
           throw new Error(data.message || 'Failed to unfollow user');
         }
@@ -36,9 +42,8 @@ function FollowButton({ followStatus: initialStatus, targetID, privacy }) {
             setStatus('requested');
           } else {
             setStatus('follows');
+            onFollowChange?.(1);
           }
-
-          console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', data.status);
         } else {
           throw new Error(data.message || 'Failed to follow user');
         }

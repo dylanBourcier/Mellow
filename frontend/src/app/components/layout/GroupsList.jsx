@@ -26,7 +26,6 @@ export default function GroupsList() {
           return;
         }
         setGroups(data.data);
-        console.log('Fetched groups:', data);
       } catch (error) {
         toast.custom((t) => (
           <CustomToast

@@ -10,7 +10,6 @@ import { formatDate } from '@/app/utils/date';
 function NotificationsCard({ notification, onAccept, onDecline }) {
   // Déterminer dynamiquement le message
   let message = '';
-  console.log(notification);
 
   if (notification.type === 'follow_request') {
     message = (
