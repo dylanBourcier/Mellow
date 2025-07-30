@@ -13,9 +13,11 @@ type Notification struct {
 	Type            string     `gorm:"type:text;not null" json:"type"`            // follow, group_invite, event_created
 	Seen            bool       `gorm:"default:false" json:"seen"`
 	CreationDate    time.Time  `gorm:"autoCreateTime" json:"creation_date"`
-	SenderID        string     `gorm:"not null" json:"sender_id"`            // Required
-	SenderUsername  *string    `gorm:"-" json:"sender_username,omitempty"`   // Optional, for follow and group requests
-	SenderAvatarURL *string    `gorm:"-" json:"sender_avatar_url,omitempty"` // Optional, for follow and group requests
+	SenderID        string     `gorm:"not null" json:"sender_id"`               // Required
+	SenderUsername  *string    `gorm:"-" json:"sender_username,omitempty"`      // Optional, for follow and group requests
+	SenderAvatarURL *string    `gorm:"-" json:"sender_avatar_url,omitempty"`    // Optional, for follow and group requests
+	GroupID         *uuid.UUID `gorm:"type:char(36)" json:"group_id,omitempty"` // Optional, for group invites
+	GroupName       *string    `gorm:"-" json:"group_name,omitempty"`           // Optional, for group invites
 }
 
 type CreateNotificationPayload struct {

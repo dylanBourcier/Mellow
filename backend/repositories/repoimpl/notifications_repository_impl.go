@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"mellow/models"
 	"mellow/repositories"
+
+	"github.com/google/uuid"
 )
 
 type notificationRepositoryImpl struct {
@@ -26,12 +28,16 @@ func (r *notificationRepositoryImpl) InsertNotification(ctx context.Context, not
 }
 
 func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error) {
-	query := `SELECT n.notification_id,n.request_id, n.user_id, n.type, n.seen, n.creation_date, 
+	query := `SELECT n.notification_id, n.request_id, n.user_id, n.type, n.seen, n.creation_date, 
 					 COALESCE(u.username, '') AS sender_username,
 					 COALESCE(u.image_url, '') AS sender_avatar_url,
-					 n.sender_id
+					 n.sender_id,
+					 COALESCE(fr.group_id, '') AS group_id,
+					 COALESCE(g.title, '') AS group_title
 			  FROM notifications n
 			  LEFT JOIN users u ON n.sender_id = u.user_id
+			  LEFT JOIN follow_requests fr ON n.request_id = fr.request_id
+			  LEFT JOIN groups g ON fr.group_id = g.group_id
 			  WHERE n.user_id = ?
 			  ORDER BY n.creation_date ASC`
 
@@ -44,12 +50,22 @@ func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, u
 	var notifs []*models.Notification
 	for rows.Next() {
 		var n models.Notification
-		var senderUsername, senderAvatarURL string
-		if err := rows.Scan(&n.NotificationID, &n.RequestID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate, &senderUsername, &senderAvatarURL, &n.SenderID); err != nil {
+		var senderUsername, senderAvatarURL, groupID, groupName string
+		if err := rows.Scan(&n.NotificationID, &n.RequestID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate, &senderUsername, &senderAvatarURL, &n.SenderID, &groupID, &groupName); err != nil {
 			return nil, fmt.Errorf("failed to scan notification: %w", err)
 		}
 		n.SenderUsername = &senderUsername   // Assuming Notification model has a SenderUsername field
 		n.SenderAvatarURL = &senderAvatarURL // Assuming Notification model has a SenderAvatarURL field
+		if groupID != "" {
+			if groupID != "" {
+				parsedGroupID, err := uuid.Parse(groupID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse groupID as UUID: %w", err)
+				}
+				n.GroupID = &parsedGroupID // Assuming Notification model has a GroupID field
+			}
+			n.GroupName = &groupName // Assuming Notification model has a GroupName field
+		}
 		notifs = append(notifs, &n)
 	}
 

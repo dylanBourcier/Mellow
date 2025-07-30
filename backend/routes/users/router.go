@@ -47,3 +47,32 @@ func FollowRouter(userService services.UserService, notificationSvc services.Not
 		}
 	}
 }
+
+func SearchUsersHandler(userService services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query().Get("q")
+		groupId := r.URL.Query().Get("groupId")
+		excludeGroupMembers := r.URL.Query().Get("excludeGroupMembers") == "true"
+		if query == "" {
+			utils.RespondError(w, http.StatusBadRequest, "Query parameter 'q' is required", utils.ErrBadRequest)
+			return
+		}
+
+		users, err := userService.SearchUsers(r.Context(), query, groupId, excludeGroupMembers)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, err.Error(), err)
+			return
+		}
+		if len(users) == 0 {
+			utils.RespondJSON(w, http.StatusOK, "No users found", nil)
+			return
+		}
+		for _, user := range users {
+			if user.ImageURL != nil {
+				user.ImageURL = utils.GetFullImageURLAvatar(user.ImageURL)
+			}
+		}
+		utils.RespondJSON(w, http.StatusOK, "Users retrieved successfully", users)
+
+	}
+}

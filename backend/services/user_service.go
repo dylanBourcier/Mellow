@@ -43,7 +43,7 @@ type UserService interface {
 	GetFollowing(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
 
 	// SearchUsers retourne une liste d'utilisateurs correspondant à un mot-clé.
-	SearchUsers(ctx context.Context, query string) ([]*models.User, error)
+	SearchUsers(ctx context.Context, query string, groupId string, excludeGroupMembers bool) ([]*models.User, error)
 
 	// IsFollowing vérifie si un utilisateur suit un autre.
 	IsFollowing(ctx context.Context, followerID, targetID string) (bool, error)

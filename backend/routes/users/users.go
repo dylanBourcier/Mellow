@@ -13,6 +13,8 @@ func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService, au
 	// Profil utilisateur : GET, PUT, DELETE
 	mux.Handle("/users/", utils.ChainHTTP(UserRouter(userService), middlewares.RequireAuthMiddleware(authSvc)))
 
+	mux.HandleFunc("/users/search", SearchUsersHandler(userService))
+
 	// Posts d'un utilisateur : GET
 	mux.Handle("/users/posts/", utils.ChainHTTP(posts.GetUserPosts(postSvc), middlewares.RequireAuthMiddleware(authSvc)))
 

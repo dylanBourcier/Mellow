@@ -304,4 +304,11 @@ func (r *groupRepositoryImpl) getEventResponses(ctx context.Context, eventID str
 	return responses, nil
 }
 
-
+func (r *groupRepositoryImpl) InviteUser(ctx context.Context, request models.FollowRequest) error {
+	query := `INSERT INTO follow_requests (request_id, sender_id, receiver_id, group_id, status, creation_date, type) VALUES (?, ?, ?, ?,1, CURRENT_TIMESTAMP,"group")`
+	_, err := r.db.ExecContext(ctx, query, request.RequestID, request.SenderID, request.ReceiverID, request.GroupID)
+	if err != nil {
+		return fmt.Errorf("failed to invite user: %w", err)
+	}
+	return nil
+}

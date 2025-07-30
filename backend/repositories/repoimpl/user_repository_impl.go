@@ -332,3 +332,30 @@ func (r *userRepositoryImpl) IsFollowRequestExists(ctx context.Context, senderID
 	}
 	return exists, nil
 }
+
+func (r *userRepositoryImpl) SearchUsersExcludingGroupMembers(ctx context.Context, query, groupId string) ([]*models.User, error) {
+	like := "%" + query + "%"
+	rows, err := r.db.QueryContext(ctx, `SELECT u.user_id, u.username, u.image_url, u.privacy
+	FROM users u 
+	WHERE (u.username LIKE ? OR u.firstname LIKE ? OR u.lastname LIKE ?) 
+	AND NOT EXISTS (
+		SELECT 1 FROM groups_member gm WHERE gm.user_id = u.user_id AND gm.group_id = ?
+	)
+	AND NOT EXISTS (
+		SELECT 1 FROM follow_requests fr WHERE fr.receiver_id = u.user_id AND fr.type = 'group' AND fr.group_id = ?
+	)`, like, like, like, groupId, groupId)
+	if err != nil {
+		return nil, fmt.Errorf("error searching users excluding group members: %w", err)
+	}
+	defer rows.Close()
+
+	var users []*models.User
+	for rows.Next() {
+		var u models.User
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy); err != nil {
+			return nil, fmt.Errorf("error scanning user: %w", err)
+		}
+		users = append(users, &u)
+	}
+	return users, nil
+}

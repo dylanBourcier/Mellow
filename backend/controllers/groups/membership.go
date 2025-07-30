@@ -1,11 +1,16 @@
 package groups
 
 import (
+	"encoding/json"
 	"errors"
+	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 func JoinGroup(groupSvc services.GroupService) http.HandlerFunc {
@@ -76,5 +81,67 @@ func LeaveGroupHandler(groupSvc services.GroupService) http.HandlerFunc {
 		}
 
 		utils.RespondJSON(w, http.StatusOK, "Left group successfully", nil)
+	}
+}
+
+func InviteUserToGroup(groupSvc services.GroupService, notifSvc services.NotificationService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+			return
+		}
+
+		id := strings.TrimPrefix(r.URL.Path, "/groups/invite/")
+
+		if id == "" || strings.Contains(id, "/") {
+			utils.RespondError(w, http.StatusNotFound, "Group not found", utils.ErrGroupNotFound)
+			return
+		}
+
+		var payload struct {
+			UserID string `json:"user_id"`
+		}
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&payload); err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid payload", utils.ErrInvalidPayload)
+			return
+		}
+
+		if payload.UserID == "" {
+			utils.RespondError(w, http.StatusBadRequest, "User ID is required", utils.ErrInvalidPayload)
+			return
+		}
+
+		userID, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+
+		requestID, err := groupSvc.InviteUser(r.Context(), id, userID.String(), payload.UserID)
+		if err != nil {
+			switch {
+			case errors.Is(err, utils.ErrGroupNotFound):
+				utils.RespondError(w, http.StatusNotFound, "Group not found", utils.ErrGroupNotFound)
+			case errors.Is(err, utils.ErrForbidden):
+				utils.RespondError(w, http.StatusForbidden, "Forbidden", utils.ErrForbidden)
+			case errors.Is(err, utils.ErrInvalidPayload):
+				utils.RespondError(w, http.StatusBadRequest, "Invalid payload", utils.ErrInvalidPayload)
+			default:
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to invite user", utils.ErrInternalServerError)
+			}
+			return
+		}
+		//Creer une notification pour l'invitation
+		notif := &models.Notification{
+			UserID:       uuid.MustParse(payload.UserID),
+			SenderID:     userID.String(),
+			RequestID:    &requestID,
+			Type:         models.NotificationTypeGroupInvite,
+			Seen:         false,
+			CreationDate: time.Now(),
+		}
+		notifSvc.CreateNotification(r.Context(), notif)
+		utils.RespondJSON(w, http.StatusOK, "User invited successfully", nil)
 	}
 }

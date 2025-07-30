@@ -310,3 +310,47 @@ func (s *groupServiceImpl) GetGroupEvents(ctx context.Context, groupID string) (
 
 	return events, nil
 }
+
+func (s *groupServiceImpl) InviteUser(ctx context.Context, groupID, senderId, userID string) (uuid.UUID, error) {
+	if groupID == "" || senderId == "" || userID == "" {
+		return uuid.Nil, utils.ErrInvalidPayload
+	}
+
+	group, err := s.groupRepo.GetGroupByID(ctx, groupID)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to get group: %w", err)
+	}
+	if group == nil {
+		return uuid.Nil, utils.ErrGroupNotFound
+	}
+	if group.UserID.String() != senderId {
+		return uuid.Nil, utils.ErrForbidden
+	}
+	if group.UserID.String() == userID {
+		return uuid.Nil, utils.ErrInvalidPayload
+	}
+	isMember, err := s.groupRepo.IsMember(ctx, groupID, userID)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to check group membership: %w", err)
+	}
+	if isMember {
+		return uuid.Nil, utils.ErrResourceConflict
+	}
+	// Créer une requête de suivi pour inviter l'utilisateur
+	requestID, err := uuid.NewRandom()
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to generate request ID: %w", err)
+	}
+	groupIDParsed := uuid.MustParse(groupID)
+	request := models.FollowRequest{
+		RequestID:  requestID,
+		SenderID:   uuid.MustParse(senderId),
+		ReceiverID: uuid.MustParse(userID),
+		GroupID:    &groupIDParsed,
+	}
+	if err := s.groupRepo.InviteUser(ctx, request); err != nil {
+		return uuid.Nil, fmt.Errorf("failed to invite user: %w", err)
+	}
+
+	return requestID, nil
+}

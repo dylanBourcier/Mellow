@@ -30,4 +30,5 @@ type UserRepository interface {
 
 	GetUserPrivacy(ctx context.Context, userID string) (string, error)
 	SearchUsers(ctx context.Context, query string) ([]*models.User, error)
+	SearchUsersExcludingGroupMembers(ctx context.Context, query, groupId string) ([]*models.User, error)
 }

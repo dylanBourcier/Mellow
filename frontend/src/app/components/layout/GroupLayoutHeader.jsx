@@ -9,9 +9,9 @@ import PageTitle from '../ui/PageTitle';
 import { useEffect } from 'react';
 import Spinner from '../ui/Spinner';
 import { useRouter } from 'next/navigation';
-import Button from '../ui/Button';
 import GroupNavbar from './GroupNavbar';
 import { icons } from '@/app/lib/icons';
+import InviteUsersModal from '../ui/InviteUsersModal';
 
 export default function GroupLayoutHeader({ groupId }) {
   // Get user data and group data based on groupId
@@ -19,6 +19,8 @@ export default function GroupLayoutHeader({ groupId }) {
   const [loading, setLoading] = useState(true);
   const [groupData, setGroupData] = useState(null);
   const [isMember, setIsMember] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -79,7 +81,10 @@ export default function GroupLayoutHeader({ groupId }) {
       <p>{groupData.description}</p>
       <div className="flex gap-2 items-center justify-between w-full">
         {user && user.user_id === groupData.user_id && (
-          <button className="px-2 text-sm py-1.5 rounded-xl bg-lavender-1 border border-lavender-1 text-white flex gap-1 items-center">
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="px-2 text-sm py-1.5 rounded-xl bg-lavender-1 border border-lavender-1 text-white flex gap-1 items-center"
+          >
             {icons['add_person']}
             <span className="">Add People</span>
           </button>
@@ -103,6 +108,12 @@ export default function GroupLayoutHeader({ groupId }) {
       </div>
       <div className="w-[50%] h-[1px] bg-lavender-2 self-center mt-1 mb-1"></div>
       <GroupNavbar groupId={groupId} isMember={isMember} />
+      {showInviteModal && (
+        <InviteUsersModal
+          onClose={() => setShowInviteModal(false)}
+          groupId={groupId}
+        />
+      )}
     </div>
   );
 }

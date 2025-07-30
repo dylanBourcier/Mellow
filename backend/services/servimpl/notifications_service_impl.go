@@ -38,15 +38,15 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 		models.NotificationTypeRejectedFollowRequest: true,
 		models.NotificationTypeRejectedGroupRequest:  true,
 	}
-	
-		// verify user exists
-		user, err := s.userRepo.FindUserByID(ctx, notif.UserID.String())
-		if err != nil {
-			return fmt.Errorf("failed to check user existence: %w", err)
-		}
-		if user == nil {
-			return utils.ErrUserNotFound
-		}
+
+	// verify user exists
+	user, err := s.userRepo.FindUserByID(ctx, notif.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check user existence: %w", err)
+	}
+	if user == nil {
+		return utils.ErrUserNotFound
+	}
 
 	if !validTypes[notif.Type] {
 		return utils.ErrInvalidPayload
@@ -58,9 +58,9 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 	}
 	if existingNotif != nil {
 		// if the notification already exists and his creation date is less than 24 hours, we don't create a new one
-		if time.Since(existingNotif.CreationDate) < 24*time.Hour {
+		if time.Since(existingNotif.CreationDate) < 24*time.Hour && !existingNotif.Seen {
 			return nil
-		}else{
+		} else {
 			// if the notification already exists and his creation date is more than 24 hours, we delete the old one
 			if err := s.notifRepo.DeleteNotification(ctx, existingNotif.NotificationID.String()); err != nil {
 				return fmt.Errorf("failed to delete existing notification: %w", err)
@@ -97,7 +97,9 @@ func (s *notificationServiceImpl) GetUserNotifications(ctx context.Context, user
 		}
 
 	}
-
+	for _, notif := range notifs {
+		fmt.Printf("Notification: %+v\n", notif)
+	}
 	return notifs, nil
 }
 

@@ -197,9 +197,31 @@ func (s *userServiceImpl) GetFollowing(ctx context.Context, viewerID, userID str
 	return users, nil
 }
 
-func (s *userServiceImpl) SearchUsers(ctx context.Context, query string) ([]*models.User, error) {
+func (s *userServiceImpl) SearchUsers(ctx context.Context, query string, groupId string, excludeGroupMembers bool) ([]*models.User, error) {
 	if query == "" {
 		return []*models.User{}, nil
+	}
+	if len(query) < 2 {
+		return nil, fmt.Errorf("%s: query must be at least 3 characters long", utils.ErrInvalidUserData)
+	}
+	if groupId != "" && excludeGroupMembers {
+		// If groupId is provided, we need to find users not in the group
+		users, err := s.userRepo.SearchUsersExcludingGroupMembers(ctx, sanitize.SanitizeInput(query), groupId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to search users excluding group members: %w", err)
+		}
+		return users, nil
+	}
+	//If groupId and not excluding group members, search only the group members
+	if groupId != "" && !excludeGroupMembers {
+		// Do we need to search users in the group?
+		// This part is commented out because it is not implemented yet.
+		// users, err := s.userRepo.SearchUsersInGroup(ctx, sanitize.SanitizeInput(query), groupId)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("failed to search users in group: %w", err)
+		// }
+		// return users, nil
+
 	}
 	users, err := s.userRepo.SearchUsers(ctx, sanitize.SanitizeInput(query))
 	if err != nil {

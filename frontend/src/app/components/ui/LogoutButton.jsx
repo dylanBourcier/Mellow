@@ -17,12 +17,11 @@ export default function LogoutButton({ className, isMobile = false }) {
         method: 'POST',
         credentials: 'include',
       });
-
+      router.push('/login');
       setUser(null); // vider le contexte
       toast.custom((t) => (
         <CustomToast message="Logged out successfully" type="success" />
       ));
-      if (pathname !== '/') router.push('/login');
     } catch (err) {
       toast.custom((t) => <CustomToast message="Logout failed" type="error" />);
     }
