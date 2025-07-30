@@ -38,18 +38,34 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 		models.NotificationTypeRejectedFollowRequest: true,
 		models.NotificationTypeRejectedGroupRequest:  true,
 	}
+	
+		// verify user exists
+		user, err := s.userRepo.FindUserByID(ctx, notif.UserID.String())
+		if err != nil {
+			return fmt.Errorf("failed to check user existence: %w", err)
+		}
+		if user == nil {
+			return utils.ErrUserNotFound
+		}
 
 	if !validTypes[notif.Type] {
 		return utils.ErrInvalidPayload
 	}
-
-	// verify user exists
-	user, err := s.userRepo.FindUserByID(ctx, notif.UserID.String())
+	//check if the notification is already sent
+	existingNotif, err := s.notifRepo.GetNotificationByTypeSenderReceiver(ctx, notif.Type, notif.SenderID, notif.UserID.String())
 	if err != nil {
-		return fmt.Errorf("failed to check user existence: %w", err)
+		return fmt.Errorf("failed to check existing notification: %w", err)
 	}
-	if user == nil {
-		return utils.ErrUserNotFound
+	if existingNotif != nil {
+		// if the notification already exists and his creation date is less than 24 hours, we don't create a new one
+		if time.Since(existingNotif.CreationDate) < 24*time.Hour {
+			return nil
+		}else{
+			// if the notification already exists and his creation date is more than 24 hours, we delete the old one
+			if err := s.notifRepo.DeleteNotification(ctx, existingNotif.NotificationID.String()); err != nil {
+				return fmt.Errorf("failed to delete existing notification: %w", err)
+			}
+		}
 	}
 
 	id, err := uuid.NewRandom()

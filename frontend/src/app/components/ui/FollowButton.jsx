@@ -20,8 +20,8 @@ function FollowButton({
 
     try {
       if (status === 'follows') {
-        const res = await fetch(`/api/users/unfollow/${targetID}`, {
-          method: 'POST',
+        const res = await fetch(`/api/users/follow/${targetID}`, {
+          method: 'DELETE',
           credentials: 'include',
         });
         const data = await res.json();

@@ -153,8 +153,7 @@ func (r *userRepositoryImpl) AnswerFollowRequest(ctx context.Context, request mo
 }
 
 func (r *userRepositoryImpl) Unfollow(ctx context.Context, followerID, targetID string) error {
-	// TODO: DELETE FROM follow WHERE follower_id = ? AND target_id = ?
-	query := `DELETE FROM follow_requests WHERE sender_id = ? AND receiver_id = ?`
+	query := `DELETE FROM follows WHERE follower_id = ? AND followed_id = ?`
 	_, err := r.db.ExecContext(ctx, query, followerID, targetID)
 	if err != nil {
 		return fmt.Errorf("error unfollowing user: %w", err)
@@ -167,6 +166,7 @@ func (r *userRepositoryImpl) GetFollowers(ctx context.Context, viewerID, userID 
   u.user_id,
   u.username,
   u.image_url,
+  u.privacy,
   CASE
     WHEN f2.follower_id IS NOT NULL THEN 'follows'
     WHEN fr.sender_id IS NOT NULL THEN 'requested'
@@ -187,7 +187,7 @@ WHERE f.followed_id = ?
 	var users []*models.UserProfileData
 	for rows.Next() {
 		var u models.UserProfileData
-		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.FollowStatus); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy, &u.FollowStatus); err != nil {
 			return nil, fmt.Errorf("error scanning follower: %w", err)
 		}
 		if u.UserID == viewerID {
@@ -203,6 +203,7 @@ func (r *userRepositoryImpl) GetFollowing(ctx context.Context, viewerID, userID 
   u.user_id,
   u.username,
   u.image_url,
+  u.privacy,
   CASE
     WHEN f2.follower_id IS NOT NULL THEN 'follows'
     WHEN fr.sender_id IS NOT NULL THEN 'requested'
@@ -222,7 +223,7 @@ WHERE f.follower_id = ?`
 	var users []*models.UserProfileData
 	for rows.Next() {
 		var u models.UserProfileData
-		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.FollowStatus); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy, &u.FollowStatus); err != nil {
 			return nil, fmt.Errorf("error scanning followed user: %w", err)
 		}
 		if u.UserID == viewerID {

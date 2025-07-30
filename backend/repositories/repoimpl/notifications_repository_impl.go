@@ -73,6 +73,20 @@ func (r *notificationRepositoryImpl) GetNotificationByID(ctx context.Context, no
 	return &n, nil
 }
 
+func (r *notificationRepositoryImpl) GetNotificationByTypeSenderReceiver(ctx context.Context, notifType, senderID, receiverID string) (*models.Notification, error) {
+	query := `SELECT notification_id, user_id, type, seen, creation_date FROM notifications 
+			  WHERE type = ? AND sender_id = ? AND user_id = ?`
+	var n models.Notification
+	err := r.db.QueryRowContext(ctx, query, notifType, senderID, receiverID).Scan(&n.NotificationID, &n.UserID, &n.Type, &n.Seen, &n.CreationDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get notification by type and sender: %w", err)
+	}
+	return &n, nil
+}
+
 func (r *notificationRepositoryImpl) MarkAsRead(ctx context.Context, notificationID string) error {
 	query := `UPDATE notifications SET seen = 1 WHERE notification_id = ?`
 	_, err := r.db.ExecContext(ctx, query, notificationID)
@@ -82,6 +96,11 @@ func (r *notificationRepositoryImpl) MarkAsRead(ctx context.Context, notificatio
 	return nil
 }
 func (r *notificationRepositoryImpl) DeleteNotification(ctx context.Context, notificationID string) error {
-	// TODO: DELETE FROM notifications WHERE id = ?
+	query := `DELETE FROM notifications WHERE notification_id = ?`
+	_, err := r.db.ExecContext(ctx, query, notificationID)
+	if err != nil {
+		return fmt.Errorf("failed to delete notification: %w", err)
+	}
+	// Successfully deleted the notification
 	return nil
 }

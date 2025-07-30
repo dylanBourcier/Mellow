@@ -303,3 +303,5 @@ func (r *groupRepositoryImpl) getEventResponses(ctx context.Context, eventID str
 
 	return responses, nil
 }
+
+

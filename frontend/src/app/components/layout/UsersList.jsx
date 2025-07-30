@@ -38,6 +38,8 @@ export default function UsersList({ userId, type }) {
         }
 
         setUserList(usersData.data);
+        console.log('Fetched users list:', usersData.data);
+        
         setUserInfo(userInfoData.data); // Set user info
 
         setLoading(false);
