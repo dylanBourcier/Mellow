@@ -1,10 +1,18 @@
 import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
 import React from 'react';
+import UserConversation from '@/app/components/layout/UserConversation';
 
-export default function ConversationPage() {
+const metadata = {
+  title: 'Conversation',
+  description: 'Conversation page',
+};
+export { metadata };
+
+export default function ConversationPage({ params }) {
+  const { id } = params;
   return (
     <ProtectedRoute redirectTo="/login">
-      <div>ConversationPage</div>
+      <UserConversation id={id} />
     </ProtectedRoute>
   );
 }
