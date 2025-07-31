@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../ui/Input';
 import Label from '../ui/Label';
 import Button from '../ui/Button';
 import FileInput from '../ui/FileInput';
+import Modal from '../ui/Modal';
 import { useForm } from 'react-hook-form';
 import { useUser } from '@/app/context/UserContext';
 import PageTitle from '../ui/PageTitle';
@@ -13,6 +14,9 @@ function EditProfile() {
   const { user } = useUser();
 
   const { register, setValue } = useForm();
+
+  // Ajout du state pour gérer l'ouverture du modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -158,10 +162,34 @@ function EditProfile() {
         />
       </div>
       <div className="flex flex-1 align-middle justify-center gap-2.5 w-full">
-        <Button type="submit" className="w-full">
+        <Button
+          type="button" // <-- Important : empêche la soumission du formulaire
+          className="w-full"
+          onClick={() => setIsModalOpen(true)}
+        >
           Save Changes
         </Button>
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Confirmation"
+        message="Acceptez-vous les modifications ?"
+        actions={[
+          {
+            label: 'Oui',
+            onClick: () => {
+              /* ajouter la logique de sauvegarde ici */
+            },
+            closeOnClick: true,
+          },
+          {
+            label: 'Non',
+            onClick: null,
+            closeOnClick: true,
+          },
+        ]}
+      />
     </form>
   );
 }
