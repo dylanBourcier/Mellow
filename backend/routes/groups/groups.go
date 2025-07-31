@@ -8,12 +8,15 @@ import (
 	"net/http"
 )
 
-func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, postSvc services.PostService, authSvc services.AuthService, notifSvc services.NotificationService) {
+func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, postSvc services.PostService, authSvc services.AuthService, notifSvc services.NotificationService, userSvc services.UserService) {
 	// Créer un groupe / voir tous les groupes
 	mux.Handle("/groups", GroupRootRouter(groupSvc, authSvc))
 
 	// Inviter un utilisateur dans un groupe
 	mux.Handle("/groups/invite/", utils.ChainHTTP(groups.InviteUserToGroup(groupSvc, notifSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
+	//Repondre à une invitation de groupe
+	mux.Handle("/groups/invite/answer/", utils.ChainHTTP(groups.AnswerGroupInvite(groupSvc, userSvc, notifSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir un groupe spécifique
 	mux.Handle("/groups/", utils.ChainHTTP(GroupRouter(groupSvc, authSvc), middlewares.OptionalAuthMiddleware(authSvc)))

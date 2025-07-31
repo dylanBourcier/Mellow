@@ -52,4 +52,7 @@ type GroupService interface {
 
 	// InviteUser invite un utilisateur dans un groupe.
 	InviteUser(ctx context.Context, groupID, senderId, userID string) (uuid.UUID, error)
+
+	// AnswerGroupInvite enregistre la réponse d'un utilisateur à une invitation de groupe.
+	AnswerGroupInvite(ctx context.Context, request models.FollowRequest, userId, action string) error
 }

@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useUser } from '@/app/context/UserContext';
 import { useEffect } from 'react';
 import { icons } from '@/app/lib/icons'; // Assurez-vous que le chemin est correct
+import CustomToast from './CustomToast';
 
 function Event({ event }) {
   const [vote, setVote] = useState(null);

@@ -6,12 +6,15 @@ import Button from '../ui/Button';
 import GroupCard from '../ui/GroupCard';
 import CustomToast from '../ui/CustomToast';
 import Spinner from '../ui/Spinner';
+import { useUser } from '@/app/context/UserContext';
 
 export default function GroupsList() {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState(null);
+  const { user } = useUser(); // Assuming useUser is a custom hook to get user data
+  console.log('user in GroupsList:', user);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -79,7 +82,12 @@ export default function GroupsList() {
       ) : (
         <div className="flex flex-col gap-2.5">
           {filteredGroups.map((group) => (
-            <GroupCard key={group.group_id} props={group} withButton />
+            <GroupCard
+              key={group.group_id}
+              props={group}
+              withButton
+              currentUserId={user.user_id}
+            />
           ))}
         </div>
       )}

@@ -80,7 +80,7 @@ export default function GroupLayoutHeader({ groupId }) {
       </div>
       <p>{groupData.description}</p>
       <div className="flex gap-2 items-center justify-between w-full">
-        {user && user.user_id === groupData.user_id && (
+        {user && isMember && (
           <button
             onClick={() => setShowInviteModal(true)}
             className="px-2 text-sm py-1.5 rounded-xl bg-lavender-1 border border-lavender-1 text-white flex gap-1 items-center"

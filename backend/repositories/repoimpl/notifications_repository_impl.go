@@ -57,14 +57,12 @@ func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, u
 		n.SenderUsername = &senderUsername   // Assuming Notification model has a SenderUsername field
 		n.SenderAvatarURL = &senderAvatarURL // Assuming Notification model has a SenderAvatarURL field
 		if groupID != "" {
-			if groupID != "" {
-				parsedGroupID, err := uuid.Parse(groupID)
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse groupID as UUID: %w", err)
-				}
-				n.GroupID = &parsedGroupID // Assuming Notification model has a GroupID field
+			parsedGroupID, err := uuid.Parse(groupID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse groupID as UUID: %w", err)
 			}
-			n.GroupName = &groupName // Assuming Notification model has a GroupName field
+			n.GroupID = &parsedGroupID // Assuming Notification model has a GroupID field
+			n.GroupName = &groupName   // Assuming Notification model has a GroupName field
 		}
 		notifs = append(notifs, &n)
 	}

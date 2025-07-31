@@ -141,9 +141,11 @@ func (r *groupRepositoryImpl) UpdateGroup(ctx context.Context, group *models.Gro
 }
 
 func (r *groupRepositoryImpl) AddMember(ctx context.Context, groupID, userID string) error {
+	fmt.Println("Adding member to group:", groupID, userID)
 	query := `INSERT INTO groups_member (group_id, user_id, role, join_date) VALUES (?, ?, 'member', CURRENT_TIMESTAMP)`
 	_, err := r.db.ExecContext(ctx, query, groupID, userID)
 	if err != nil {
+		fmt.Println("Error adding member to group:", err)
 		return fmt.Errorf("failed to add member: %w", err)
 	}
 	return nil
@@ -309,6 +311,32 @@ func (r *groupRepositoryImpl) InviteUser(ctx context.Context, request models.Fol
 	_, err := r.db.ExecContext(ctx, query, request.RequestID, request.SenderID, request.ReceiverID, request.GroupID)
 	if err != nil {
 		return fmt.Errorf("failed to invite user: %w", err)
+	}
+	return nil
+}
+
+func (r *groupRepositoryImpl) AnswerGroupInvite(ctx context.Context, request models.FollowRequest, userId, action string) error {
+	if action != "accept" && action != "reject" {
+		return fmt.Errorf("invalid action: %s", action)
+	}
+	// If the action is "accept", we insert the member into the group
+	if action == "accept" {
+		fmt.Println(request.GroupID)
+		query := `INSERT INTO groups_member (group_id, user_id, role, join_date) VALUES (?, ?, 'member', CURRENT_TIMESTAMP)`
+		_, err := r.db.ExecContext(ctx, query, request.GroupID, userId)
+		if err != nil {
+			fmt.Println("Error adding member to group:", err)
+			return fmt.Errorf("failed to add member: %w", err)
+		}
+		return nil
+
+	}
+
+	// Delete the follow request regardless of the action
+	query := `DELETE FROM follow_requests WHERE request_id = ?`
+	_, err := r.db.ExecContext(ctx, query, request.RequestID)
+	if err != nil {
+		return fmt.Errorf("error deleting follow request: %w", err)
 	}
 	return nil
 }

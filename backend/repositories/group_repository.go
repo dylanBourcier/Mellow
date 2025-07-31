@@ -56,4 +56,7 @@ type GroupRepository interface {
 
 	// InviteUser invite un utilisateur dans un groupe.
 	InviteUser(ctx context.Context, request models.FollowRequest) error
+
+	//AnswerGroupInvite enregistre la réponse d'un utilisateur à une invitation de groupe.
+	AnswerGroupInvite(ctx context.Context, request models.FollowRequest, userId, action string) error
 }

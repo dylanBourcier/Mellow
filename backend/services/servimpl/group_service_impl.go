@@ -323,9 +323,6 @@ func (s *groupServiceImpl) InviteUser(ctx context.Context, groupID, senderId, us
 	if group == nil {
 		return uuid.Nil, utils.ErrGroupNotFound
 	}
-	if group.UserID.String() != senderId {
-		return uuid.Nil, utils.ErrForbidden
-	}
 	if group.UserID.String() == userID {
 		return uuid.Nil, utils.ErrInvalidPayload
 	}
@@ -353,4 +350,24 @@ func (s *groupServiceImpl) InviteUser(ctx context.Context, groupID, senderId, us
 	}
 
 	return requestID, nil
+}
+
+func (s *groupServiceImpl) AnswerGroupInvite(ctx context.Context, request models.FollowRequest, userId, action string) error {
+	if request.RequestID == uuid.Nil || userId == "" || action == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	if request.ReceiverID.String() != userId {
+		return utils.ErrForbidden
+	}
+
+	if action != "accept" && action != "reject" {
+		return utils.ErrInvalidUserData
+	}
+
+	if err := s.groupRepo.AnswerGroupInvite(ctx, request, userId, action); err != nil {
+		return fmt.Errorf("failed to answer group invite: %w", err)
+	}
+
+	return nil
 }

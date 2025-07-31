@@ -24,6 +24,50 @@ function NotificationsCard({ notification, onAccept, onDecline }) {
     case 'rejected_follow_request':
       message = 'has rejected your follow request';
       break;
+    case 'accepted_group_request':
+      message = (
+        <>
+          has accepted your request to join{' '}
+          <GroupLink
+            groupId={notification.group_id}
+            groupName={notification.group_name}
+          />
+        </>
+      );
+      break;
+    case 'rejected_group_request':
+      message = (
+        <>
+          has rejected your request to join{' '}
+          <GroupLink
+            groupId={notification.group_id}
+            groupName={notification.group_name}
+          />
+        </>
+      );
+      break;
+    case 'accepted_group_invite':
+      message = (
+        <>
+          has accepted your invitation to join{' '}
+          <GroupLink
+            groupId={notification.group_id}
+            groupName={notification.group_name}
+          />
+        </>
+      );
+      break;
+    case 'rejected_group_invite':
+      message = (
+        <>
+          has rejected your invitation to join{' '}
+          <GroupLink
+            groupId={notification.group_id}
+            groupName={notification.group_name}
+          />
+        </>
+      );
+      break;
     case 'new_follower':
       message = 'has followed you';
       break;

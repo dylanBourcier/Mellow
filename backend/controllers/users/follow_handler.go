@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -172,7 +171,6 @@ func FollowRequestAnswerHandler(userService services.UserService, notificationSe
 
 		requestId := strings.TrimPrefix(r.URL.Path, "/users/follow/request/")
 		// Get the request details to find the sender
-		fmt.Println("Request ID:", requestId)
 		request, err := userService.GetFollowRequestByID(r.Context(), requestId)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get follow request details", utils.ErrInternalServerError)

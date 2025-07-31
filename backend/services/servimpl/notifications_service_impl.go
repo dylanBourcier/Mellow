@@ -24,6 +24,7 @@ func NewNotificationService(notifRepo repositories.NotificationRepository, userR
 
 func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif *models.Notification) error {
 	if notif == nil || notif.UserID == uuid.Nil || notif.Type == "" {
+		fmt.Println("1")
 		return utils.ErrInvalidPayload
 	}
 
@@ -37,6 +38,8 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 		models.NotificationTypeAcceptedGroupRequest:  true,
 		models.NotificationTypeRejectedFollowRequest: true,
 		models.NotificationTypeRejectedGroupRequest:  true,
+		models.NotificationTypeAcceptedGroupInvite:   true,
+		models.NotificationTypeRejectedGroupInvite:   true,
 	}
 
 	// verify user exists
@@ -49,6 +52,8 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 	}
 
 	if !validTypes[notif.Type] {
+		fmt.Println("2")
+
 		return utils.ErrInvalidPayload
 	}
 	//check if the notification is already sent

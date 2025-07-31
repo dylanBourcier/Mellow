@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { use, useEffect } from 'react';
 import GroupCard from '../ui/GroupCard';
 import Button from '../ui/Button';
 import { useState } from 'react';
 import Spinner from '../ui/Spinner';
+import { useUser } from '@/app/context/UserContext';
 
 function JoinedGroupsList(props) {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser(); // Assuming useUser is a custom hook to get user data
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -55,7 +57,7 @@ function JoinedGroupsList(props) {
           <GroupCard
             key={group.group_id}
             props={group}
-            currentUserId={group.user_id}
+            currentUserId={user.user_id}
           />
         ))
       )}

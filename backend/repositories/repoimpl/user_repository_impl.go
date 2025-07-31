@@ -120,10 +120,10 @@ func (r *userRepositoryImpl) SendFollowRequest(ctx context.Context, followReques
 	return nil
 }
 func (r *userRepositoryImpl) GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error) {
-	query := `SELECT request_id, sender_id, receiver_id, status, creation_date FROM follow_requests WHERE request_id = ?`
+	query := `SELECT request_id, sender_id, receiver_id,group_id, status, creation_date FROM follow_requests WHERE request_id = ?`
 	var followRequest models.FollowRequest
 	err := r.db.QueryRowContext(ctx, query, requestID).Scan(
-		&followRequest.RequestID, &followRequest.SenderID, &followRequest.ReceiverID,
+		&followRequest.RequestID, &followRequest.SenderID, &followRequest.ReceiverID, &followRequest.GroupID,
 		&followRequest.Status, &followRequest.CreationDate)
 	if err != nil {
 		if err == sql.ErrNoRows {
