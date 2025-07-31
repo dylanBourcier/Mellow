@@ -1,47 +1,25 @@
 import React from "react";
 
+// Composant Modal réutilisable
+// Affiche une fenêtre modale avec un titre, un message et des boutons d'action dynamiques
 const Modal = ({ isOpen, onClose, title, message, actions = [] }) => {
+  // Si le modal n'est pas ouvert, ne rien afficher
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{
-        backgroundColor: "rgba(0,0,0,0.5)",
-        zIndex: 50,
-      }}
-    >
-      <div
-        style={{
-          background: "var(--color-background, #fff)",
-          borderRadius: "1rem",
-          padding: "2rem",
-          minWidth: "320px",
-        }}
-      >
-        <h2
-          style={{
-            fontFamily: "var(--font-quicksand), sans-serif",
-            fontSize: "1.25rem",
-            fontWeight: 600,
-            color: "var(--color-primary, #6C63FF)",
-            margin: 0,
-          }}
-        >
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+      {/* Contenu principal du modal */}
+      <div className="bg-white rounded-2xl p-8 min-w-[320px]">
+        {/* Titre du modal, stylisé */}
+        <h2 className="font-quicksand text-xl font-semibold text-lavender-3 m-0">
           {title}
         </h2>
-        <p
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "1rem",
-            color: "var(--color-text, #22223B)",
-            marginTop: "1rem",
-            marginBottom: 0,
-          }}
-        >
+        {/* Message du modal */}
+        <p className="font-inter text-base text-dark-blue mt-4 mb-0">
           {message}
         </p>
-        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+        {/* Zone des boutons d'action */}
+        <div className="mt-8 flex justify-end gap-4">
           {actions.length > 0 ? (
             actions.map((action, idx) => (
               <button
@@ -51,46 +29,22 @@ const Modal = ({ isOpen, onClose, title, message, actions = [] }) => {
                   if (action.closeOnClick !== false) onClose();
                 }}
                 disabled={action.disabled}
-                style={{
-                  background: "var(--color-primary, #6C63FF)",
-                  color: "var(--color-background, #fff)",
-                  padding: "0.5rem 1.5rem",
-                  borderRadius: "0.75rem",
-                  border: "none",
-                  fontFamily: "var(--font-inter), sans-serif",
-                  fontWeight: 500,
-                  fontSize: "1rem",
-                  cursor: action.disabled ? "not-allowed" : "pointer",
-                  opacity: action.disabled ? 0.6 : 1,
-                  transition: "background 0.2s",
-                }}
-                onMouseOver={e => {
-                  if (!action.disabled) e.currentTarget.style.background = "var(--color-primary-hover, #574fd6)";
-                }}
-                onMouseOut={e => {
-                  if (!action.disabled) e.currentTarget.style.background = "var(--color-primary, #6C63FF)";
-                }}
+                className={`
+                  bg-lavender-3 text-white px-6 py-2 rounded-xl border-none font-inter font-medium text-base
+                  transition-colors duration-200
+                  ${action.disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-lavender-5 cursor-pointer"}
+                `}
+                type="button"
               >
                 {action.label}
               </button>
             ))
           ) : (
+            // Sinon, afficher un bouton "Fermer" par défaut
             <button
               onClick={onClose}
-              style={{
-                background: "var(--color-primary, #6C63FF)",
-                color: "var(--color-background, #fff)",
-                padding: "0.5rem 1.5rem",
-                borderRadius: "0.75rem",
-                border: "none",
-                fontFamily: "var(--font-inter), sans-serif",
-                fontWeight: 500,
-                fontSize: "1rem",
-                cursor: "pointer",
-                transition: "background 0.2s",
-              }}
-              onMouseOver={e => (e.currentTarget.style.background = "var(--color-primary-hover, #574fd6)")}
-              onMouseOut={e => (e.currentTarget.style.background = "var(--color-primary, #6C63FF)")}
+              className="bg-lavender-3 text-white px-6 py-2 rounded-xl border-none font-inter font-medium text-base transition-colors duration-200 hover:bg-lavender-5 cursor-pointer"
+              type="button"
             >
               Fermer
             </button>
