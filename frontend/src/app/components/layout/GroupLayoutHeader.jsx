@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import Button from '../ui/Button';
 import GroupNavbar from './GroupNavbar';
 import { icons } from '@/app/lib/icons';
+import Modal from '../ui/Modal';
 
 export default function GroupLayoutHeader({ groupId }) {
   // Get user data and group data based on groupId
@@ -20,6 +21,7 @@ export default function GroupLayoutHeader({ groupId }) {
   const [groupData, setGroupData] = useState(null);
   const [isMember, setIsMember] = useState(false);
   const router = useRouter();
+  const [isModalOpen,setIsModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchGroupData = async () => {
@@ -63,6 +65,30 @@ export default function GroupLayoutHeader({ groupId }) {
     router.push('/groups'); // Redirect to groups page if no group data
     return null; // Prevent rendering if no group data
   }
+
+  // ajout du Modal pour la suppression du groupe --> phase de test 
+   <Modal
+    isOpen={isModalOpen}
+    onClose={() => setIsModalOpen(false)}
+    title="Supprimer Groupe"
+    message="Êtes-vous sûr de vouloir supprimer ce groupe ?"
+    actions={[
+      {
+        label: 'Oui',
+        onClick: () => {
+          // ajouter la logique de suppression ici
+          setIsModalOpen(false);
+          toast.success('Groupe supprimé avec succès');
+        },
+      closeOnclick: true,
+      },
+      {
+        label: 'Non',
+        onClick: null,
+        closeOnClick: true,
+      }
+    ]}
+  />
   return (
     <div className="flex flex-col w-full gap-1 lg:gap-2 p-2">
       <div className="flex">
@@ -91,7 +117,8 @@ export default function GroupLayoutHeader({ groupId }) {
             <button className="p-1.5 rounded-xl border border-dark-grey">
               {icons['edit']}
             </button>
-            <button className="p-1.5 rounded-xl border text-red-400 bg-red-100 border-red-400">
+            <button className="p-1.5 rounded-xl border text-red-400 bg-red-100 border-red-400"
+            onClick={() => setIsModalOpen(true)}>
               {icons['trash']}
             </button>
           </div>
@@ -100,5 +127,5 @@ export default function GroupLayoutHeader({ groupId }) {
       <div className="w-[50%] h-[1px] bg-lavender-2 self-center mt-1 mb-1"></div>
       <GroupNavbar groupId={groupId} isMember={isMember} />
     </div>
-  );
+      );
 }

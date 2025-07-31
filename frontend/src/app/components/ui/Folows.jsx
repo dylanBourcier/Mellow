@@ -1,6 +1,8 @@
 import React from 'react';
 
+
 function folows() {
+  
     const handleFollow = async (e) => {
         e.preventDefault();
         // Implement follow logic here
