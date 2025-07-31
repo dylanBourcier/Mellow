@@ -10,7 +10,7 @@ const Modal = ({ isOpen, onClose, title, message, actions = [] }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       {/* Contenu principal du modal */}
       <div className="bg-white rounded-2xl p-8 min-w-[320px]">
-        {/* Titre du modal, stylisé */}
+        {/* Titre du modal */}
         <h2 className="font-quicksand text-xl font-semibold text-lavender-3 m-0">
           {title}
         </h2>
