@@ -9,15 +9,20 @@ import (
 	"net/http"
 )
 
-func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService, authSvc services.AuthService, postSvc services.PostService) {
+func RegisterUserRoutes(mux *http.ServeMux, userService services.UserService, authSvc services.AuthService, postSvc services.PostService, notificationSvc services.NotificationService) {
 	// Profil utilisateur : GET, PUT, DELETE
 	mux.Handle("/users/", utils.ChainHTTP(UserRouter(userService), middlewares.RequireAuthMiddleware(authSvc)))
+
+	mux.HandleFunc("/users/search", SearchUsersHandler(userService))
 
 	// Posts d'un utilisateur : GET
 	mux.Handle("/users/posts/", utils.ChainHTTP(posts.GetUserPosts(postSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Follow / Unfollow
-	mux.Handle("/users/follow/", utils.ChainHTTP(FollowRouter(userService), middlewares.RequireAuthMiddleware(authSvc)))
+	mux.Handle("/users/follow/", utils.ChainHTTP(FollowRouter(userService, notificationSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
+	// Handlers pour les demandes de suivi
+	mux.Handle("/users/follow/request/", utils.ChainHTTP(ctr.FollowRequestAnswerHandler(userService, notificationSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir followers / following
 	mux.Handle("/users/followers/", utils.ChainHTTP(ctr.GetFollowersHandler(userService), middlewares.OptionalAuthMiddleware(authSvc)))

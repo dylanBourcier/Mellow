@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mellow/models"
 	"mellow/repositories"
+	"time"
 )
 
 type userRepositoryImpl struct {
@@ -17,8 +18,8 @@ func NewUserRepository(db *sql.DB) repositories.UserRepository {
 }
 
 func (r *userRepositoryImpl) InsertUser(ctx context.Context, user *models.User) error {
-	query := "INSERT INTO users (user_id,email,password,username,firstname,lastname,birthdate,role,image_url,creation_date,description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	_, err := r.db.ExecContext(ctx, query, user.UserID, user.Email, user.Password, user.Username, user.Firstname, user.Lastname, user.Birthdate, user.Role, user.ImageURL, user.CreationDate, user.Description)
+	query := "INSERT INTO users (user_id,email,password,username,firstname,lastname,birthdate,role,image_url,creation_date,description,privacy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
+	_, err := r.db.ExecContext(ctx, query, user.UserID, user.Email, user.Password, user.Username, user.Firstname, user.Lastname, user.Birthdate, user.Role, user.ImageURL, user.CreationDate, user.Description, user.Privacy)
 	if err != nil {
 		return fmt.Errorf("error inserting user: %w", err)
 	}
@@ -26,14 +27,14 @@ func (r *userRepositoryImpl) InsertUser(ctx context.Context, user *models.User) 
 }
 
 func (r *userRepositoryImpl) FindUserByID(ctx context.Context, userID string) (*models.User, error) {
-	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description 
+	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description, privacy 
 	          FROM users WHERE user_id = ?`
 	var user models.User
 	err := r.db.QueryRowContext(ctx, query, userID).Scan(
 		&user.UserID, &user.Email, &user.Password, &user.Username,
 		&user.Firstname, &user.Lastname, &user.Birthdate,
 		&user.Role, &user.ImageURL, &user.CreationDate,
-		&user.Description)
+		&user.Description, &user.Privacy)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // User not found
@@ -101,19 +102,58 @@ func (r *userRepositoryImpl) DeleteUser(ctx context.Context, userID string) erro
 	return nil
 }
 
-func (r *userRepositoryImpl) Follow(ctx context.Context, followerID, targetID string) error {
-	// TODO: INSERT INTO follow (follower_id, target_id) VALUES (?, ?)
-	query := `INSERT INTO follow_requests (sender_id,receiver_id, status, creation_date, type) VALUES (?, ?, 1, CURRENT_TIMESTAMP, 'user')`
-	_, err := r.db.ExecContext(ctx, query, followerID, targetID)
+func (r *userRepositoryImpl) InsertFollow(ctx context.Context, follower_id, followed_id string) error {
+	query := `INSERT INTO follows (follower_id, followed_id, creation_date) VALUES (?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, follower_id, followed_id, time.Now())
+	if err != nil {
+		return fmt.Errorf("error inserting follow: %w", err)
+	}
+	return nil
+}
+
+func (r *userRepositoryImpl) SendFollowRequest(ctx context.Context, followRequest models.FollowRequest) error {
+	query := `INSERT INTO follow_requests (request_id,sender_id,receiver_id, status, creation_date, type) VALUES (?,?, ?, 1, CURRENT_TIMESTAMP, 'user')`
+	_, err := r.db.ExecContext(ctx, query, followRequest.RequestID, followRequest.SenderID, followRequest.ReceiverID)
 	if err != nil {
 		return fmt.Errorf("error following user: %w", err)
 	}
 	return nil
 }
+func (r *userRepositoryImpl) GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error) {
+	query := `SELECT request_id, sender_id, receiver_id,group_id, status, creation_date FROM follow_requests WHERE request_id = ?`
+	var followRequest models.FollowRequest
+	err := r.db.QueryRowContext(ctx, query, requestID).Scan(
+		&followRequest.RequestID, &followRequest.SenderID, &followRequest.ReceiverID, &followRequest.GroupID,
+		&followRequest.Status, &followRequest.CreationDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Follow request not found
+		}
+		return nil, fmt.Errorf("error retrieving follow request: %w", err)
+	}
+	return &followRequest, nil
+}
+func (r *userRepositoryImpl) AnswerFollowRequest(ctx context.Context, request models.FollowRequest, userId, action string) error {
+	if action != "accept" && action != "reject" {
+		return fmt.Errorf("invalid action: %s", action)
+	}
+	// If the action is "accept", we insert the follow relationship
+	if action == "accept" {
+		if err := r.InsertFollow(ctx, request.SenderID.String(), request.ReceiverID.String()); err != nil {
+			return fmt.Errorf("error accepting follow request: %w", err)
+		}
+	}
+	// Delete the follow request regardless of the action
+	query := `DELETE FROM follow_requests WHERE request_id = ?`
+	_, err := r.db.ExecContext(ctx, query, request.RequestID)
+	if err != nil {
+		return fmt.Errorf("error deleting follow request: %w", err)
+	}
+	return nil
+}
 
 func (r *userRepositoryImpl) Unfollow(ctx context.Context, followerID, targetID string) error {
-	// TODO: DELETE FROM follow WHERE follower_id = ? AND target_id = ?
-	query := `DELETE FROM follow_requests WHERE sender_id = ? AND receiver_id = ?`
+	query := `DELETE FROM follows WHERE follower_id = ? AND followed_id = ?`
 	_, err := r.db.ExecContext(ctx, query, followerID, targetID)
 	if err != nil {
 		return fmt.Errorf("error unfollowing user: %w", err)
@@ -121,44 +161,73 @@ func (r *userRepositoryImpl) Unfollow(ctx context.Context, followerID, targetID 
 	return nil
 }
 
-func (r *userRepositoryImpl) GetFollowers(ctx context.Context, userID string) ([]*models.User, error) {
-	query := `select u.user_id, u.email, u.password, u.username, u.firstname, u.lastname, u.birthdate, u.role, u.image_url, u.creation_date, u.description
-			from users u
-			join follow_requests f on f.sender_id = u.user_id
-			where f.receiver_id = ? and f.type = 'user' and f.status = 1`
-	rows, err := r.db.QueryContext(ctx, query, userID)
+func (r *userRepositoryImpl) GetFollowers(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error) {
+	query := `SELECT 
+  u.user_id,
+  u.username,
+  u.image_url,
+  u.privacy,
+  CASE
+    WHEN f2.follower_id IS NOT NULL THEN 'follows'
+    WHEN fr.sender_id IS NOT NULL THEN 'requested'
+    ELSE 'not_follow'
+  END AS follow_status
+FROM follows f
+JOIN users u ON u.user_id = f.follower_id
+LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.followed_id = u.user_id
+LEFT JOIN follow_requests fr ON fr.sender_id = ? AND fr.receiver_id = u.user_id
+WHERE f.followed_id = ?
+`
+	rows, err := r.db.QueryContext(ctx, query, viewerID, viewerID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving followers: %w", err)
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*models.UserProfileData
 	for rows.Next() {
-		var u models.User
-		if err := rows.Scan(&u.UserID, &u.Email, &u.Password, &u.Username, &u.Firstname, &u.Lastname, &u.Birthdate, &u.Role, &u.ImageURL, &u.CreationDate, &u.Description); err != nil {
+		var u models.UserProfileData
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy, &u.FollowStatus); err != nil {
 			return nil, fmt.Errorf("error scanning follower: %w", err)
+		}
+		if u.UserID == viewerID {
+			u.FollowStatus = "yourself"
 		}
 		users = append(users, &u)
 	}
 	return users, nil
 }
 
-func (r *userRepositoryImpl) GetFollowing(ctx context.Context, userID string) ([]*models.User, error) {
-	query := `SELECT u.user_id, u.email, u.password, u.username, u.firstname, u.lastname, u.birthdate, u.role, u.image_url, u.creation_date, u.description
-                  FROM users u
-                  JOIN follow_requests f ON f.receiver_id = u.user_id
-                  WHERE f.sender_id = ? AND f.type = 'user' AND f.status = 1`
-	rows, err := r.db.QueryContext(ctx, query, userID)
+func (r *userRepositoryImpl) GetFollowing(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error) {
+	query := `SELECT 
+  u.user_id,
+  u.username,
+  u.image_url,
+  u.privacy,
+  CASE
+    WHEN f2.follower_id IS NOT NULL THEN 'follows'
+    WHEN fr.sender_id IS NOT NULL THEN 'requested'
+    ELSE 'not_follow'
+  END AS follow_status
+FROM follows f
+JOIN users u ON u.user_id = f.followed_id
+LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.followed_id = u.user_id
+LEFT JOIN follow_requests fr ON fr.sender_id = ? AND fr.receiver_id = u.user_id
+WHERE f.follower_id = ?`
+	rows, err := r.db.QueryContext(ctx, query, viewerID, viewerID, userID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving following: %w", err)
+		return nil, fmt.Errorf("error retrieving followed users: %w", err)
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*models.UserProfileData
 	for rows.Next() {
-		var u models.User
-		if err := rows.Scan(&u.UserID, &u.Email, &u.Password, &u.Username, &u.Firstname, &u.Lastname, &u.Birthdate, &u.Role, &u.ImageURL, &u.CreationDate, &u.Description); err != nil {
-			return nil, fmt.Errorf("error scanning following: %w", err)
+		var u models.UserProfileData
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy, &u.FollowStatus); err != nil {
+			return nil, fmt.Errorf("error scanning followed user: %w", err)
+		}
+		if u.UserID == viewerID {
+			u.FollowStatus = "yourself"
 		}
 		users = append(users, &u)
 	}
@@ -187,7 +256,7 @@ func (r *userRepositoryImpl) SearchUsers(ctx context.Context, query string) ([]*
 
 func (r *userRepositoryImpl) IsFollowing(ctx context.Context, followerID, targetID string) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND target_id = ?)`
+	query := `SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?)`
 	err := r.db.QueryRowContext(ctx, query, followerID, targetID).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("error checking following status: %w", err)
@@ -195,7 +264,7 @@ func (r *userRepositoryImpl) IsFollowing(ctx context.Context, followerID, target
 	return exists, nil
 }
 func (r *userRepositoryImpl) GetUserProfile(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error) {
-	query := `SELECT u.user_id, u.username, u.firstname, u.lastname, u.email, u.birthdate, u.image_url, u.description, 
+	query := `SELECT u.user_id, u.username, u.firstname, u.lastname, u.email, u.birthdate, u.image_url, u.description, u.privacy, 
 					 (SELECT COUNT(*) FROM follows f WHERE f.followed_id = u.user_id) AS followers_count,
 					 (SELECT COUNT(*) FROM follows f WHERE f.follower_id = u.user_id) AS followed_count
 			  FROM users u WHERE u.user_id = ?`
@@ -203,31 +272,90 @@ func (r *userRepositoryImpl) GetUserProfile(ctx context.Context, viewerID, userI
 	err := r.db.QueryRowContext(ctx, query, userID).Scan(
 		&profile.UserID, &profile.Username, &profile.Firstname,
 		&profile.Lastname, &profile.Email, &profile.Birthdate,
-		&profile.ImageURL, &profile.Description, &profile.FollowersCount, &profile.FollowedCount)
+		&profile.ImageURL, &profile.Description, &profile.Privacy, &profile.FollowersCount, &profile.FollowedCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // User not found
 		}
 		return nil, fmt.Errorf("error retrieving user profile: %w", err)
 	}
+
 	// Determine follow status
-	if viewerID == userID {
-		profile.FollowStatus = "yourself"
-	} else {
-		var followStatus string
-		followQuery := `SELECT 'follows' AS status FROM follows WHERE follower_id = ? AND followed_id = ?
-							UNION ALL
-							SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ?
-							LIMIT 1`
-		err = r.db.QueryRowContext(ctx, followQuery, viewerID, userID, viewerID, userID).Scan(&followStatus)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				followStatus = "not_follow"
-			} else {
-				return nil, fmt.Errorf("error determining follow status: %w", err)
-			}
-		}
-		profile.FollowStatus = followStatus
+	followStatus, err := r.getFollowStatus(ctx, viewerID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("error determining follow status: %w", err)
 	}
+	profile.FollowStatus = followStatus
+
 	return &profile, nil
+}
+
+func (r *userRepositoryImpl) GetUserPrivacy(ctx context.Context, userID string) (string, error) {
+	query := `SELECT privacy FROM users WHERE user_id = ?`
+	var privacy string
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&privacy)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", fmt.Errorf("user privacy not found")
+		}
+		return "", fmt.Errorf("error retrieving user privacy: %w", err)
+	}
+	return privacy, nil
+}
+
+func (r *userRepositoryImpl) getFollowStatus(ctx context.Context, viewerID, userID string) (string, error) {
+	if viewerID == userID {
+		return "yourself", nil
+	}
+
+	var followStatus string
+	followQuery := `SELECT 'follows' AS status FROM follows WHERE follower_id = ? AND followed_id = ?
+					UNION ALL
+					SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ?
+					LIMIT 1`
+	err := r.db.QueryRowContext(ctx, followQuery, viewerID, userID, viewerID, userID).Scan(&followStatus)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "not_follow", nil
+		}
+		return "", err
+	}
+	return followStatus, nil
+}
+
+func (r *userRepositoryImpl) IsFollowRequestExists(ctx context.Context, senderID, receiverID string) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM follow_requests WHERE sender_id = ? AND receiver_id = ?)`
+	var exists bool
+	err := r.db.QueryRowContext(ctx, query, senderID, receiverID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error checking follow request existence: %w", err)
+	}
+	return exists, nil
+}
+
+func (r *userRepositoryImpl) SearchUsersExcludingGroupMembers(ctx context.Context, query, groupId string) ([]*models.User, error) {
+	like := "%" + query + "%"
+	rows, err := r.db.QueryContext(ctx, `SELECT u.user_id, u.username, u.image_url, u.privacy
+	FROM users u 
+	WHERE (u.username LIKE ? OR u.firstname LIKE ? OR u.lastname LIKE ?) 
+	AND NOT EXISTS (
+		SELECT 1 FROM groups_member gm WHERE gm.user_id = u.user_id AND gm.group_id = ?
+	)
+	AND NOT EXISTS (
+		SELECT 1 FROM follow_requests fr WHERE fr.receiver_id = u.user_id AND fr.type = 'group' AND fr.group_id = ?
+	)`, like, like, like, groupId, groupId)
+	if err != nil {
+		return nil, fmt.Errorf("error searching users excluding group members: %w", err)
+	}
+	defer rows.Close()
+
+	var users []*models.User
+	for rows.Next() {
+		var u models.User
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy); err != nil {
+			return nil, fmt.Errorf("error scanning user: %w", err)
+		}
+		users = append(users, &u)
+	}
+	return users, nil
 }

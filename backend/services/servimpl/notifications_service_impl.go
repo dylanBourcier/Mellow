@@ -3,12 +3,13 @@ package servimpl
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"mellow/models"
 	"mellow/repositories"
 	"mellow/services"
 	"mellow/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type notificationServiceImpl struct {
@@ -23,13 +24,22 @@ func NewNotificationService(notifRepo repositories.NotificationRepository, userR
 
 func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif *models.Notification) error {
 	if notif == nil || notif.UserID == uuid.Nil || notif.Type == "" {
+		fmt.Println("1")
 		return utils.ErrInvalidPayload
 	}
 
-	switch notif.Type {
-	case "follow", "group_invite", "event_created":
-	default:
-		return utils.ErrInvalidPayload
+	validTypes := map[string]bool{
+		models.NotificationTypeFollowRequest:         true,
+		models.NotificationTypeGroupInvite:           true,
+		models.NotificationTypeGroupRequest:          true,
+		models.NotificationTypeEventCreated:          true,
+		models.NotificationTypeNewFollower:           true,
+		models.NotificationTypeAcceptedFollowRequest: true,
+		models.NotificationTypeAcceptedGroupRequest:  true,
+		models.NotificationTypeRejectedFollowRequest: true,
+		models.NotificationTypeRejectedGroupRequest:  true,
+		models.NotificationTypeAcceptedGroupInvite:   true,
+		models.NotificationTypeRejectedGroupInvite:   true,
 	}
 
 	// verify user exists
@@ -39,6 +49,28 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 	}
 	if user == nil {
 		return utils.ErrUserNotFound
+	}
+
+	if !validTypes[notif.Type] {
+		fmt.Println("2")
+
+		return utils.ErrInvalidPayload
+	}
+	//check if the notification is already sent
+	existingNotif, err := s.notifRepo.GetNotificationByTypeSenderReceiver(ctx, notif.Type, notif.SenderID, notif.UserID.String())
+	if err != nil {
+		return fmt.Errorf("failed to check existing notification: %w", err)
+	}
+	if existingNotif != nil {
+		// if the notification already exists and his creation date is less than 24 hours, we don't create a new one
+		if time.Since(existingNotif.CreationDate) < 24*time.Hour && !existingNotif.Seen {
+			return nil
+		} else {
+			// if the notification already exists and his creation date is more than 24 hours, we delete the old one
+			if err := s.notifRepo.DeleteNotification(ctx, existingNotif.NotificationID.String()); err != nil {
+				return fmt.Errorf("failed to delete existing notification: %w", err)
+			}
+		}
 	}
 
 	id, err := uuid.NewRandom()
@@ -64,7 +96,15 @@ func (s *notificationServiceImpl) GetUserNotifications(ctx context.Context, user
 	if err != nil {
 		return nil, err
 	}
+	for _, notif := range notifs {
+		if notif.SenderAvatarURL != nil && *notif.SenderAvatarURL != "" {
+			notif.SenderAvatarURL = utils.GetFullImageURLAvatar(notif.SenderAvatarURL)
+		}
 
+	}
+	for _, notif := range notifs {
+		fmt.Printf("Notification: %+v\n", notif)
+	}
 	return notifs, nil
 }
 

@@ -10,9 +10,7 @@ export const metadata = {
 export default function NotficationsPage() {
   return (
     <ProtectedRoute redirectTo="/login">
-      <div>
-        <NotificationScreen />
-      </div>
+      <NotificationScreen />
     </ProtectedRoute>
   );
 }
