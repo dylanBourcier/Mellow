@@ -3,7 +3,6 @@ import React from "react";
 // Composant Modal réutilisable
 // Affiche une fenêtre modale avec un titre, un message et des boutons d'action dynamiques
 const Modal = ({ isOpen, onClose, title, message, actions = [] }) => {
-  // Si le modal n'est pas ouvert, ne rien afficher
   if (!isOpen) return null;
 
   return (
