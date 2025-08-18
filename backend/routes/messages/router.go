@@ -2,30 +2,30 @@ package messages
 
 import (
 	"mellow/controllers/messages"
+	"mellow/middlewares"
+	"mellow/services"
 	"mellow/utils"
 	"net/http"
 	"strings"
 )
 
 // /messages/:userId
-func MessageUserRouter(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/messages/group/") {
-		return // évite conflit avec groupe
-	}
+func MessageUserRouter(messageService services.MessageService, authService services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/messages/group/") {
+			return // évite conflit avec groupe
+		}
 
-	userId := strings.TrimPrefix(r.URL.Path, "/messages/")
-	if userId == "" || strings.Contains(userId, "/") {
-		utils.RespondError(w, http.StatusNotFound, "Utilisateur introuvable", utils.ErrUserNotFound)
-		return
-	}
-
-	switch r.Method {
-	case http.MethodGet:
-		messages.GetConversation(w, r, userId)
-	case http.MethodPost:
-		messages.SendMessage(w, r, userId)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		switch r.Method {
+		case http.MethodGet:
+			handler := utils.ChainHTTP(messages.GetConversation(messageService), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
+		case http.MethodPost:
+			handler := utils.ChainHTTP(messages.SendMessage(messageService), middlewares.RequireAuthMiddleware(authService))
+			handler.ServeHTTP(w, r)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
 	}
 }
 

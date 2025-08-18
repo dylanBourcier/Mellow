@@ -24,40 +24,47 @@ export default function UserConversation({ id }) {
           throw new Error(userInfo.message);
         }
 
-        // // Fetch messages between logged-in user and the other user
-        // const messagesResponse = await fetch(`/api/messages/${id}`);
-        // const messagesData = await messagesResponse.json();
-        // if (messagesData.status !== 'success') {
-        //   throw new Error(messagesData.message);
-        // }
+        // Fetch messages between logged-in user and the other user
+        const messagesResponse = await fetch(`/api/messages/${id}?limit=50&offset=0`);
+        const messagesData = await messagesResponse.json();
+        console.log(messagesData);
+        
+        if (messagesData.status !== 'success') {
+          throw new Error(messagesData.message);
+        }
 
         setUserData(userInfo.data);
-        // setMessages(messagesData.data);
+        if (messagesData.data){
+
+          setMessages(messagesData.data);
+        }else{
+          setMessages([]);
+        }
 
         //Do some fake messages for testing
-        setMessages([
-          {
-            message_id: 1,
-            sender_id: user.user_id,
-            receiver_id: id,
-            content: 'Hello, how are you?',
-            creation_date: new Date().toISOString(),
-          },
-          {
-            message_id: 2,
-            sender_id: id,
-            receiver_id: user.user_id,
-            content: 'I am fine, thank you! How about you?',
-            creation_date: new Date().toISOString(),
-          },
-          {
-            message_id: 3,
-            sender_id: user.user_id,
-            receiver_id: id,
-            content: 'I am doing well, thanks for asking!',
-            creation_date: new Date().toISOString(),
-          },
-        ]);
+        // setMessages([
+        //   {
+        //     message_id: 1,
+        //     sender_id: user.user_id,
+        //     receiver_id: id,
+        //     content: 'Hello, how are you?',
+        //     creation_date: new Date().toISOString(),
+        //   },
+        //   {
+        //     message_id: 2,
+        //     sender_id: id,
+        //     receiver_id: user.user_id,
+        //     content: 'I am fine, thank you! How about you?',
+        //     creation_date: new Date().toISOString(),
+        //   },
+        //   {
+        //     message_id: 3,
+        //     sender_id: user.user_id,
+        //     receiver_id: id,
+        //     content: 'I am doing well, thanks for asking!',
+        //     creation_date: new Date().toISOString(),
+        //   },
+        // ]);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

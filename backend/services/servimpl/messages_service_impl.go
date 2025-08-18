@@ -2,18 +2,18 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
 )
 
 type messageServiceImpl struct {
-	db *sql.DB
+	messageRepository repositories.MessageRepository
 }
 
 // NewMessageService crée une nouvelle instance de MessageService.
-func NewMessageService(db *sql.DB) services.MessageService {
-	return &messageServiceImpl{db: db}
+func NewMessageService(messageRepository repositories.MessageRepository) services.MessageService {
+	return &messageServiceImpl{messageRepository: messageRepository}
 }
 
 func (s *messageServiceImpl) SendMessage(ctx context.Context, msg *models.Message) error {
@@ -22,10 +22,15 @@ func (s *messageServiceImpl) SendMessage(ctx context.Context, msg *models.Messag
 	return nil
 }
 
-func (s *messageServiceImpl) GetConversation(ctx context.Context, user1ID, user2ID string, page, pageSize int) ([]*models.Message, error) {
-	// TODO: Vérifier droits d’accès
+func (s *messageServiceImpl) GetConversation(ctx context.Context, user1ID, user2ID string, limit, offset int) ([]*models.Message, error) {
+	if limit == 0 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
 	// TODO: Appeler le repository pour récupérer les messages paginés entre deux utilisateurs
-	return nil, nil
+	return s.messageRepository.GetConversation(ctx, user1ID, user2ID, limit, offset)
 }
 
 func (s *messageServiceImpl) DeleteMessage(ctx context.Context, messageID, requesterID string) error {
