@@ -1,83 +1,314 @@
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import PageTitle from '../ui/PageTitle';
 import NotificationsCard from '../ui/NotificationsCard';
+import { useState, useEffect } from 'react';
+import CustomToast from '../ui/CustomToast';
+import { toast } from 'react-hot-toast';
 
 function NotificationScreen() {
-  const notifications = [
-    {
-      id: '1',
-      type: 'followed',
-      username: 'Doedoe',
-      avatarUrl: '/img/lion.png',
-      timestamp: '21:45',
-    },
-    {
-      id: '2',
-      type: 'follow_request',
-      username: 'Hunk',
-      avatarUrl: '/img/DefaultAvatar.png',
-      timestamp: '16:30',
-    },
-    {
-      id: '3',
-      type: 'followed',
-      username: 'JaneDoe',
-      avatarUrl: '/img/DefaultAvatar.png',
-      timestamp: '03:54',
-    },
-    {
-      id: '4',
-      type: 'follow_request',
-      username: 'JohnSmith',
-      avatarUrl: '/img/lion.png',
-      timestamp: '16:50',
-    },
-    {
-      id: '5',
-      type: 'followed',
-      username: 'Alice',
-      avatarUrl: '/img/lion.png',
-      timestamp: '12:20',
-    },
-    {
-      id: '6',
-      type: 'follow_request',
-      username: 'Bob',
-      avatarUrl: '/img/lion.png',
-      timestamp: '10:15',
-    },
-    {
-      id: '7',
-      type: 'followed',
-      username: 'Charlie',
-      avatarUrl: '/img/lion.png',
-      timestamp: '08:00',
-    },
-  ];
-  const handleAccept = (notificationId) => {
-    console.log(`Accepted notification with ID: ${notificationId}`);
+  const [notifications, setNotifications] = useState([]);
+  useEffect(() => {
+    // Fetch notifications from the API
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch('/api/notifications', {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.status !== 'success') {
+          console.log(data);
+
+          throw new Error(data.message || 'Failed to fetch notifications');
+        }
+        setNotifications(data.data);
+        // Handle notifications data
+      } catch (err) {
+        toast.custom((t) => (
+          <CustomToast
+            t={t}
+            type="error"
+            message={'Error fetching notifications! ' + err.message}
+          />
+        ));
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+  const handleAccept = (notification) => {
+    switch (notification.type) {
+      case 'follow_request':
+        // Logic to accept follow request
+        try {
+          const acceptRequest = async () => {
+            const res = await fetch(
+              `/api/users/follow/request/${notification.request_id}?action=accept`,
+              {
+                method: 'POST',
+                credentials: 'include',
+              }
+            );
+            const data = await res.json();
+            if (data.status !== 'success') {
+              throw new Error(
+                data.message || 'Failed to accept follow request'
+              );
+            }
+          };
+
+          const processAccept = async () => {
+            try {
+              await markAsRead(notification);
+              await acceptRequest();
+              // Optionally, you can update the notification to reflect the accepted state
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n.notification_id === notification.notification_id
+                    ? { ...n, seen: true }
+                    : n
+                )
+              );
+            } catch (error) {
+              console.error('Error accepting follow request:', error);
+              toast.custom((t) => (
+                <CustomToast
+                  t={t}
+                  type="error"
+                  message={'Error accepting follow request! ' + error.message}
+                />
+              ));
+            }
+          };
+
+          processAccept();
+        } catch (error) {
+          console.error('Error accepting follow request:', error);
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={'Error accepting follow request! ' + error.message}
+            />
+          ));
+        }
+        break;
+      case 'group_invite':
+        // Logic to accept group invite
+        try {
+          const acceptGroupInvite = async () => {
+            const res = await fetch(
+              `/api/groups/invite/answer/${notification.request_id}?action=accept`,
+              {
+                method: 'POST',
+                credentials: 'include',
+              }
+            );
+            const data = await res.json();
+            if (data.status !== 'success') {
+              throw new Error(data.message || 'Failed to accept group invite');
+            }
+          };
+          const processGroupInvite = async () => {
+            try {
+              await markAsRead(notification);
+              await acceptGroupInvite();
+              // Optionally, you can update the notification to reflect the accepted state
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n.notification_id === notification.notification_id
+                    ? { ...n, seen: true }
+                    : n
+                )
+              );
+            } catch (error) {
+              console.error('Error accepting group invite:', error);
+              toast.custom((t) => (
+                <CustomToast
+                  t={t}
+                  type="error"
+                  message={'Error accepting group invite ! ' + error.message}
+                />
+              ));
+            }
+          };
+          processGroupInvite();
+        } catch (error) {
+          console.error('Error accepting group invite:', error);
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={'Error accepting group invite! ' + error.message}
+            />
+          ));
+        }
+        break;
+
+      default:
+        console.log(
+          `Accepted notification with ID: ${notification.notification_id}`
+        );
+    }
   };
-  const handleDecline = (notificationId) => {
-    console.log(`Declined notification with ID: ${notificationId}`);
+  const handleDecline = (notification) => {
+    switch (notification.type) {
+      case 'follow_request':
+        // Logic to decline follow request
+        try {
+          const declineRequest = async () => {
+            const res = await fetch(
+              `/api/users/follow/request/${notification.request_id}?action=reject`,
+              {
+                method: 'POST',
+                credentials: 'include',
+              }
+            );
+            const data = await res.json();
+            if (data.status !== 'success') {
+              throw new Error(
+                data.message || 'Failed to decline follow request'
+              );
+            }
+          };
+
+          const processDecline = async () => {
+            try {
+              await markAsRead(notification);
+              await declineRequest();
+              // Update the notifications state or refetch notifications
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n.notification_id === notification.notification_id
+                    ? { ...n, seen: true }
+                    : n
+                )
+              );
+            } catch (error) {
+              console.error('Error declining follow request:', error);
+              toast.custom((t) => (
+                <CustomToast
+                  t={t}
+                  type="error"
+                  message={'Error declining follow request! ' + error.message}
+                />
+              ));
+            }
+          };
+
+          processDecline();
+        } catch (error) {
+          console.error('Error declining follow request:', error);
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={'Error declining follow request! ' + error.message}
+            />
+          ));
+        }
+        break;
+      case 'group_invite':
+        // Logic to decline group invite
+        try {
+          const declineGroupInvite = async () => {
+            const res = await fetch(
+              `/api/groups/invite/answer/${notification.request_id}?action=reject`,
+              {
+                method: 'POST',
+                credentials: 'include',
+              }
+            );
+            const data = await res.json();
+            if (data.status !== 'success') {
+              throw new Error(data.message || 'Failed to decline group invite');
+            }
+          };
+          const processGroupInvite = async () => {
+            try {
+              await markAsRead(notification);
+              await declineGroupInvite();
+              // Update the notifications state or refetch notifications
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n.notification_id === notification.notification_id
+                    ? { ...n, seen: true }
+                    : n
+                )
+              );
+            } catch (error) {
+              console.error('Error declining group invite:', error);
+              toast.custom((t) => (
+                <CustomToast
+                  t={t}
+                  type="error"
+                  message={'Error declining group invite! ' + error.message}
+                />
+              ));
+            }
+          };
+          processGroupInvite();
+        } catch (error) {
+          console.error('Error declining group invite:', error);
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={'Error declining group invite! ' + error.message}
+            />
+          ));
+        }
+        break;
+      default:
+        console.log(
+          `Declined notification with ID: ${notification.notification_id}`
+        );
+    }
   };
+
+  // Sort notifications by date (assuming notifications have a 'date' property)
+
+  if (!notifications || notifications.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <span className="text-gray-500">No notifications available</span>
+      </div>
+    );
+  }
+  const sortedNotifications = [...notifications].sort(
+    (a, b) => new Date(b.creation_date) - new Date(a.creation_date)
+  );
 
   return (
     <div className="flex flex-col gap-2">
       <PageTitle>Notifications</PageTitle>
       <div className="flex flex-col gap-2">
-        {notifications.map((notification) => (
+        {sortedNotifications.map((notification) => (
           <NotificationsCard
-            key={notification.id}
+            key={notification.notification_id}
             notification={notification}
-            onAccept={() => handleAccept(notification.id)}
-            onDecline={() => handleDecline(notification.id)}
+            onAccept={() => handleAccept(notification)}
+            onDecline={() => handleDecline(notification)}
           />
         ))}
       </div>
     </div>
   );
 }
+// Mark the notification as read and decline the request sequentially
+const markAsRead = async (notification) => {
+  const res = await fetch(
+    `/api/notifications/read/${notification.notification_id}`,
+    {
+      method: 'PATCH',
+      credentials: 'include',
+    }
+  );
+  const data = await res.json();
+  if (data.status !== 'success') {
+    throw new Error(data.message || 'Failed to mark notification as read');
+  }
+};
 
 export default NotificationScreen;

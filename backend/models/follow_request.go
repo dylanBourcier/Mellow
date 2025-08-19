@@ -1,11 +1,13 @@
 package models
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type FollowRequest struct {
+	RequestID    uuid.UUID  `json:"request_id"`
 	SenderID     uuid.UUID  `json:"sender_id"`
 	ReceiverID   uuid.UUID  `json:"receiver_id"`
 	GroupID      *uuid.UUID `json:"group_id,omitempty"`

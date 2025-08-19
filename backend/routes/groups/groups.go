@@ -8,12 +8,20 @@ import (
 	"net/http"
 )
 
-func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, postSvc services.PostService, authSvc services.AuthService) {
+func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, postSvc services.PostService, authSvc services.AuthService, notifSvc services.NotificationService, userSvc services.UserService) {
 	// Créer un groupe / voir tous les groupes
 	mux.Handle("/groups", GroupRootRouter(groupSvc, authSvc))
 
+	// Inviter un utilisateur dans un groupe
+	mux.Handle("/groups/invite/", utils.ChainHTTP(groups.InviteUserToGroup(groupSvc, notifSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
+	//Repondre à une invitation de groupe
+	mux.Handle("/groups/invite/answer/", utils.ChainHTTP(groups.AnswerGroupInvite(groupSvc, userSvc, notifSvc), middlewares.RequireAuthMiddleware(authSvc)))
+
 	// Voir un groupe spécifique
 	mux.Handle("/groups/", utils.ChainHTTP(GroupRouter(groupSvc, authSvc), middlewares.OptionalAuthMiddleware(authSvc)))
+
+	//Inviter un utilisateur dans un groupe
 
 	// Voir les posts ou poster dans un groupe
 	mux.HandleFunc("/groups/posts/", GroupPostsRouter(groupSvc, postSvc, authSvc))
@@ -25,7 +33,7 @@ func RegisterGroupRoutes(mux *http.ServeMux, groupSvc services.GroupService, pos
 	mux.Handle("/groups/leave/", utils.ChainHTTP(groups.LeaveGroupHandler(groupSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir les événements du groupe
-	mux.Handle("/groups/events/", utils.ChainHTTP(GroupEventRouter(groupSvc,authSvc),middlewares.RequireAuthMiddleware(authSvc)))
+	mux.Handle("/groups/events/", utils.ChainHTTP(GroupEventRouter(groupSvc, authSvc), middlewares.RequireAuthMiddleware(authSvc)))
 
 	// Voir le chat de groupe
 	mux.HandleFunc("/groups/chat/", groups.GroupChatHandler)

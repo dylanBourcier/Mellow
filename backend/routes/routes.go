@@ -21,12 +21,12 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	auth.RegisterAuthRoutes(mux, services.UserService, services.AuthService)
 
 	// Utilisateurs
-	users.RegisterUserRoutes(mux, services.UserService, services.AuthService, services.PostService)
+	users.RegisterUserRoutes(mux, services.UserService, services.AuthService, services.PostService, services.NotificationService)
 	// Publications (posts)
 	posts.RegisterPostRoutes(mux, services.PostService, services.AuthService, services.UserService, services.GroupService)
 
 	// Groupes
-	groups.RegisterGroupRoutes(mux, services.GroupService, services.PostService, services.AuthService)
+	groups.RegisterGroupRoutes(mux, services.GroupService, services.PostService, services.AuthService, services.NotificationService, services.UserService)
 
 	// Notifications
 	notifications.RegisterNotificationRoutes(mux, services.NotificationService, services.AuthService)

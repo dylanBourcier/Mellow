@@ -2,6 +2,7 @@ package users
 
 import (
 	"encoding/json"
+	"fmt"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -31,6 +32,29 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 		if user == nil {
 			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
 			return
+		}
+		fmt.Println("User Profile Data:", user)
+		//Check if the user can view the profile
+		if user.Privacy == "private" && userID.String() != id {
+			// Check if the user is following
+			isFollowing, err := userService.IsFollowing(r.Context(), userID.String(), id)
+			if err != nil {
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to check following status", utils.ErrInternalServerError)
+				return
+			}
+			if !isFollowing {
+				var limitedProfile models.UserProfileData
+				limitedProfile.UserID = user.UserID
+				limitedProfile.Username = user.Username
+				limitedProfile.ImageURL = user.ImageURL
+				limitedProfile.FollowStatus = user.FollowStatus
+				limitedProfile.Privacy = user.Privacy
+				description := "This profile is private. Follow to see more."
+				limitedProfile.Description = &description
+				utils.RespondJSON(w, http.StatusOK, "Limited", limitedProfile)
+				return
+			}
+
 		}
 		utils.RespondJSON(w, http.StatusOK, "User retrieved", user)
 	}

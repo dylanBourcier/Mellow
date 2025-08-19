@@ -21,12 +21,31 @@ export default function RegisterForm() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm();
+  } = useForm(
+    {
+      defaultValues: {
+        first_name: '',
+        last_name: '',
+        username: '',
+        email: '',
+        birthdate: '',
+        password: '',
+        confirm_password: '',
+        avatar: null,
+        about: '',
+        privacy: 'public', // Default to public
+      },
+    }
+  );
+
+  // Watch the privacy field to conditionally render messages
+  const privacy = watch('privacy'); // Default to 'public'
 
   const onSubmit = async (data) => {
     try {
       const formData = new FormData();
-
+      
+      
       // Champs texte
       formData.append('firstname', data.first_name);
       formData.append('lastname', data.last_name);
@@ -35,7 +54,8 @@ export default function RegisterForm() {
       formData.append('birthdate', data.birthdate);
       formData.append('password', data.password);
       formData.append('description', data.about || '');
-
+      formData.append('privacy',data.privacy); // Default privacy setting
+      
       // FileInput (avatar)
       if (data.avatar) {
         formData.append('avatar', data.avatar);
@@ -194,6 +214,56 @@ export default function RegisterForm() {
             )}
           />
         </div>
+        <>
+          <Label htmlFor={'privacy'}>Privacy* :</Label>
+          <div>
+            <div className="flex gap-1 justify-center">
+              <div className="flex-1">
+                <input
+                  type="radio"
+                  name="privacy"
+                  id="public"
+                  className="hidden peer"
+                  value="public"
+                  {...register('privacy', { required: true })}
+                  defaultChecked
+                />
+                <label
+                  htmlFor="public"
+                  className="flex align-middle justify-center py-2 border border-lavender-5 text-lavender-5 bg-transparent rounded-2xl peer-checked:bg-lavender-6 cursor-pointer transition-colors duration-200"
+                >
+                  Public
+                </label>
+              </div>
+              <div className="flex-1">
+                <input
+                  type="radio"
+                  name="privacy"
+                  id="private"
+                  className="hidden peer"
+                  value="private"
+                  {...register('privacy', { required: true })}
+                />
+                <label
+                  htmlFor="private"
+                  className="flex align-middle justify-center py-2 border border-lavender-5 text-lavender-5 bg-transparent rounded-2xl peer-checked:bg-lavender-6 cursor-pointer transition-colors duration-200"
+                >
+                  Private
+                </label>
+              </div>
+            </div>
+          </div>
+          {privacy === 'public' && (
+            <span className="italic text-sm">
+              Your profil will be visible to everyone.
+            </span>
+          )}
+          {privacy === 'private' && (
+            <span className="italic text-sm">
+              Your profil will be visible by your followers only.
+            </span>
+          )}
+        </>
         <div>
           <Label htmlFor="about">About me :</Label>
           <Input

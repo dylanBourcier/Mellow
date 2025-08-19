@@ -53,7 +53,6 @@ func main() {
 		port = "3225" // Default port
 	}
 
-
 	server := &http.Server{
 		Addr:              ":" + port,
 		Handler:           handler,

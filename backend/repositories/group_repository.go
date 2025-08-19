@@ -14,7 +14,7 @@ type GroupRepository interface {
 
 	// InsertEventResponse enregistre la réponse d'un utilisateur à un événement.
 	InsertEventResponse(ctx context.Context, response *models.EventResponse) error
-	
+
 	// GetEventById retourne un événement par son ID.
 	GetEventById(ctx context.Context, eventID string) (*models.Event, error)
 
@@ -53,4 +53,10 @@ type GroupRepository interface {
 
 	//GetGroupEvents retourne les événements d’un groupe.
 	GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error)
+
+	// InviteUser invite un utilisateur dans un groupe.
+	InviteUser(ctx context.Context, request models.FollowRequest) error
+
+	//AnswerGroupInvite enregistre la réponse d'un utilisateur à une invitation de groupe.
+	AnswerGroupInvite(ctx context.Context, request models.FollowRequest, userId, action string) error
 }
