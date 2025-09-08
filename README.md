@@ -19,6 +19,5 @@ A full-featured social networking platform inspired by Facebook, built with a mo
 git clone https://github.com/dylanBourcier/Mellow
 cd mellow
 docker-compose up
-
 ```
 
