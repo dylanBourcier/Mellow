@@ -2,45 +2,85 @@ package servimpl
 
 import (
 	"context"
-	"database/sql"
+	"github.com/google/uuid"
 	"mellow/models"
+	"mellow/repositories"
 	"mellow/services"
+	"mellow/utils"
+	"time"
 )
 
 type messageServiceImpl struct {
-	db *sql.DB
+	repo repositories.MessageRepository
 }
 
 // NewMessageService crée une nouvelle instance de MessageService.
-func NewMessageService(db *sql.DB) services.MessageService {
-	return &messageServiceImpl{db: db}
+func NewMessageService(repo repositories.MessageRepository) services.MessageService {
+	return &messageServiceImpl{repo: repo}
 }
 
+// SendMessage envoie un messgae depuis un "sender" vers un "receiver" et le persistent dans le repository.
 func (s *messageServiceImpl) SendMessage(ctx context.Context, msg *models.Message) error {
-	// TODO: Vérifier que les deux utilisateurs existent et peuvent se parler
-	// TODO: Appeler le repository pour enregistrer le message
-	return nil
+	if msg == nil || msg.Content == nil || *msg.Content == "" {
+		return utils.ErrInvalidPayload
+	}
+	if msg.SenderID == uuid.Nil || msg.ReceiverID == uuid.Nil {
+		return utils.ErrInvalidUserData
+	}
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return utils.ErrUUIDGeneration
+	}
+
+	msg.MessageID = id
+	msg.CreationDate = time.Now()
+	msg.IsRead = false
+	return s.repo.InsertMessage(ctx, msg)
 }
 
 func (s *messageServiceImpl) GetConversation(ctx context.Context, user1ID, user2ID string, page, pageSize int) ([]*models.Message, error) {
-	// TODO: Vérifier droits d’accès
-	// TODO: Appeler le repository pour récupérer les messages paginés entre deux utilisateurs
-	return nil, nil
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 30
+	}
+	if user1ID == "" || user2ID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	offset := (page - 1) * pageSize
+	msgs, err := s.repo.GetConversation(ctx, user1ID, user2ID, offset, pageSize)
+	if err != nil {
+		return nil, err
+	}
+	return msgs, nil
 }
 
 func (s *messageServiceImpl) DeleteMessage(ctx context.Context, messageID, requesterID string) error {
-	// TODO: Vérifier si le requester est l’auteur ou un modérateur
-	// TODO: Supprimer le message via le repository
-	return nil
+	if messageID == "" || requesterID == "" {
+		return utils.ErrInvalidPayload
+	}
+	return s.repo.DeleteMessage(ctx, messageID)
 }
 
 func (s *messageServiceImpl) GetRecentConversations(ctx context.Context, userID string) ([]*models.ConversationPreview, error) {
-	// TODO: Récupérer les dernières conversations par utilisateur unique
-	return nil, nil
+	if userID == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	conversations, err := s.repo.GetRecentConversations(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return conversations, nil
 }
 
 func (s *messageServiceImpl) MarkAsRead(ctx context.Context, messageID, userID string) error {
-	// TODO: Vérifier que l’utilisateur est le destinataire
-	// TODO: Mettre à jour le statut via le repository
-	return nil
+	if messageID == "" || userID == "" {
+		return utils.ErrInvalidPayload
+	}
+
+	return s.repo.MarkAsRead(ctx, messageID, userID)
 }
