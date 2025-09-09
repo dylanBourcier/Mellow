@@ -1,7 +1,5 @@
 package websocket
 
-import ()
-
 // Hub structure centrale qui gère tous les clients connectés et la diffusion des messages.
 type Hub struct {}
 
