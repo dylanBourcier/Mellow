@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"mellow/models"
+
+	"github.com/google/uuid"
 )
 
 type GroupService interface {
@@ -13,7 +15,7 @@ type GroupService interface {
 	InsertEvent(ctx context.Context, event *models.Event) error
 
 	// InsertEventResponse crée une réponse d'un utilisateur à un événement.
-	InsertEventResponse(ctx context.Context,eventResponse *models.EventResponse)error
+	InsertEventResponse(ctx context.Context, eventResponse *models.EventResponse) error
 
 	// UpdateGroup met à jour le titre ou la description d'un groupe.
 	UpdateGroup(ctx context.Context, groupID, requesterID, title string, description string) error
@@ -47,4 +49,10 @@ type GroupService interface {
 
 	//GetGroupEvents retourne les événements d’un groupe.
 	GetGroupEvents(ctx context.Context, groupID string) ([]*models.EventDetails, error)
+
+	// InviteUser invite un utilisateur dans un groupe.
+	InviteUser(ctx context.Context, groupID, senderId, userID string) (uuid.UUID, error)
+
+	// AnswerGroupInvite enregistre la réponse d'un utilisateur à une invitation de groupe.
+	AnswerGroupInvite(ctx context.Context, request models.FollowRequest, userId, action string) error
 }

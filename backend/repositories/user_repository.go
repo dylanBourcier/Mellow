@@ -14,14 +14,21 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, user *models.User) error
 	DeleteUser(ctx context.Context, userID string) error
 
-	Follow(ctx context.Context, followerID, targetID string) error
+	SendFollowRequest(ctx context.Context, followRequest models.FollowRequest) error
+	GetFollowRequestByID(ctx context.Context, requestID string) (*models.FollowRequest, error)
+	AnswerFollowRequest(ctx context.Context, request models.FollowRequest, userId, action string) error
+	IsFollowRequestExists(ctx context.Context, senderID, receiverID string) (bool, error)
+
+	InsertFollow(ctx context.Context, follower_id, followed_id string) error
 	Unfollow(ctx context.Context, followerID, targetID string) error
 	IsFollowing(ctx context.Context, followerID, targetID string) (bool, error)
 
-	GetFollowers(ctx context.Context, userID string) ([]*models.User, error)
-	GetFollowing(ctx context.Context, userID string) ([]*models.User, error)
+	GetFollowers(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
+	GetFollowing(ctx context.Context, viewerID, userID string) ([]*models.UserProfileData, error)
 
 	GetUserProfile(ctx context.Context, viewerID, userID string) (*models.UserProfileData, error)
 
+	GetUserPrivacy(ctx context.Context, userID string) (string, error)
 	SearchUsers(ctx context.Context, query string) ([]*models.User, error)
+	SearchUsersExcludingGroupMembers(ctx context.Context, query, groupId string) ([]*models.User, error)
 }

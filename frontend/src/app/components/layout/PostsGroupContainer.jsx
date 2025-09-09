@@ -21,7 +21,6 @@ function PostsGroupContainer({ groupId }) {
         return res.json();
       })
       .then((data) => {
-        console.log(data);
         if (data.status == 'error') {
           throw new Error(data.message || 'Failed to fetch group posts');
         }
@@ -32,7 +31,6 @@ function PostsGroupContainer({ groupId }) {
         }
         setIsMember(true);
         setPosts(data.data || []);
-        console.log('Posts fetched successfully:', data.data);
 
         setLoading(false);
       })

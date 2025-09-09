@@ -1,57 +1,74 @@
 package messages
 
 import (
+	"encoding/json"
+	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
-	"strconv"
+
+	"github.com/google/uuid"
 )
 
-func GetConversation(messageService services.MessageService) http.HandlerFunc {
+func GetConversation(service services.MessageService, userId string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		otherUserId := r.URL.Path[len("/messages/"):]
-		userId, err := utils.GetUserIDFromContext(r.Context())
+
+		uid, err := utils.GetUserIDFromContext(r.Context())
 		if err != nil {
-			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", err)
-			return
-		}
-		userIdStr := userId.String()
-		if otherUserId == "" || userIdStr == "" {
-			utils.RespondError(w, http.StatusBadRequest, "Invalid user IDs", utils.ErrInvalidPayload)
-			return
-		}
-		if otherUserId == userIdStr {
-			utils.RespondError(w, http.StatusBadRequest, "Cannot message yourself", utils.ErrInvalidPayload)
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
 			return
 		}
 
-		limit := 10
-		offset := 0
-		query := r.URL.Query()
-		if l := query.Get("limit"); l != "" {
-			if limit2, err := strconv.Atoi(l); err == nil {
-				limit = limit2
-			}
-		}
-		if o := query.Get("offset"); o != "" {
-			if offset2, err := strconv.Atoi(o); err == nil {
-				offset = offset2
-			}
-		}
-
-		// Appeler le service pour récupérer la conversation
-		messages, err := messageService.GetConversation(r.Context(), userIdStr, otherUserId, limit, offset)
+		page := 1
+		pageSize := 20
+		msgs, err := service.GetConversation(r.Context(), uid.String(), userId, page, pageSize)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to get conversation", err)
 			return
 		}
-
-		utils.RespondJSON(w, http.StatusOK, "Message fetch successful", messages)
+		utils.RespondJSON(w, http.StatusOK, "Conversation retrieved", msgs)
 	}
 }
 
-func SendMessage(messageService services.MessageService) http.HandlerFunc {
+func SendMessage(service services.MessageService, userId string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: envoyer un message privé
+
+		defer r.Body.Close()
+		uid, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+
+		var payload struct {
+			Content string `json:"content"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid JSON", utils.ErrInvalidJSON)
+			return
+		}
+
+		if payload.Content == "" {
+			utils.RespondError(w, http.StatusBadRequest, "Empty content", utils.ErrInvalidPayload)
+			return
+		}
+
+		receiverID, err := uuid.Parse(userId)
+		if err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Invalid user", utils.ErrInvalidPayload)
+			return
+		}
+
+		content := payload.Content
+		msg := models.Message{
+			SenderID:   uid,
+			ReceiverID: receiverID,
+			Content:    &content,
+		}
+		if err := service.SendMessage(r.Context(), &msg); err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to send message", err)
+			return
+		}
+		utils.RespondJSON(w, http.StatusCreated, "Message sent", msg)
 	}
 }

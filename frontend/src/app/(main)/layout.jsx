@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Sidebar from '../components/layout/Sidebar';
 import SidebarMobile from '../components/layout/SidebarMobile';
 import Link from 'next/link';
-import { icons } from '@/app/lib/icons';
 
 export const metadata = {
   title: {

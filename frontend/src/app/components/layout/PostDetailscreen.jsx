@@ -60,7 +60,7 @@ function PostDetailscreen({ postid }) {
       <div className="flex flex-col gap-3 p-4 bg-white shadow-(--box-shadow) rounded-lg">
         <Link
           href={'/'}
-          className="group flex items-center hover:underline hover:text-lavender-3 text-sm"
+          className="group flex items-center hover:underline hover:text-lavender-3 text-sm w-fit"
         >
           {' '}
           <span className="group-hover:animate-bounce">
