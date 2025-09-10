@@ -1,12 +1,24 @@
 package messages
 
 import (
+	"net/http"
+	"strings"
+
 	msg "mellow/controllers/messages"
 	"mellow/services"
 	"mellow/utils"
-	"net/http"
-	"strings"
 )
+
+// /messages
+func MessageRouter(msgService services.MessageService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+			return
+		}
+		msg.GetRecentConversations(msgService)(w, r)
+	}
+}
 
 // /messages/:userId
 func MessageUserRouter(msgService services.MessageService) http.HandlerFunc {

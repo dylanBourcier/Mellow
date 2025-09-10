@@ -85,3 +85,10 @@ func (s *messageServiceImpl) MarkAsRead(ctx context.Context, messageID, userID s
 
 	return s.repo.MarkAsRead(ctx, messageID, userID)
 }
+
+func (s *messageServiceImpl) MarkAsReadConversation(ctx context.Context, userId, otherId string) error {
+	if userId == "" || otherId == "" {
+		return utils.ErrInvalidPayload
+	}
+	return s.repo.MarkAsReadConversation(ctx, userId, otherId)
+}

@@ -8,6 +8,8 @@ import (
 )
 
 func RegisterMessageRoutes(mux *http.ServeMux, msgService services.MessageService, authService services.AuthService) {
+	// GET|POST /messages
+	mux.HandleFunc("/messages", utils.ChainHTTP(MessageRouter(msgService), middlewares.RequireAuthMiddleware(authService)).ServeHTTP)
 	// GET|POST /messages/:userId
 	mux.HandleFunc("/messages/", utils.ChainHTTP(MessageUserRouter(msgService), middlewares.RequireAuthMiddleware(authService)).ServeHTTP)
 	// TODO: Implement group + logic

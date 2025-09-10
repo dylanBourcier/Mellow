@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Message struct {
@@ -16,6 +17,7 @@ type Message struct {
 
 type ConversationPreview struct {
 	UserID      uuid.UUID `json:"user_id"`      // L’autre utilisateur
+	Avatar      *string   `json:"avatar"`       // Avatar de l’utilisateur
 	Username    string    `json:"username"`     // Pour affichage dans l’UI
 	LastMessage string    `json:"last_message"` // Dernier message échangé
 	LastSentAt  time.Time `json:"last_sent_at"` // Date d’envoi du dernier message

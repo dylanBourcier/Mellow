@@ -17,8 +17,14 @@ export default function UserConversation({ id }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        //We need to check if the user try to access a conversation with himself if its the case redirect him on where he was before
+        if (user.user_id === id) {
+          window.history.back();
+          return;
+        }
         // Fetch user information
         const userResponse = await fetch(`/api/users/${id}`);
+
         const userInfo = await userResponse.json();
         if (userInfo.status !== 'success') {
           throw new Error(userInfo.message);

@@ -20,4 +20,7 @@ type MessageService interface {
 
 	// MarkAsRead marque un message comme lu.
 	MarkAsRead(ctx context.Context, messageID, userID string) error
+
+	// MarkAsReadConversation met à jour le statut de lecture des messages dans une conversation.
+	MarkAsReadConversation(ctx context.Context, userId, otherId string) error
 }

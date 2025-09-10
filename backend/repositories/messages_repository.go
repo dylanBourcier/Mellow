@@ -20,4 +20,7 @@ type MessageRepository interface {
 
 	// MarkAsRead met à jour le statut de lecture d’un message.
 	MarkAsRead(ctx context.Context, messageID, userID string) error
+
+	// MarkAsReadBySender met à jour le statut de lecture des messages envoyés par un utilisateur.
+	MarkAsReadConversation(ctx context.Context, userId, otherId string) error
 }
