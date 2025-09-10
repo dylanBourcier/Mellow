@@ -13,7 +13,6 @@ type Services struct {
 	CommentService      services.CommentService
 	MessageService      services.MessageService
 	NotificationService services.NotificationService
-	MessageService      services.MessageService
 }
 
 func InitServices(repos *Repositories) *Services {
@@ -23,7 +22,6 @@ func InitServices(repos *Repositories) *Services {
 	postService := servimpl.NewPostService(repos.PostRepository, userService, groupService)
 	commentService := servimpl.NewCommentService(repos.CommentRepository, repos.UserRepository, postService)
 	notificationService := servimpl.NewNotificationService(repos.NotificationRepository, repos.UserRepository)
-	messageService := servimpl.NewMessageService(repos.MessageRepository)
 	messageService := servimpl.NewMessageService(repos.MessageRepository)
 
 	return &Services{

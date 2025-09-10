@@ -25,19 +25,20 @@ export default function UserConversation({ id }) {
         }
 
         // Fetch messages between logged-in user and the other user
-        const messagesResponse = await fetch(`/api/messages/${id}?limit=50&offset=0`);
+        const messagesResponse = await fetch(
+          `/api/messages/${id}?limit=50&offset=0`
+        );
         const messagesData = await messagesResponse.json();
         console.log(messagesData);
-        
+
         if (messagesData.status !== 'success') {
           throw new Error(messagesData.message);
         }
 
         setUserData(userInfo.data);
-        if (messagesData.data){
-
+        if (messagesData.data) {
           setMessages(messagesData.data);
-        }else{
+        } else {
           setMessages([]);
         }
 
@@ -81,7 +82,7 @@ export default function UserConversation({ id }) {
     );
   }
   return (
-    <div>
+    <div className="flex flex-col h-full max-h-[90vh]">
       <section className="flex justify-center items-center py-2 bg-white relative rounded-2xl shadow-(--box-shadow)">
         <Link
           href={'/messages'}
@@ -110,11 +111,58 @@ export default function UserConversation({ id }) {
         </Link>
         <div></div>
       </section>
-      {messages.length === 0 ? (
-        <p>No messages yet. Start the conversation!</p>
-      ) : (
-        <MessagesList messages={messages} type="private" />
-      )}
+      <section className="flex-1 overflow-y-auto">
+        {messages.length === 0 ? (
+          <p>No messages yet. Start the conversation!</p>
+        ) : (
+          <MessagesList messages={messages} type="private" />
+        )}
+      </section>
+      <div className="p-4 bg-white rounded-b-2xl shadow-(--box-shadow)">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const content = formData.get('message');
+            if (!content) return;
+
+            try {
+              const response = await fetch(`/api/messages/${id}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content }),
+              });
+              const result = await response.json();
+              if (result.status !== 'success') {
+                throw new Error(result.message);
+              }
+
+              // Append the new message to the messages list
+              setMessages((prevMessages) => [...prevMessages, result.data]);
+              form.reset();
+            } catch (error) {
+              console.error('Error sending message:', error);
+            }
+          }}
+          className="flex items-center gap-2"
+        >
+          <input
+            type="text"
+            name="message"
+            placeholder="Type your message..."
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5"
+          />
+          <button
+            type="submit"
+            className="bg-lavender-5 text-white rounded-full px-4 py-2 hover:bg-lavender-4 focus:outline-none focus:ring-2 focus:ring-lavender-5"
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

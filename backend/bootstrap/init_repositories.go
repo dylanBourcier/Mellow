@@ -14,7 +14,6 @@ type Repositories struct {
 	CommentRepository      repositories.CommentRepository
 	MessageRepository      repositories.MessageRepository
 	NotificationRepository repositories.NotificationRepository
-	MessageRepository      repositories.MessageRepository
 }
 
 func InitRepositories(db *sql.DB) *Repositories {
@@ -26,6 +25,5 @@ func InitRepositories(db *sql.DB) *Repositories {
 		CommentRepository:      repoimpl.NewCommentRepository(db),
 		MessageRepository:      repoimpl.NewMessageRepository(db),
 		NotificationRepository: repoimpl.NewNotificationRepository(db),
-		MessageRepository:      repoimpl.NewMessageRepository(db),
 	}
 }

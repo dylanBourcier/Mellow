@@ -16,7 +16,7 @@ export default function Message({ message }) {
       }`}
     >
       <div
-        className={`p-3 w-fit max-w-[500px] rounded-2xl shadow-2xs ${
+        className={`p-3 w-fit max-w-[500px] rounded-2xl shadow-2xs break-words ${
           isSender ? 'bg-lavender-1' : 'bg-white'
         }`}
       >

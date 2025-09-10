@@ -8,8 +8,8 @@ const metadata = {
 };
 export { metadata };
 
-export default function ConversationPage({ params }) {
-  const { id } = params;
+export default async function ConversationPage({ params }) {
+  const { id } = await params;
   return (
     <ProtectedRoute redirectTo="/login">
       <UserConversation id={id} />
