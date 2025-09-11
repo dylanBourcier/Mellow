@@ -29,11 +29,14 @@ useEffect(() => {
 
 return (
     <div className='flex flex-col'>
-
-        {conversations != null && conversations.length > 0 ? (
-            conversations.map((conv, idx) => (
+        {conversations !== null && conversations.length > 0 ? (
+            conversations.map((conv, idx) => (<>
                 <RecentMessage key={idx} conversation={conv} />
+            <div className="h-[0.1px] w-[97%] bg-dark-grey-lighter"></div>
+                </>
+
             ))
+
         ) : (
             <p>No conversation for now</p>
         )}

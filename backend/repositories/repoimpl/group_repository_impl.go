@@ -321,17 +321,14 @@ func (r *groupRepositoryImpl) AnswerGroupInvite(ctx context.Context, request mod
 	}
 	// If the action is "accept", we insert the member into the group
 	if action == "accept" {
-		fmt.Println(request.GroupID)
 		query := `INSERT INTO groups_member (group_id, user_id, role, join_date) VALUES (?, ?, 'member', CURRENT_TIMESTAMP)`
 		_, err := r.db.ExecContext(ctx, query, request.GroupID, userId)
 		if err != nil {
 			fmt.Println("Error adding member to group:", err)
 			return fmt.Errorf("failed to add member: %w", err)
 		}
-		return nil
 
 	}
-
 	// Delete the follow request regardless of the action
 	query := `DELETE FROM follow_requests WHERE request_id = ?`
 	_, err := r.db.ExecContext(ctx, query, request.RequestID)
