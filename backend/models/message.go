@@ -7,12 +7,14 @@ import (
 )
 
 type Message struct {
-	MessageID    uuid.UUID `json:"message_id"`
-	SenderID     uuid.UUID `json:"sender_id"`
-	ReceiverID   uuid.UUID `json:"receiver_id"`
-	Content      *string   `json:"content,omitempty"`
-	CreationDate time.Time `json:"creation_date"`
-	IsRead       bool      `json:"is_read"`
+	MessageID      uuid.UUID `json:"message_id"`
+	SenderID       uuid.UUID `json:"sender_id"`
+	ReceiverID     uuid.UUID `json:"receiver_id"`
+	Content        *string   `json:"content,omitempty"`
+	CreationDate   time.Time `json:"creation_date"`
+	IsRead         bool      `json:"is_read"`
+	SenderUsername *string   `json:"username,omitempty"`
+	SenderImageUrl *string   `json:"image_url,omitempty"`
 }
 
 type ConversationPreview struct {

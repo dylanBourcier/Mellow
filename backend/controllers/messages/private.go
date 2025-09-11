@@ -2,6 +2,7 @@ package messages
 
 import (
 	"encoding/json"
+	"fmt"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -59,7 +60,7 @@ func SendMessage(service services.MessageService, userId string) http.HandlerFun
 			utils.RespondError(w, http.StatusBadRequest, "Empty content", utils.ErrInvalidPayload)
 			return
 		}
-
+		fmt.Println("userId:", userId)
 		receiverID, err := uuid.Parse(userId)
 		if err != nil {
 			utils.RespondError(w, http.StatusBadRequest, "Invalid user", utils.ErrInvalidPayload)

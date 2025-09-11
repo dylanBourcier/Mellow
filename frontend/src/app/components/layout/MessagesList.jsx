@@ -12,7 +12,11 @@ export default function MessagesList({ messages, type }) {
         </div>
       );
     case 'group':
-      return <ul>{/* TODO */}</ul>;
+      return   (<div className="flex flex-col gap-2.5">
+          {messages.map((message) => {
+            return <Message message={message} key={message.message_id} type={type}/>;
+          })}
+        </div>);
     default:
       return <p>No messages available</p>;
   }

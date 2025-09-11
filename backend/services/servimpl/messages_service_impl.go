@@ -58,6 +58,24 @@ func (s *messageServiceImpl) GetConversation(ctx context.Context, user1ID, user2
 	}
 	return msgs, nil
 }
+func (s *messageServiceImpl) GetGroupConversation(ctx context.Context, user1ID, groupId string, page, pageSize int) ([]*models.Message, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 30
+	}
+	if user1ID == "" || groupId == "" {
+		return nil, utils.ErrInvalidPayload
+	}
+
+	offset := (page - 1) * pageSize
+	msgs, err := s.repo.GetGroupConversation(ctx, user1ID, groupId, offset, pageSize)
+	if err != nil {
+		return nil, err
+	}
+	return msgs, nil
+}
 
 func (s *messageServiceImpl) DeleteMessage(ctx context.Context, messageID, requesterID string) error {
 	if messageID == "" || requesterID == "" {

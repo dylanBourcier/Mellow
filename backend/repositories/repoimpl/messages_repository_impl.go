@@ -51,6 +51,33 @@ func (r *messageRepositoryImpl) GetConversation(ctx context.Context, user1ID, us
 	return messages, nil
 }
 
+func (r *messageRepositoryImpl) GetGroupConversation(ctx context.Context, user1ID, groupID string, offset, limit int) ([]*models.Message, error) {
+	query := `select m.message_id, m.sender_id, m.receiver_id, m.content, m.creation_date, m.is_read,u.username,u.image_Url
+			from messages m
+			join users u on m.sender_id = u.user_id
+			where m.receiver_id = ? 
+			order by m.creation_date asc
+			limit ? offset ?`
+
+	rows, err := r.db.QueryContext(ctx, query, groupID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get conversation: %w", err)
+	}
+	defer rows.Close()
+	var messages []*models.Message
+	for rows.Next() {
+		var m models.Message
+		if err := rows.Scan(&m.MessageID, &m.SenderID, &m.ReceiverID, &m.Content, &m.CreationDate, &m.IsRead, &m.SenderUsername, &m.SenderImageUrl); err != nil {
+			return nil, fmt.Errorf("failed to scan message: %w", err)
+		}
+		messages = append(messages, &m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over messages: %w", err)
+	}
+	return messages, nil
+}
+
 func (r *messageRepositoryImpl) DeleteMessage(ctx context.Context, messageID string) error {
 	_, err := r.db.ExecContext(ctx, `delete from messages where message_id = ?`, messageID)
 	if err != nil {

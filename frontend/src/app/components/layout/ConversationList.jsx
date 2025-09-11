@@ -29,7 +29,8 @@ useEffect(() => {
 
 return (
     <div className='flex flex-col'>
-        {conversations.length > 0 ? (
+
+        {conversations != null && conversations.length > 0 ? (
             conversations.map((conv, idx) => (
                 <RecentMessage key={idx} conversation={conv} />
             ))
