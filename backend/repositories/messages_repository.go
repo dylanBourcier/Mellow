@@ -12,6 +12,8 @@ type MessageRepository interface {
 	// GetConversation retourne l’historique paginé entre deux utilisateurs.
 	GetConversation(ctx context.Context, user1ID, user2ID string, offset, limit int) ([]*models.Message, error)
 
+	GetGroupConversation(ctx context.Context, user1ID, groupID string, offset, limit int) ([]*models.Message, error)
+
 	// DeleteMessage supprime un message par son ID.
 	DeleteMessage(ctx context.Context, messageID string) error
 
@@ -20,4 +22,7 @@ type MessageRepository interface {
 
 	// MarkAsRead met à jour le statut de lecture d’un message.
 	MarkAsRead(ctx context.Context, messageID, userID string) error
+
+	// MarkAsReadBySender met à jour le statut de lecture des messages envoyés par un utilisateur.
+	MarkAsReadConversation(ctx context.Context, userId, otherId string) error
 }

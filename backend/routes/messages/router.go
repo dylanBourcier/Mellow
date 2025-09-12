@@ -1,12 +1,24 @@
 package messages
 
 import (
+	"net/http"
+	"strings"
+
 	msg "mellow/controllers/messages"
 	"mellow/services"
 	"mellow/utils"
-	"net/http"
-	"strings"
 )
+
+// /messages
+func MessageRouter(msgService services.MessageService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+			return
+		}
+		msg.GetRecentConversations(msgService)(w, r)
+	}
+}
 
 // /messages/:userId
 func MessageUserRouter(msgService services.MessageService) http.HandlerFunc {
@@ -34,19 +46,21 @@ func MessageUserRouter(msgService services.MessageService) http.HandlerFunc {
 }
 
 // /messages/group/:groupId
-func MessageGroupRouter(w http.ResponseWriter, r *http.Request) {
-	groupId := strings.TrimPrefix(r.URL.Path, "/messages/group/")
-	if groupId == "" || strings.Contains(groupId, "/") {
-		utils.RespondError(w, http.StatusNotFound, "Groupe introuvable", utils.ErrGroupNotFound)
-		return
-	}
+func MessageGroupRouter(msgService services.MessageService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		groupId := strings.TrimPrefix(r.URL.Path, "/messages/group/")
+		if groupId == "" || strings.Contains(groupId, "/") {
+			utils.RespondError(w, http.StatusNotFound, "Groupe introuvable", utils.ErrGroupNotFound)
+			return
+		}
 
-	switch r.Method {
-	case http.MethodGet:
-		msg.GetGroupMessages(w, r, groupId)
-	case http.MethodPost:
-		msg.SendGroupMessage(w, r, groupId)
-	default:
-		utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		switch r.Method {
+		case http.MethodGet:
+			msg.GetGroupMessages(msgService, groupId)(w, r)
+		case http.MethodPost:
+			msg.SendGroupMessage(w, r, groupId)
+		default:
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
+		}
 	}
 }

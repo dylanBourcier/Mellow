@@ -11,7 +11,7 @@ type Services struct {
 	PostService         services.PostService
 	GroupService        services.GroupService
 	CommentService      services.CommentService
-	MessageService 		services.MessageService
+	MessageService      services.MessageService
 	NotificationService services.NotificationService
 }
 
@@ -31,6 +31,6 @@ func InitServices(repos *Repositories) *Services {
 		GroupService:        groupService,
 		CommentService:      commentService,
 		NotificationService: notificationService,
-		MessageService: messageService,
+		MessageService:      messageService,
 	}
 }

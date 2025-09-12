@@ -29,3 +29,19 @@ func MarkAsRead(service services.MessageService) http.HandlerFunc {
 		utils.RespondJSON(w, http.StatusOK, "Message marked as read", nil)
 	}
 }
+func MarkAsReadConversation(service services.MessageService, otherId string) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		uid, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+
+		if err := service.MarkAsReadConversation(r.Context(), uid.String(), otherId); err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to mark conversation as read", err)
+			return
+		}
+		utils.RespondJSON(w, http.StatusOK, "Conversation marked as read", nil)
+	}
+}

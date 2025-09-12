@@ -311,7 +311,7 @@ func (r *userRepositoryImpl) getFollowStatus(ctx context.Context, viewerID, user
 	var followStatus string
 	followQuery := `SELECT 'follows' AS status FROM follows WHERE follower_id = ? AND followed_id = ?
 					UNION ALL
-					SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ?
+					SELECT 'requested' AS status FROM follow_requests WHERE sender_id = ? AND receiver_id = ? AND group_id IS NULL
 					LIMIT 1`
 	err := r.db.QueryRowContext(ctx, followQuery, viewerID, userID, viewerID, userID).Scan(&followStatus)
 	if err != nil {
@@ -320,11 +320,12 @@ func (r *userRepositoryImpl) getFollowStatus(ctx context.Context, viewerID, user
 		}
 		return "", err
 	}
+	fmt.Println("Follow Status:", followStatus)
 	return followStatus, nil
 }
 
 func (r *userRepositoryImpl) IsFollowRequestExists(ctx context.Context, senderID, receiverID string) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM follow_requests WHERE sender_id = ? AND receiver_id = ?)`
+	query := `SELECT EXISTS(SELECT 1 FROM follow_requests WHERE sender_id = ? AND receiver_id = ? AND type = 'user')`
 	var exists bool
 	err := r.db.QueryRowContext(ctx, query, senderID, receiverID).Scan(&exists)
 	if err != nil {
