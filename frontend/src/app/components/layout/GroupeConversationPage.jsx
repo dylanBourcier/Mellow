@@ -1,14 +1,11 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/app/context/UserContext';
 import Spinner from '../ui/Spinner';
 import MessagesList from './MessagesList';
 
-
-export default function GroupConversationPage({groupId}) {
-    
-    
+export default function GroupConversationPage({ groupId }) {
   const { user } = useUser(); // Logged-in user
 
   const [messages, setMessages] = useState([]);
@@ -16,7 +13,7 @@ export default function GroupConversationPage({groupId}) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching messages for group:", groupId);
+        console.log('Fetching messages for group:', groupId);
         // Fetch messages between logged-in user and the other user
         const messagesResponse = await fetch(
           `/api/messages/group/${groupId}?limit=50&offset=0`
@@ -30,11 +27,17 @@ export default function GroupConversationPage({groupId}) {
 
         if (messagesData.data) {
           setMessages(messagesData.data);
+          console.log(messagesData.data);
         } else {
           setMessages([]);
         }
-
-
+        // Scroll to bottom after loading messages
+        setTimeout(() => {
+          const chatContainer = document.querySelector('.overflow-y-auto');
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+        }, 100);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -42,6 +45,41 @@ export default function GroupConversationPage({groupId}) {
 
     fetchData();
   }, [groupId]);
+  useEffect(() => {
+    if (!groupId || !user) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    // user.user_id = ton ID connecté
+    const room = groupId; // ID de la conversation (ex: user1_user2)
+    const ws = new WebSocket(
+      `${protocol}://localhost:3225/ws/chat?room=group:${room}`
+    );
+
+    ws.onopen = () => console.log('WS connected');
+
+    ws.onmessage = (event) => {
+      const newMsg = JSON.parse(event.data);
+      console.log('Received WS message:', newMsg);
+      setMessages((prev) => [...prev, newMsg]);
+      // Scroll to bottom when a new message arrives
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.overflow-y-auto');
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }, 100);
+    };
+
+    ws.onclose = (event) => {
+      console.log('WS closed', event.code, event.reason);
+    };
+
+    ws.onerror = (event) => {
+      console.error('WS error:', event);
+    };
+
+    return () => ws.close();
+  }, [groupId, user]);
 
   if (!messages) {
     return (
@@ -69,9 +107,9 @@ export default function GroupConversationPage({groupId}) {
             if (!content) return;
 
             try {
-                console.log(groupId );
-                
-              const response = await fetch(`/api/messages/${groupId}`, {
+              console.log(groupId);
+
+              const response = await fetch(`/api/messages/group/${groupId}`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -83,8 +121,6 @@ export default function GroupConversationPage({groupId}) {
                 throw new Error(result.message);
               }
 
-              // Append the new message to the messages list
-              setMessages((prevMessages) => [...prevMessages, result.data]);
               form.reset();
             } catch (error) {
               console.error('Error sending message:', error);
