@@ -21,17 +21,17 @@ func NewMessageService(repo repositories.MessageRepository) services.MessageServ
 }
 
 // SendMessage envoie un messgae depuis un "sender" vers un "receiver" et le persistent dans le repository.
-func (s *messageServiceImpl) SendMessage(ctx context.Context, msg *models.Message) error {
+func (s *messageServiceImpl) SendMessage(ctx context.Context, msg *models.Message) (string, error) {
 	if msg == nil || msg.Content == nil || *msg.Content == "" {
-		return utils.ErrInvalidPayload
+		return "", utils.ErrInvalidPayload
 	}
 	if msg.SenderID == uuid.Nil || msg.ReceiverID == uuid.Nil {
-		return utils.ErrInvalidUserData
+		return "", utils.ErrInvalidUserData
 	}
 
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return utils.ErrUUIDGeneration
+		return "", utils.ErrUUIDGeneration
 	}
 
 	msg.MessageID = id

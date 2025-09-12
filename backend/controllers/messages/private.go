@@ -6,7 +6,9 @@ import (
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
+	"mellow/websocket"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -73,10 +75,28 @@ func SendMessage(service services.MessageService, userId string) http.HandlerFun
 			ReceiverID: receiverID,
 			Content:    &content,
 		}
-		if err := service.SendMessage(r.Context(), &msg); err != nil {
+		msgId, err := service.SendMessage(r.Context(), &msg)
+		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to send message", err)
 			return
 		}
+		msg.MessageID, err = uuid.Parse(msgId)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to parse message ID", err)
+			return
+		}
+		fmt.Println("Sent message ID:", msg.MessageID)
+		// 👉 Broadcast WS après insertion
+		wsMsg := websocket.WSMessage{
+			ID:        msg.MessageID.String(),
+			SenderID:  msg.SenderID.String(),
+			Content:   *msg.Content,
+			Timestamp: msg.CreationDate.Format(time.RFC3339),
+			Room:      websocket.MakePrivateRoom(uid.String(), msg.ReceiverID.String()), // room = destinataire
+			Type:      "private",
+		}
+		websocket.BroadcastMessage(wsMsg.Room, wsMsg)
+
 		utils.RespondJSON(w, http.StatusCreated, "Message sent", msg)
 	}
 }

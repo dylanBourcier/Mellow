@@ -12,6 +12,7 @@ import (
 	"mellow/routes/notifications"
 	"mellow/routes/posts"
 	"mellow/routes/users"
+	"mellow/websocket"
 )
 
 func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
@@ -32,7 +33,9 @@ func SetupRoutes(services *bootstrap.Services) *http.ServeMux {
 	notifications.RegisterNotificationRoutes(mux, services.NotificationService, services.AuthService)
 
 	// Messages privés + groupes
-	messages.RegisterMessageRoutes(mux, services.MessageService, services.AuthService)
+	messages.RegisterMessageRoutes(mux, services.MessageService, services.UserService, services.AuthService)
+	websocket.RegisterDebugRoutes(mux)
+	mux.HandleFunc("/ws/chat", websocket.WsHandler)
 
 	// Modération (admin)
 	admin.RegisterAdminRoutes(mux)
