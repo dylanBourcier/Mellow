@@ -7,7 +7,7 @@ import (
 
 type MessageRepository interface {
 	// InsertMessage enregistre un nouveau message.
-	InsertMessage(ctx context.Context, message *models.Message) error
+	InsertMessage(ctx context.Context, message *models.Message) (string, error)
 
 	// GetConversation retourne l’historique paginé entre deux utilisateurs.
 	GetConversation(ctx context.Context, user1ID, user2ID string, offset, limit int) ([]*models.Message, error)

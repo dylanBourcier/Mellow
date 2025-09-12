@@ -6,8 +6,8 @@ import (
 )
 
 type MessageService interface {
-	// SendMessage envoie un message privé entre deux utilisateurs.
-	SendMessage(ctx context.Context, msg *models.Message) error
+	// SendMessage envoie un message privé entre deux utilisateurs et retourne l'ID du message ou une erreur.
+	SendMessage(ctx context.Context, msg *models.Message) (string, error)
 
 	// GetConversation retourne l’historique paginé entre deux utilisateurs.
 	GetConversation(ctx context.Context, user1ID, user2ID string, page, pageSize int) ([]*models.Message, error)

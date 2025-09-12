@@ -46,7 +46,7 @@ func MessageUserRouter(msgService services.MessageService) http.HandlerFunc {
 }
 
 // /messages/group/:groupId
-func MessageGroupRouter(msgService services.MessageService) http.HandlerFunc {
+func MessageGroupRouter(msgService services.MessageService, userSvc services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		groupId := strings.TrimPrefix(r.URL.Path, "/messages/group/")
 		if groupId == "" || strings.Contains(groupId, "/") {
@@ -58,7 +58,7 @@ func MessageGroupRouter(msgService services.MessageService) http.HandlerFunc {
 		case http.MethodGet:
 			msg.GetGroupMessages(msgService, groupId)(w, r)
 		case http.MethodPost:
-			msg.SendGroupMessage(w, r, groupId)
+			msg.SendGroupMessage(msgService, userSvc, groupId)(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}

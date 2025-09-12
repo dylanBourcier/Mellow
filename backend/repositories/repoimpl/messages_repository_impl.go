@@ -16,13 +16,13 @@ func NewMessageRepository(db *sql.DB) repositories.MessageRepository {
 	return &messageRepositoryImpl{db: db}
 }
 
-func (r *messageRepositoryImpl) InsertMessage(ctx context.Context, message *models.Message) error {
+func (r *messageRepositoryImpl) InsertMessage(ctx context.Context, message *models.Message) (string, error) {
 	query := `insert into messages (message_id, sender_id, receiver_id, content, creation_date, is_read) values (?,?,?,?,?,?)`
 	_, err := r.db.ExecContext(ctx, query, message.MessageID, message.SenderID, message.ReceiverID, message.Content, message.CreationDate, message.IsRead)
 	if err != nil {
-		return fmt.Errorf("failed to insert message: %w", err)
+		return "", fmt.Errorf("failed to insert message: %w", err)
 	}
-	return nil
+	return message.MessageID.String(), nil
 }
 
 func (r *messageRepositoryImpl) GetConversation(ctx context.Context, user1ID, user2ID string, offset, limit int) ([]*models.Message, error) {
