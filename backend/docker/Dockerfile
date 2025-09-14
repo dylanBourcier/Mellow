@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY . ./
 # Static binary (GCO nearly cost my life on windows. SO YEAH i switched to my FEDORA VM)
 ENV CGO_ENABLED=1
-RUn --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=type=cache,target=/root/.cache/go-build \
 	GOOS=${TOS} GOARCH=${TAC} \
 	go build -ldflags '-s -w -linkmode external -extldflags "-static"' -o /app/mellow ./
 RUN mkdir -p /app/database/migration /app/uploads /app/data
