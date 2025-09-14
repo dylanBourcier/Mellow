@@ -1,0 +1,88 @@
+name: mellow
+
+services:
+  # PROD profile
+  backend:
+    #profiles: [prod]
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+      target: final
+      args:
+        - TARGETOS=linux
+        - TARGETARCH=amd64
+    user: "0:0"
+    environment:
+      - PORT=3225
+      - DB_PATH=/app/data/social.db
+      - MIGRATIONS_PATH=/app/database/migration/sqlite
+    volumes:
+      - backend_data:/app/data
+      - backend_uploads:/app/uploads
+    ports:
+      - "3225:3225"
+    restart: unless-stopped
+
+  frontend:
+    #profiles: [prod]
+    build:
+      context: ./frontend
+      target: final
+      args:
+        - NODE_VERSION=20
+        # Compile-time backend origin for Next.js rewrites
+        - BACKEND_ORIGIN=http://backend:3225
+    environment:
+      - PORT=3000
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  # DEV profile
+  backend-dev:
+    profiles: [dev]
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+      target: dev
+    environment:
+      - PORT=3225
+      - DB_PATH=/app/data/social.db
+      - MIGRATIONS_PATH=/app/database/migration/sqlite
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+      - backend_uploads:/app/uploads
+    ports:
+      - "3225:3225"
+
+  frontend-dev:
+    profiles: [dev]
+    build:
+      context: ./frontend
+      target: dev
+      args:
+        - NODE_VERSION=20
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - BACKEND_ORIGIN=http://backend-dev:3225
+      - NEXT_TELEMETRY_DISABLED=1
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend-dev
+    ports:
+      - "3000:3000"
+    command: >-
+      sh -c "npm ci && npx next dev --turbopack -H 0.0.0.0 -p 3000"
+
+volumes:
+  backend_data: {}
+  backend_uploads: {}
+  frontend_node_modules: {}
