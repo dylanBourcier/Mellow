@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.18.0
 
-#  BUild context
+#  Build context
 ARG TOS=linux
 ARG TAC=amd64
 
