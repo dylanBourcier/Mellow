@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 	go build -ldflags '-s -w -linkmode external -extldflags "-static"' -o /app/mellow ./
 RUN mkdir -p /app/database/migration /app/uploads /app/data
 
-# Dev targer (yeah cuz i'll use docker compose profil, we're pros here)
+# Dev target (yeah cuz i'll use docker compose profile, we're pros here)
 FROM golang:1.24-alpine AS dev
 WORKDIR /app
 RUN apk add --no-cache build-base
