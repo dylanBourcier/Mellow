@@ -37,10 +37,10 @@ FROM gcr.io/distroless/static-debian12 AS final
 WORKDIR /app
 # Here chown 0:0 actually serves so we have full perms on DB, better solutions exists but will require more 
 # workload and complexity
-COPY --chown=O:O --from=builder /app/mellow /app/mellow
-COPY --chown=O:O --from=builder /app/database/migration /app/database/migration
-COPY --chown=O:O --from=builder /app/uploads /app/uploads
-COPY --chown=O:O --from=builder /app/data /app/data
+COPY --chown=0:0 --from=builder /app/mellow /app/mellow
+COPY --chown=0:0 --from=builder /app/database/migration /app/database/migration
+COPY --chown=0:0 --from=builder /app/uploads /app/uploads
+COPY --chown=0:0 --from=builder /app/data /app/data
 # Here declaring our ROOT user for runtime
 USER 0:0
 ENV PORT=3225 \
