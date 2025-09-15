@@ -34,6 +34,7 @@ type UpdateUserRequest struct {
 	Birthdate   *time.Time `json:"birthdate,omitempty"`
 	ImageURL    *string    `json:"image_url,omitempty"`
 	Description *string    `json:"description,omitempty"`
+	Privacy     *string    `json:"privacy,omitempty"` // "public", "private"
 }
 
 type ReportRequest struct {

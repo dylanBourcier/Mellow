@@ -85,9 +85,31 @@ func (r *userRepositoryImpl) GetUserByUsernameOrEmail(ctx context.Context, usern
 }
 
 func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) error {
-	query := `UPDATE users SET email = ?, password = ?, username = ?, firstname = ?, lastname = ?, birthdate = ?, role = ?, image_url = ?, description = ? WHERE user_id = ?`
+	// Only update fields that are not empty except for description (zero value)
+	query := `UPDATE users SET 
+		email = CASE WHEN ? != '' THEN ? ELSE email END,
+		password = CASE WHEN ? != '' THEN ? ELSE password END,
+		username = CASE WHEN ? != '' THEN ? ELSE username END,
+		firstname = CASE WHEN ? != '' THEN ? ELSE firstname END,
+		lastname = CASE WHEN ? != '' THEN ? ELSE lastname END,
+		birthdate = CASE WHEN ? != '' THEN ? ELSE birthdate END,
+		role = CASE WHEN ? != '' THEN ? ELSE role END,
+		image_url = CASE WHEN ? != '' THEN ? ELSE image_url END,
+		description = ?,
+		privacy = CASE WHEN ? != '' THEN ? ELSE privacy END
+		WHERE user_id = ?`
 	_, err := r.db.ExecContext(ctx, query,
-		user.Email, user.Password, user.Username, user.Firstname, user.Lastname, user.Birthdate, user.Role, user.ImageURL, user.Description, user.UserID)
+		user.Email, user.Email,
+		user.Password, user.Password,
+		user.Username, user.Username,
+		user.Firstname, user.Firstname,
+		user.Lastname, user.Lastname,
+		user.Birthdate, user.Birthdate,
+		user.Role, user.Role,
+		user.ImageURL, user.ImageURL,
+		user.Description,
+		user.Privacy, user.Privacy,
+		user.UserID)
 	if err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}

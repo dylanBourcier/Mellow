@@ -1,13 +1,15 @@
 package users
 
 import (
-	"encoding/json"
 	"fmt"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
@@ -63,8 +65,16 @@ func GetUserProfileHandler(userService services.UserService) http.HandlerFunc {
 func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		defer r.Body.Close()
 		id := strings.TrimPrefix(r.URL.Path, "/users/")
 		uid, err := utils.GetUserIDFromContext(r.Context())
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Failed to get user from context", utils.ErrUnauthorized)
+			return
+		}
+
+		userInfo, err := userService.GetUserByID(r.Context(), uid.String())
+
 		if err != nil {
 			utils.RespondError(w, http.StatusUnauthorized, "Failed to get user from context", utils.ErrUnauthorized)
 			return
@@ -75,54 +85,97 @@ func UpdateUserProfileHandler(userService services.UserService) http.HandlerFunc
 			return
 		}
 
-		var req models.UpdateUserRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			utils.RespondError(w, http.StatusBadRequest,
-				"Invalid JSON", utils.ErrInvalidJSON)
+		if r.Method != http.MethodPut {
+			utils.RespondError(w, http.StatusMethodNotAllowed, "Method not allowed", utils.ErrMethodNotAllowed)
 			return
 		}
 
-		user, err := userService.GetUserByID(r.Context(), id)
-		if err != nil {
-			utils.RespondError(w, http.StatusInternalServerError, "Failed to get user", utils.ErrInternalServerError)
-			return
-		}
-		if user == nil {
-			utils.RespondError(w, http.StatusNotFound, "User not found", utils.ErrUserNotFound)
+		// Limite taille max (par ex 10 Mo)
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "Failed to parse multipart form: "+err.Error(), utils.ErrInvalidPayload)
 			return
 		}
 
-		if req.Username != nil {
-			user.Username = *req.Username
+		// Récupère les champs texte
+		user := models.User{}
+		user.UserID = uid
+
+		username := r.FormValue("username")
+		if username != "" {
+			user.Username = username
+		} else {
+			user.Username = ""
 		}
-		if req.Firstname != nil {
-			user.Firstname = *req.Firstname
+		fmt.Println("Username:", user.Username)
+
+		firstname := r.FormValue("firstname")
+		if firstname != "" {
+			user.Firstname = firstname
+		} else {
+			user.Firstname = ""
 		}
-		if req.Lastname != nil {
-			user.Lastname = *req.Lastname
+		fmt.Println("Firstname:", user.Firstname)
+
+		lastname := r.FormValue("lastname")
+		if lastname != "" {
+			user.Lastname = lastname
+		} else {
+			user.Lastname = ""
 		}
-		if req.Description != nil {
-			user.Description = req.Description
+		fmt.Println("Lastname:", user.Lastname)
+
+		privacy := r.FormValue("privacy")
+		if privacy != "" {
+			user.Privacy = privacy
+		} else {
+			user.Privacy = ""
 		}
-		if req.Password != nil {
-			hashed, err := utils.HashPassword(*req.Password)
+		fmt.Println("Privacy:", user.Privacy)
+		user.Description = nil
+		if desc := r.FormValue("description"); desc != "" {
+			user.Description = &desc
+		}
+		fmt.Println("Description:", user.Description)
+
+		// Parse birthdate (exemple format "2006-01-02")
+		bdStr := r.FormValue("birthdate")
+		if bdStr != "" {
+			birthdate, err := time.Parse("2006-01-02", bdStr)
 			if err != nil {
-				utils.RespondError(w, http.StatusInternalServerError, "Failed to hash password", utils.ErrInternalServerError)
+				utils.RespondError(w, http.StatusBadRequest, "Invalid birthdate format", utils.ErrInvalidPayload)
 				return
 			}
-			user.Password = hashed
+			user.Birthdate = birthdate
 		}
-		if req.Birthdate != nil {
-			bd := *req.Birthdate
-			user.Birthdate = bd
-		}
+		fmt.Println("Birthdate:", user.Birthdate)
+		//password ne change pas, il n'est pas modifiable dans le form
+		user.Password = ""
 
-		if err := userService.UpdateUser(r.Context(), user); err != nil {
-			utils.RespondError(w, http.StatusInternalServerError, "Failed to update user", utils.ErrInternalServerError)
+		file, header, err := r.FormFile("avatar")
+		var image_url *string
+		if err == nil {
+			image_url, err = utils.HandleImageUpload(header, file, []string{"uploads", "avatars"})
+			if err != nil {
+				utils.RespondError(w, http.StatusInternalServerError, "Failed to upload image", err)
+				return
+			}
+			user.ImageURL = image_url
+			// Supprimer l'ancienne image si elle existe
+			if userInfo.ImageURL != nil {
+				os.Remove(filepath.Join("uploads", "avatars", *userInfo.ImageURL))
+			}
+		}
+		// Appelle le service (il hash le mdp, valide, insert)
+		if err := userService.UpdateUser(r.Context(), &user); err != nil {
+			utils.RespondError(w, http.StatusBadRequest, "User creation failed: "+err.Error(), utils.ErrInvalidPayload)
+			// Supprimer le fichier si l'utilisateur n'a pas été créé
+			if user.ImageURL != nil {
+				os.Remove(filepath.Join("uploads", "avatars", *user.ImageURL))
+			}
 			return
 		}
 
-		utils.RespondJSON(w, http.StatusOK, "User updated", nil)
+		utils.RespondJSON(w, http.StatusCreated, "User created successfully", nil)
 	}
 }
 
