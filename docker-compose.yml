@@ -3,7 +3,7 @@ name: mellow
 services:
   # PROD profile
   backend:
-    #profiles: [prod]
+    profiles: [prod]
     build:
       context: ./backend
       dockerfile: docker/Dockerfile
@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    #profiles: [prod]
+    profiles: [prod]
     build:
       context: ./frontend
       target: final
