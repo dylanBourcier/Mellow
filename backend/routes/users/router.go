@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	ctr "mellow/controllers/users"
 	"mellow/services"
 	"mellow/utils"
@@ -52,13 +53,19 @@ func SearchUsersHandler(userService services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("q")
 		groupId := r.URL.Query().Get("groupId")
+		viewerID, err := utils.GetUserIDFromContext(r.Context())
+		fmt.Println(viewerID)
+		if err != nil {
+			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", err)
+			return
+		}
 		excludeGroupMembers := r.URL.Query().Get("excludeGroupMembers") == "true"
 		if query == "" {
 			utils.RespondError(w, http.StatusBadRequest, "Query parameter 'q' is required", utils.ErrBadRequest)
 			return
 		}
 
-		users, err := userService.SearchUsers(r.Context(), query, groupId, excludeGroupMembers)
+		users, err := userService.SearchUsers(r.Context(), viewerID.String(), query, groupId, excludeGroupMembers)
 		if err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, err.Error(), err)
 			return

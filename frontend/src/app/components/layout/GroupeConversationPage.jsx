@@ -13,13 +13,11 @@ export default function GroupConversationPage({ groupId }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching messages for group:', groupId);
         // Fetch messages between logged-in user and the other user
         const messagesResponse = await fetch(
           `/api/messages/group/${groupId}?limit=50&offset=0`
         );
         const messagesData = await messagesResponse.json();
-        console.log(messagesData);
 
         if (messagesData.status !== 'success') {
           throw new Error(messagesData.message);
@@ -27,7 +25,6 @@ export default function GroupConversationPage({ groupId }) {
 
         if (messagesData.data) {
           setMessages(messagesData.data);
-          console.log(messagesData.data);
         } else {
           setMessages([]);
         }
@@ -59,7 +56,6 @@ export default function GroupConversationPage({ groupId }) {
 
     ws.onmessage = (event) => {
       const newMsg = JSON.parse(event.data);
-      console.log('Received WS message:', newMsg);
       setMessages((prev) => [...prev, newMsg]);
       // Scroll to bottom when a new message arrives
       setTimeout(() => {
@@ -107,7 +103,6 @@ export default function GroupConversationPage({ groupId }) {
             if (!content) return;
 
             try {
-              console.log(groupId);
 
               const response = await fetch(`/api/messages/group/${groupId}`, {
                 method: 'POST',

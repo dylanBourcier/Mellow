@@ -35,14 +35,12 @@ export default function UserConversation({ id }) {
           `/api/messages/${id}?limit=50&offset=0`
         );
         const messagesData = await messagesResponse.json();
-        console.log(messagesData);
 
         if (messagesData.status !== 'success') {
           throw new Error(messagesData.message);
         }
 
         setUserData(userInfo.data);
-        console.log(userInfo.data);
 
         if (messagesData.data) {
           setMessages(messagesData.data);

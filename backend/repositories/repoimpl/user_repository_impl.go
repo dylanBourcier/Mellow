@@ -234,21 +234,26 @@ WHERE f.follower_id = ?`
 	return users, nil
 }
 
-func (r *userRepositoryImpl) SearchUsers(ctx context.Context, query string) ([]*models.User, error) {
+func (r *userRepositoryImpl) SearchUsers(ctx context.Context, viewerID, query string) ([]*models.UserProfileData, error) {
 	like := "%" + query + "%"
-	rows, err := r.db.QueryContext(ctx, `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description 
-												FROM users WHERE username LIKE ? OR firstname LIKE ? OR lastname LIKE ?`, like, like, like)
+	rows, err := r.db.QueryContext(ctx, `SELECT user_id, username, image_url, privacy FROM users WHERE username LIKE ? OR firstname LIKE ? OR lastname LIKE ?`, like, like, like)
 	if err != nil {
 		return nil, fmt.Errorf("error searching users: %w", err)
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*models.UserProfileData
 	for rows.Next() {
-		var u models.User
-		if err := rows.Scan(&u.UserID, &u.Email, &u.Password, &u.Username, &u.Firstname, &u.Lastname, &u.Birthdate, &u.Role, &u.ImageURL, &u.CreationDate, &u.Description); err != nil {
+		var u models.UserProfileData
+		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy); err != nil {
 			return nil, fmt.Errorf("error scanning user: %w", err)
 		}
+		// Get follow status for each user
+		followStatus, err := r.getFollowStatus(ctx, viewerID, u.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting follow status: %w", err)
+		}
+		u.FollowStatus = followStatus
 		users = append(users, &u)
 	}
 	return users, nil
@@ -334,7 +339,7 @@ func (r *userRepositoryImpl) IsFollowRequestExists(ctx context.Context, senderID
 	return exists, nil
 }
 
-func (r *userRepositoryImpl) SearchUsersExcludingGroupMembers(ctx context.Context, query, groupId string) ([]*models.User, error) {
+func (r *userRepositoryImpl) SearchUsersExcludingGroupMembers(ctx context.Context, query, groupId string) ([]*models.UserProfileData, error) {
 	like := "%" + query + "%"
 	rows, err := r.db.QueryContext(ctx, `SELECT u.user_id, u.username, u.image_url, u.privacy
 	FROM users u 
@@ -350,9 +355,9 @@ func (r *userRepositoryImpl) SearchUsersExcludingGroupMembers(ctx context.Contex
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*models.UserProfileData
 	for rows.Next() {
-		var u models.User
+		var u models.UserProfileData
 		if err := rows.Scan(&u.UserID, &u.Username, &u.ImageURL, &u.Privacy); err != nil {
 			return nil, fmt.Errorf("error scanning user: %w", err)
 		}

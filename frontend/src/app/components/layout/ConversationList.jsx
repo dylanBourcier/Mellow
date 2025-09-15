@@ -13,12 +13,10 @@ useEffect(() => {
         try {
             const response = await fetch('/api/messages');
             const data = await response.json();
-            console.log(data);
             if (data.status !== 'success') {
                 throw new Error(data.errorCode);
             }
             setConversations(data.data);
-            console.log(data.data);
 
         } catch (error) {
             console.error('Error fetching conversations:', error);
