@@ -1,0 +1,26 @@
+# VCS
+.git
+.gitignore
+
+# Editors
+.vscode
+.idea
+
+# Local runtime/state
+data
+uploads
+*.db
+*.sqlite
+*.log
+*.tmp
+
+# Env files
+.env
+.env.*
+
+# Misc
+Dockerfile
+docker-compose*.yml
+assets
+doc
+**/.DS_Store

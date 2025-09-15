@@ -1,0 +1,21 @@
+# VCS
+.git
+.gitignore
+
+# Editors
+.vscode
+.idea
+
+# Build output
+.next
+out
+
+# Dependencies (installed in image)
+node_modules
+
+# Env files
+.env
+.env.*
+
+# Misc
+**/.DS_Store
