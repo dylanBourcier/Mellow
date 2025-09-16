@@ -158,7 +158,7 @@ export default function UserConversation({ id }) {
       <div className="p-4 bg-white rounded-b-2xl shadow-(--box-shadow)">
         {(!canSend || sendError) && (
           <div className="mb-3 p-3 text-sm rounded-md border border-amber-300 bg-amber-50 text-amber-800">
-            {sendError || 'This person is not on your followers List'}
+            {sendError || 'You must follow each other mutually to send messages.'}
           </div>
         )}
         <form
