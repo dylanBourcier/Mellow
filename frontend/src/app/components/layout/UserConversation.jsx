@@ -220,7 +220,7 @@ export default function UserConversation({ id }) {
           <input
             type="text"
             name="message"
-            placeholder={canSend ? "Type your message..." : "Messaging blocked: mutually follow each other"}
+            placeholder={canSend ? "Type your message..." : "Messaging blocked: you must follow each other mutually"}
             className={`flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5 ${!canSend ? 'bg-gray-100 cursor-not-allowed opacity-70' : ''}`}
             disabled={!canSend}
             readOnly={!canSend}
