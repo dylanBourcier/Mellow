@@ -21,7 +21,7 @@ func MessageRouter(msgService services.MessageService) http.HandlerFunc {
 }
 
 // /messages/:userId
-func MessageUserRouter(msgService services.MessageService) http.HandlerFunc {
+func MessageUserRouter(msgService services.MessageService, userSvc services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if strings.HasPrefix(r.URL.Path, "/messages/group/") {
@@ -36,9 +36,9 @@ func MessageUserRouter(msgService services.MessageService) http.HandlerFunc {
 
 		switch r.Method {
 		case http.MethodGet:
-			msg.GetConversation(msgService, userId)(w, r)
+			msg.GetConversation(msgService, userSvc, userId)(w, r)
 		case http.MethodPost:
-			msg.SendMessage(msgService, userId)(w, r)
+			msg.SendMessage(msgService, userSvc, userId)(w, r)
 		default:
 			utils.RespondError(w, http.StatusMethodNotAllowed, "Méthode non autorisée", utils.ErrBadRequest)
 		}
