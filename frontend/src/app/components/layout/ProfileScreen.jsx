@@ -40,7 +40,6 @@ function ProfileScreen({ userId }) {
         }
 
         setUserData(data.data);
-        console.log(data.data);
 
         setIsLimited(data.message === 'Limited');
       } catch (err) {

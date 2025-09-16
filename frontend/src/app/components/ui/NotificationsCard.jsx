@@ -10,7 +10,6 @@ import GroupLink from './GroupLink';
 function NotificationsCard({ notification, onAccept, onDecline }) {
   const { type, sender_username, sender_avatar_url, creation_date } =
     notification;
-  console.log(notification);
 
   // Déterminer dynamiquement le message
   let message;

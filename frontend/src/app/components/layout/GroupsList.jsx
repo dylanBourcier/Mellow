@@ -14,7 +14,6 @@ export default function GroupsList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState(null);
   const { user } = useUser(); // Assuming useUser is a custom hook to get user data
-  console.log('user in GroupsList:', user);
 
   useEffect(() => {
     const fetchGroups = async () => {

@@ -26,7 +26,6 @@ export default function InviteUsersModal({ onClose, groupId }) {
           throw new Error(data.message);
         }
         setResults(data.data); // suppose que l’API renvoie { users: [...] }
-        console.log('Search results:', data.data);
       } catch (err) {
         toast.custom((t) => (
           <CustomToast

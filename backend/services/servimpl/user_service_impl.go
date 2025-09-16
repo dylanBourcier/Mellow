@@ -197,9 +197,9 @@ func (s *userServiceImpl) GetFollowing(ctx context.Context, viewerID, userID str
 	return users, nil
 }
 
-func (s *userServiceImpl) SearchUsers(ctx context.Context, query string, groupId string, excludeGroupMembers bool) ([]*models.User, error) {
+func (s *userServiceImpl) SearchUsers(ctx context.Context, viewerID string, query string, groupId string, excludeGroupMembers bool) ([]*models.UserProfileData, error) {
 	if query == "" {
-		return []*models.User{}, nil
+		return []*models.UserProfileData{}, nil
 	}
 	if len(query) < 2 {
 		return nil, fmt.Errorf("%s: query must be at least 3 characters long", utils.ErrInvalidUserData)
@@ -212,6 +212,8 @@ func (s *userServiceImpl) SearchUsers(ctx context.Context, query string, groupId
 		}
 		return users, nil
 	}
+	//getUserID
+
 	//If groupId and not excluding group members, search only the group members
 	if groupId != "" && !excludeGroupMembers {
 		// Do we need to search users in the group?
@@ -223,7 +225,7 @@ func (s *userServiceImpl) SearchUsers(ctx context.Context, query string, groupId
 		// return users, nil
 
 	}
-	users, err := s.userRepo.SearchUsers(ctx, sanitize.SanitizeInput(query))
+	users, err := s.userRepo.SearchUsers(ctx, viewerID, sanitize.SanitizeInput(query))
 	if err != nil {
 		return nil, fmt.Errorf("failed to search users: %w", err)
 	}

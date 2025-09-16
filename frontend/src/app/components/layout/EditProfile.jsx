@@ -6,20 +6,31 @@ import Label from '../ui/Label';
 import Button from '../ui/Button';
 import FileInput from '../ui/FileInput';
 import Modal from '../ui/Modal';
-import { useForm } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import { useUser } from '@/app/context/UserContext';
 import PageTitle from '../ui/PageTitle';
+import CustomToast from '../ui/CustomToast';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 function EditProfile() {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
+  const router = useRouter();
 
-  const { register, setValue } = useForm();
+  const {
+    register,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm();
 
-  // Ajout du state pour gérer l'ouverture du modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
+      console.log('user data:', user);
+      
       setValue('firstname', user.firstname || '');
       setValue('lastname', user.lastname || '');
       setValue('username', user.username || '');
@@ -29,13 +40,56 @@ function EditProfile() {
           ? new Date(user.birthdate).toISOString().split('T')[0]
           : ''
       );
-      setValue('about', user.description || '');
+      setValue('description', user.description || '');
       setValue('privacy', user.privacy || 'public');
     }
+
   }, [user, setValue]);
 
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+      formData.append('firstname', data.firstname);
+      formData.append('lastname', data.lastname);
+      formData.append('username', data.username);
+      formData.append('birthdate', data.birthdate);
+      formData.append('description', data.description  || '');
+      formData.append('privacy', data.privacy);
+      if (data.avatar) {
+        formData.append('avatar', data.avatar);
+      }
+
+      const response = await fetch(`/api/users/${user.user_id}`, {
+        method: 'PUT',
+        body: formData,
+        credentials: 'include',
+      });
+      const result = await response.json();
+      if (result.status==="error"){
+        throw new Error(result.message);
+      }else{
+        toast.custom((t)=>(
+          <CustomToast message="Profile updated successfully!" type="success" />
+        ));
+        setUser(prevUser => ({
+          ...prevUser,
+          ...data,
+        }));
+        router.push('/profile');
+      }
+    } catch (error) {
+     toast.custom((t)=>(
+        <CustomToast message={error.message||"Something went wrong"} type="error" />
+      ));
+    }
+  };
+
   return (
-    <form className="flex flex-col gap-2.5 max-w-[600px] w-full">
+    <form
+      className="flex flex-col gap-2.5 max-w-[600px] w-full"
+      onSubmit={handleSubmit(onSubmit)}
+      encType="multipart/form-data"
+    >
       <div className="flex items-center justify-center">
         <PageTitle>Edit Profile</PageTitle>
       </div>
@@ -45,25 +99,35 @@ function EditProfile() {
           <Input
             id="firstname"
             placeholder="Enter your firstname..."
-            {...register('firstname')}
+            {...register('firstname', { required: 'First name is required' })}
           />
+          {errors.firstname && (
+            <span className="text-red-500">{errors.firstname.message}</span>
+          )}
         </Label>
         <Label htmlFor={'lastname'}>
           Last Name* :
           <Input
             id="lastname"
             placeholder="Enter your lastname..."
-            {...register('lastname')}
+            {...register('lastname', { required: 'Last name is required' })}
           />
+          {errors.lastname && (
+            <span className="text-red-500">{errors.lastname.message}</span>
+          )}
         </Label>
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
-        <Label htmlFor={'username'}>Username* :</Label>
+        <Label htmlFor={'username'}>Username :</Label>
         <Input
           id="username"
           placeholder="Enter your username..."
-          {...register('username')}
+          readOnly
+          {...register('username', { required: 'Username is required' })}
         />
+        {errors.username && (
+          <span className="text-red-500">{errors.username.message}</span>
+        )}
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
         <Label htmlFor={'birthdate'}>Birthdate* :</Label>
@@ -72,44 +136,23 @@ function EditProfile() {
           id="birthdate"
           name="birthdate"
           required
-          {...register('birthdate')}
+          {...register('birthdate', { required: 'Birthdate is required' })}
         />
+        {errors.birthdate && (
+          <span className="text-red-500">{errors.birthdate.message}</span>
+        )}
       </div>
       <div className="flex flex-col lg:flex-row w-full gap-2">
-        <div className="flex-1">
-          <Label htmlFor="password" className="block mb-2">
-            Password :
-          </Label>
-          <Input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="********"
-            {...register('password')}
-          />
-        </div>
-        <div className="flex-1">
-          <Label htmlFor="confirm_password" className="block mb-2">
-            Confirm Password :
-          </Label>
-          <Input
-            type="password"
-            id="confirm_password"
-            name="confirm_password"
-            placeholder="********"
-            {...register('confirm_password')}
-          />
-        </div>
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
-        <Label htmlFor="about">About me :</Label>
+        <Label htmlFor="description">About me :</Label>
         <Input
           type="textarea"
-          id="about"
-          name="about"
+          id="description"
+          name="description"
           placeholder="Tell us about yourself..."
           className="h-24"
-          {...register('about')}
+          {...register('description')}
         />
       </div>
       <div className="flex flex-col items-start gap-2.5 w-full">
@@ -124,7 +167,7 @@ function EditProfile() {
               id="public"
               className="hidden peer"
               value="public"
-              {...register('privacy')}
+              {...register('privacy', { required: 'Privacy is required' })}
             />
             <label
               htmlFor="public"
@@ -150,6 +193,9 @@ function EditProfile() {
             </label>
           </div>
         </div>
+        {errors.privacy && (
+          <span className="text-red-500">{errors.privacy.message}</span>
+        )}
       </div>
       <div>
         <Label htmlFor="avatar">Avatar :</Label>
@@ -163,7 +209,7 @@ function EditProfile() {
       </div>
       <div className="flex flex-1 align-middle justify-center gap-2.5 w-full">
         <Button
-          type="button" // <-- Important : empêche la soumission du formulaire
+          type="button"
           className="w-full"
           onClick={() => setIsModalOpen(true)}
         >
@@ -179,7 +225,9 @@ function EditProfile() {
           {
             label: 'Oui',
             onClick: () => {
-              /* ajouter la logique de sauvegarde ici */
+              setIsModalOpen(false);
+              document.querySelector('form').requestSubmit();
+              
             },
             closeOnClick: true,
           },

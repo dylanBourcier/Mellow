@@ -7,9 +7,6 @@ function GroupCard({ props, withButton = false, currentUserId }) {
   // const GroupMembers = 10; // Placeholder for number of members in the group
   if (!props) return null;
   const { group_id, title, description, user_id, member_count } = props;
-  console.log('GroupCard props:', props);
-  console.log(currentUserId, 'currentUserId in GroupCard');
-
   const SlicedGroupDescription =
     description.length > 100 ? description.slice(0, 100) + '...' : description;
 
