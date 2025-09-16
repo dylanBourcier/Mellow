@@ -158,7 +158,7 @@ export default function UserConversation({ id }) {
       <div className="p-4 bg-white rounded-b-2xl shadow-(--box-shadow)">
         {(!canSend || sendError) && (
           <div className="mb-3 p-3 text-sm rounded-md border border-amber-300 bg-amber-50 text-amber-800">
-            {sendError || 'Vous devez vous suivre mutuellement pour envoyer des messages.'}
+            {sendError || 'This person is not on your followers List'}
           </div>
         )}
         <form
@@ -189,7 +189,7 @@ export default function UserConversation({ id }) {
 
                 if (response.status === 403) {
                   setCanSend(false);
-                  setSendError('Vous devez vous suivre mutuellement pour envoyer des messages.');
+                  setSendError('You can only send messages to mutually followed users.');
                 } else {
                   setSendError(msg);
                 }
@@ -198,7 +198,7 @@ export default function UserConversation({ id }) {
 
               const result = await response.json();
               if (result.status !== 'success') {
-                setSendError(result.message || 'Impossible d\'envoyer le message.');
+                setSendError(result.message || 'Can\'t send messages.');
                 return;
               }
               form.reset();
@@ -212,7 +212,7 @@ export default function UserConversation({ id }) {
               }, 100);
             } catch (error) {
               console.error('Error sending message:', error);
-              setSendError('Impossible d\'envoyer le message.');
+              setSendError('Can\'t send messages.');
             }
           }}
           className="flex items-center gap-2"
@@ -220,7 +220,7 @@ export default function UserConversation({ id }) {
           <input
             type="text"
             name="message"
-            placeholder={canSend ? "Type your message..." : "Messagerie bloquée: suivez-vous mutuellement"}
+            placeholder={canSend ? "Type your message..." : "Messaging blocked: mutually follow each other"}
             className={`flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5 ${!canSend ? 'bg-gray-100 cursor-not-allowed opacity-70' : ''}`}
             disabled={!canSend}
             readOnly={!canSend}
