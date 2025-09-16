@@ -19,7 +19,6 @@ function PostCard({ post }) {
     user_id,
     visibility,
   } = post;
-  console.log(group_id);
 
   const formattedDate = formatDate(creation_date);
   // Ensure that the content is not too long for display
