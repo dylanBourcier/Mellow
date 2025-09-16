@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"fmt"
 	"mellow/models"
 	"mellow/services"
 	"mellow/utils"
@@ -41,6 +42,7 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 		groupIdStr := r.FormValue("postOn")
 		var visibility string
 		var groupID *uuid.UUID
+		fmt.Println("Group ID String:", groupIdStr)
 		if groupIdStr != "" {
 			if groupIdStr == "everyone" {
 				groupID = nil // Post visible to everyone
@@ -56,6 +58,10 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 
 			}
 		}
+		var viewers []string
+		if visibility == "private" {
+			viewers = r.Form["selectedFollowers"]
+		}
 
 		post := models.Post{
 			Title:      r.FormValue("title"),
@@ -64,7 +70,9 @@ func CreatePost(postService services.PostService) http.HandlerFunc {
 			UserID:     userID,
 			ImageURL:   image_url,
 			GroupID:    groupID,
+			Viewers:    viewers,
 		}
+		fmt.Println(post)
 
 		if err := postService.CreatePost(r.Context(), &post); err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Failed to create post", err)

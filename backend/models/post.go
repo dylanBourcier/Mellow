@@ -15,6 +15,7 @@ type Post struct {
 	CreationDate time.Time  `json:"creation_date"`
 	Visibility   string     `json:"visibility"`
 	ImageURL     *string    `json:"image_url,omitempty"` // nullable
+	Viewers      []string   `json:"viewers,omitempty"`   // nullable
 }
 
 type UpdatePostPayload struct {

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '@/app/context/UserContext';
 import Spinner from '../ui/Spinner';
 import MessagesList from './MessagesList';
+import Image from 'next/image';
 
 export default function GroupConversationPage({ groupId }) {
   const { user } = useUser(); // Logged-in user
@@ -85,15 +86,17 @@ export default function GroupConversationPage({ groupId }) {
     );
   }
   return (
-    <div className="flex flex-col h-full max-h-[90vh]">
-      <section className="flex-1 overflow-y-auto py-2">
+    <div className="flex flex-col max-h-[65vh]">
+      <section className="flex-1 overflow-y-auto py-2 pr-2">
         {messages.length === 0 ? (
           <p>No messages yet. Start the conversation!</p>
         ) : (
           <MessagesList messages={messages} type="group" />
         )}
       </section>
-      <div className="p-4 bg-white rounded-b-2xl shadow-(--box-shadow)">
+      <div className="w-[50%] h-[1px] bg-lavender-2 self-center mt-1 mb-1"></div>
+
+      <div className="p-2 ">
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -103,7 +106,6 @@ export default function GroupConversationPage({ groupId }) {
             if (!content) return;
 
             try {
-
               const response = await fetch(`/api/messages/group/${groupId}`, {
                 method: 'POST',
                 headers: {
@@ -127,7 +129,7 @@ export default function GroupConversationPage({ groupId }) {
             type="text"
             name="message"
             placeholder="Type your message..."
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5"
+            className="flex-1 border bg-white border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5"
           />
           <button
             type="submit"

@@ -9,6 +9,9 @@ type PostRepository interface {
 	// InsertPost crée un nouveau post.
 	InsertPost(ctx context.Context, post *models.Post) error
 
+	// AddPostViewer ajoute un viewer à un post privé.
+	AddPostViewer(ctx context.Context, postID string, viewerID string) error
+
 	// UpdatePost met à jour le titre et le contenu d'un post.
 	UpdatePost(ctx context.Context, post *models.Post) error
 

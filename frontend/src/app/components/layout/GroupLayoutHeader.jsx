@@ -92,7 +92,7 @@ export default function GroupLayoutHeader({ groupId }) {
     ]}
   />;
   return (
-    <div className="flex flex-col w-full gap-1 lg:gap-2 p-2">
+    <div className="flex flex-col w-full h-auto gap-1 lg:gap-2 p-2">
       <div className="flex">
         <PageTitle className="flex gap-2 items-baseline-last">
           {groupData.title}
@@ -122,7 +122,7 @@ export default function GroupLayoutHeader({ groupId }) {
         )}
 
         {user && user.user_id === groupData.user_id && (
-          <div className="flex items-center gap-2  self-end ml-auto lg:absolute lg:right-0">
+          <div className="flex items-center gap-2  self-end ml-auto">
             <button className="p-1.5 rounded-xl border border-dark-grey">
               {icons['edit']}
             </button>
