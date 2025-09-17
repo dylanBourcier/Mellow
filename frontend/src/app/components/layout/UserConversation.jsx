@@ -13,6 +13,8 @@ export default function UserConversation({ id }) {
   const [userData, setUserData] = useState(null);
 
   const [messages, setMessages] = useState([]);
+  const [canSend, setCanSend] = useState(true);
+  const [sendError, setSendError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,6 +30,15 @@ export default function UserConversation({ id }) {
         const userInfo = await userResponse.json();
         if (userInfo.status !== 'success') {
           throw new Error(userInfo.message);
+        }
+
+        // Set ability to send based on follow status (viewer -> target)
+        if (userInfo?.data?.follow_status && userInfo.data.follow_status !== 'follows') {
+          setCanSend(false);
+          setSendError('You can only send messages to users you follow mutually.');
+        } else {
+          setCanSend(true);
+          setSendError('');
         }
 
         // Fetch messages between logged-in user and the other user
@@ -143,9 +154,15 @@ export default function UserConversation({ id }) {
         )}
       </section>
       <div className="p-4 bg-white rounded-b-2xl shadow-(--box-shadow)">
+        {(!canSend || sendError) && (
+          <div className="mb-3 p-3 text-sm rounded-md border border-amber-300 bg-amber-50 text-amber-800">
+            {sendError || 'You must follow each other mutually to send messages.'}
+          </div>
+        )}
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+            setSendError('');
             const form = e.target;
             const formData = new FormData(form);
             const content = formData.get('message');
@@ -159,23 +176,41 @@ export default function UserConversation({ id }) {
                 },
                 body: JSON.stringify({ content }),
               });
+
+              if (!response.ok) {
+                // Try to parse error JSON
+                let msg = 'Une erreur est survenue.';
+                try {
+                  const errJson = await response.json();
+                  if (errJson?.message) msg = errJson.message;
+                } catch (_) {}
+
+                if (response.status === 403) {
+                  setCanSend(false);
+                  setSendError('You can only send messages to mutually followed users.');
+                } else {
+                  setSendError(msg);
+                }
+                return;
+              }
+
               const result = await response.json();
               if (result.status !== 'success') {
-                throw new Error(result.message);
+                setSendError(result.message || 'Can\'t send messages.');
+                return;
               }
               form.reset();
-              // Message will be added here
 
               // Scroll to bottom after sending message
               setTimeout(() => {
-                const chatContainer =
-                  document.querySelector('.overflow-y-auto');
+                const chatContainer = document.querySelector('.overflow-y-auto');
                 if (chatContainer) {
                   chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
               }, 100);
             } catch (error) {
               console.error('Error sending message:', error);
+              setSendError('Can\'t send messages.');
             }
           }}
           className="flex items-center gap-2"
@@ -183,12 +218,15 @@ export default function UserConversation({ id }) {
           <input
             type="text"
             name="message"
-            placeholder="Type your message..."
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5"
+            placeholder={canSend ? "Type your message..." : "Messaging blocked: you must follow each other mutually"}
+            className={`flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5 ${!canSend ? 'bg-gray-100 cursor-not-allowed opacity-70' : ''}`}
+            disabled={!canSend}
+            readOnly={!canSend}
           />
           <button
             type="submit"
-            className="bg-lavender-5 text-white rounded-full px-4 py-2 hover:bg-lavender-4 focus:outline-none focus:ring-2 focus:ring-lavender-5"
+            className={`rounded-full px-4 py-2 focus:outline-none focus:ring-2 ${canSend ? 'bg-lavender-5 text-white hover:bg-lavender-4 focus:ring-lavender-5' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+            disabled={!canSend}
           >
             Send
           </button>

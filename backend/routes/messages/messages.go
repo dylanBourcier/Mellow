@@ -11,7 +11,7 @@ func RegisterMessageRoutes(mux *http.ServeMux, msgService services.MessageServic
 	// GET|POST /messages
 	mux.HandleFunc("/messages", utils.ChainHTTP(MessageRouter(msgService), middlewares.RequireAuthMiddleware(authService)).ServeHTTP)
 	// GET|POST /messages/:userId
-	mux.HandleFunc("/messages/", utils.ChainHTTP(MessageUserRouter(msgService), middlewares.RequireAuthMiddleware(authService)).ServeHTTP)
+	mux.HandleFunc("/messages/", utils.ChainHTTP(MessageUserRouter(msgService, userSvc), middlewares.RequireAuthMiddleware(authService)).ServeHTTP)
 	// TODO: Implement group + logic
 	// GET|POST /messages/group/:groupId
 	mux.HandleFunc("/messages/group/", utils.ChainHTTP(MessageGroupRouter(msgService, userSvc), middlewares.RequireAuthMiddleware(authService)).ServeHTTP)
