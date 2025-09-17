@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func GetConversation(service services.MessageService, userId string) http.HandlerFunc {
+func GetConversation(service services.MessageService, userService services.UserService, userId string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		uid, err := utils.GetUserIDFromContext(r.Context())
@@ -40,13 +40,28 @@ func GetConversation(service services.MessageService, userId string) http.Handle
 	}
 }
 
-func SendMessage(service services.MessageService, userId string) http.HandlerFunc {
+func SendMessage(service services.MessageService, userService services.UserService, userId string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		defer r.Body.Close()
 		uid, err := utils.GetUserIDFromContext(r.Context())
 		if err != nil {
 			utils.RespondError(w, http.StatusUnauthorized, "Unauthorized", utils.ErrUnauthorized)
+			return
+		}
+
+		isFollowing, err := userService.IsFollowing(r.Context(), uid.String(), userId)
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to check following status", err)
+			return
+		}
+		isFollowedBy, err := userService.IsFollowing(r.Context(), userId, uid.String())
+		if err != nil {
+			utils.RespondError(w, http.StatusInternalServerError, "Failed to check following status", err)
+			return
+		}
+		if !isFollowing || !isFollowedBy {
+			utils.RespondError(w, http.StatusForbidden, "Users must follow each other to send messages", utils.ErrForbidden)
 			return
 		}
 
