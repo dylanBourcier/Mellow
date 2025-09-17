@@ -28,7 +28,7 @@ func (r *userRepositoryImpl) InsertUser(ctx context.Context, user *models.User) 
 
 func (r *userRepositoryImpl) FindUserByID(ctx context.Context, userID string) (*models.User, error) {
 	query := `SELECT user_id, email, password, username, firstname, lastname, birthdate, role, image_url, creation_date, description, privacy 
-	          FROM users WHERE user_id = ?`
+			  FROM users WHERE user_id = ?`
 	var user models.User
 	err := r.db.QueryRowContext(ctx, query, userID).Scan(
 		&user.UserID, &user.Email, &user.Password, &user.Username,
@@ -41,6 +41,16 @@ func (r *userRepositoryImpl) FindUserByID(ctx context.Context, userID string) (*
 		}
 		return nil, fmt.Errorf("error retrieving user: %w", err)
 	}
+
+	// Check if the user has unread messages
+	var unreadMessagesCount int
+	unreadQuery := `SELECT COUNT(*) FROM messages WHERE receiver_id = ? AND is_read = 0`
+	err = r.db.QueryRowContext(ctx, unreadQuery, userID).Scan(&unreadMessagesCount)
+	if err != nil {
+		return nil, fmt.Errorf("error checking unread messages: %w", err)
+	}
+
+	user.UnreadMessagesCount = unreadMessagesCount // Assuming the User model has this field
 	return &user, nil
 }
 

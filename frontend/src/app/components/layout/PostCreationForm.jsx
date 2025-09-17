@@ -13,12 +13,15 @@ import toast from 'react-hot-toast';
 import CustomToast from '@/app/components/ui/CustomToast';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useUser } from '@/app/context/UserContext';
 
 function PostCreationForm() {
   const Router = useRouter();
+  const { user } = useUser();
   const [groupOptions, setGroupOptions] = useState([
     { value: 'everyone', label: 'Everyone' },
   ]);
+  const [followers, setFollowers] = useState([]);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -51,6 +54,7 @@ function PostCreationForm() {
 
     fetchGroups();
   }, []);
+
   const {
     control,
     handleSubmit,
@@ -61,15 +65,37 @@ function PostCreationForm() {
   } = useForm({
     defaultValues: {
       selectedFollowers: [],
-      visibility: 'public', // 👈 ajouter
+      visibility: 'public',
       title: '',
       postOn: 'everyone',
       content: '',
-      image: null, // 👈 ajouter
+      image: null,
     },
   });
+
   const postOn = watch('postOn');
   const visibility = watch('visibility');
+
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      if (visibility === 'private' && followers.length === 0) {
+        try {
+          const res = await fetch(`/api/users/followers/${user.user_id}`, {
+            credentials: 'include',
+          });
+          const data = await res.json();
+          if (data.status === 'error') {
+            throw new Error(data.message);
+          }
+          setFollowers(data.data || []);
+        } catch (err) {
+          console.error('Failed to fetch followers:', err);
+        }
+      }
+    };
+
+    fetchFollowers();
+  }, [visibility]);
 
   const onSubmit = async (data) => {
     try {
@@ -82,11 +108,10 @@ function PostCreationForm() {
       if (data.image) {
         formData.append('image', data.image);
       }
-
-      formData.append(
-        'selectedFollowers',
-        JSON.stringify(data.selectedFollowers)
-      );
+      data.selectedFollowers.forEach((follower) => {
+        console.log(follower);
+        formData.append('selectedFollowers', follower);
+      });
       const res = await fetch('/api/posts', {
         method: 'POST',
         body: formData,
@@ -94,6 +119,7 @@ function PostCreationForm() {
       });
       const result = await res.json();
       if (result.status === 'error') {
+        console.error('Failed to create post:', result);
         throw new Error(result.message);
       }
       toast.custom((t) => (
@@ -105,13 +131,13 @@ function PostCreationForm() {
       ));
       Router.push('/');
     } catch (error) {
+      console.error('Failed to create post:', error.message);
       toast.custom((t) => (
-        <CustomToast t={t} type="error" message="Error creating post!" />
+        <CustomToast t={t} type="error" message={error.message} />
       ));
     }
   };
 
-  const followers = [];
   return (
     <form
       className="flex flex-col gap-6 w-full max-w-[600px]"
@@ -193,13 +219,13 @@ function PostCreationForm() {
                   <input
                     type="radio"
                     name="visibility"
-                    id="almost-private"
+                    id="followers"
                     className="hidden peer"
-                    value="almost-private"
+                    value="followers"
                     {...register('visibility', { required: true })}
                   />
                   <label
-                    htmlFor="almost-private"
+                    htmlFor="followers"
                     className="flex align-middle justify-center py-2 border border-lavender-5 text-lavender-5 bg-transparent rounded-2xl peer-checked:bg-lavender-6 cursor-pointer transition-colors duration-200"
                   >
                     Almost Private
@@ -228,7 +254,7 @@ function PostCreationForm() {
                 Your post will be visible to everyone.
               </span>
             )}
-            {visibility === 'almost-private' && (
+            {visibility === 'followers' && (
               <span className="italic text-sm">
                 Your post will be visible to your followers.
               </span>

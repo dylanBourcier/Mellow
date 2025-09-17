@@ -76,9 +76,32 @@ function PostDetailscreen({ postid }) {
             groupId={post?.group_id}
             groupName={post?.group_name}
           ></UserInfo>
-          <span className="font-thin text-sm">
-            {formatDate(post.creation_date)}
-          </span>
+          <div className="flex items-center text-dark-grey-lighter">
+            {post.visibility === 'private' && (
+              <span className="mr-1 " title="Private Post">
+                {icons['lock']}
+              </span>
+            )}
+            {post.visibility === 'followers' && (
+              <span className="mr-1" title="Followers only post">
+                {icons['follower']}
+              </span>
+            )}
+            {post.visibility === 'public' && post.group_id == undefined && (
+              <span className="mr-1" title="Public post">
+                {icons['public']}
+              </span>
+            )}
+            {post.visibility === 'public' && post.group_id != undefined && (
+              <span className="mr-1" title="Group post">
+                {icons['groups']}
+              </span>
+            )}
+            <span className="mr-1">•</span>
+            <span className="font-light text-sm">
+              {formatDate(post.creation_date)}
+            </span>
+          </div>
         </div>
         <div className="flex flex-col gap-2">
           <PageTitle className="text-left">{post.title}</PageTitle>

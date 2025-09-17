@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { useUser } from '@/app/context/UserContext';
 import Spinner from '../ui/Spinner';
 import Image from 'next/image';
@@ -33,9 +33,14 @@ export default function UserConversation({ id }) {
         }
 
         // Set ability to send based on follow status (viewer -> target)
-        if (userInfo?.data?.follow_status && userInfo.data.follow_status !== 'follows') {
+        if (
+          userInfo?.data?.follow_status &&
+          userInfo.data.follow_status !== 'follows'
+        ) {
           setCanSend(false);
-          setSendError('You can only send messages to users you follow mutually.');
+          setSendError(
+            'You can only send messages to users you follow mutually.'
+          );
         } else {
           setCanSend(true);
           setSendError('');
@@ -58,6 +63,7 @@ export default function UserConversation({ id }) {
         } else {
           setMessages([]);
         }
+        user.unread_count = 0; // Reset unread count when viewing the conversation
         // Scroll to bottom after loading messages
         setTimeout(() => {
           const chatContainer = document.querySelector('.overflow-y-auto');
@@ -110,7 +116,7 @@ export default function UserConversation({ id }) {
   }, [id, user]);
 
   return (
-    <div className="flex flex-col h-full max-h-[90vh]">
+    <div className="flex flex-col h-full max-h-[90vh] w-full">
       {!userData ? (
         <div className="flex-1 flex justify-center items-center">
           <Spinner />
@@ -139,24 +145,27 @@ export default function UserConversation({ id }) {
               className="rounded-full w-10 h-10 object-cover border border-transparent group-hover:border-lavender-5 transition-all duration-200"
             />
             <span className="group-hover:underline group-hover:text-lavender-5 transition-all duration-200">
-              {userData.firstname} {userData.lastname}
+              {userData.firstname !== '' && userData.lastname !== ''
+                ? `${userData.firstname} ${userData.lastname} (${userData.username})`
+                : userData.username}
             </span>
           </Link>
           <div></div>
         </section>
       )}
 
-      <section className="flex-1 overflow-y-auto py-2">
+      <section className="flex-1 overflow-y-auto py-2 w-full">
         {messages.length === 0 ? (
           <p>No messages yet. Start the conversation!</p>
         ) : (
           <MessagesList messages={messages} type="private" />
         )}
       </section>
-      <div className="p-4 bg-white rounded-b-2xl shadow-(--box-shadow)">
+      <div className="p-4">
         {(!canSend || sendError) && (
           <div className="mb-3 p-3 text-sm rounded-md border border-amber-300 bg-amber-50 text-amber-800">
-            {sendError || 'You must follow each other mutually to send messages.'}
+            {sendError ||
+              'You must follow each other mutually to send messages.'}
           </div>
         )}
         <form
@@ -187,7 +196,9 @@ export default function UserConversation({ id }) {
 
                 if (response.status === 403) {
                   setCanSend(false);
-                  setSendError('You can only send messages to mutually followed users.');
+                  setSendError(
+                    'You can only send messages to mutually followed users.'
+                  );
                 } else {
                   setSendError(msg);
                 }
@@ -196,21 +207,22 @@ export default function UserConversation({ id }) {
 
               const result = await response.json();
               if (result.status !== 'success') {
-                setSendError(result.message || 'Can\'t send messages.');
+                setSendError(result.message || "Can't send messages.");
                 return;
               }
               form.reset();
 
               // Scroll to bottom after sending message
               setTimeout(() => {
-                const chatContainer = document.querySelector('.overflow-y-auto');
+                const chatContainer =
+                  document.querySelector('.overflow-y-auto');
                 if (chatContainer) {
                   chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
               }, 100);
             } catch (error) {
               console.error('Error sending message:', error);
-              setSendError('Can\'t send messages.');
+              setSendError("Can't send messages.");
             }
           }}
           className="flex items-center gap-2"
@@ -218,14 +230,26 @@ export default function UserConversation({ id }) {
           <input
             type="text"
             name="message"
-            placeholder={canSend ? "Type your message..." : "Messaging blocked: you must follow each other mutually"}
-            className={`flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5 ${!canSend ? 'bg-gray-100 cursor-not-allowed opacity-70' : ''}`}
+            placeholder={
+              canSend
+                ? 'Type your message...'
+                : 'Messaging blocked: you must follow each other mutually'
+            }
+            className={`flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lavender-5 ${
+              !canSend
+                ? 'bg-gray-100 cursor-not-allowed opacity-70'
+                : 'bg-white'
+            }`}
             disabled={!canSend}
             readOnly={!canSend}
           />
           <button
             type="submit"
-            className={`rounded-full px-4 py-2 focus:outline-none focus:ring-2 ${canSend ? 'bg-lavender-5 text-white hover:bg-lavender-4 focus:ring-lavender-5' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+            className={`rounded-full px-4 py-2 focus:outline-none focus:ring-2 ${
+              canSend
+                ? 'bg-lavender-5 text-white hover:bg-lavender-4 focus:ring-lavender-5'
+                : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+            }`}
             disabled={!canSend}
           >
             Send

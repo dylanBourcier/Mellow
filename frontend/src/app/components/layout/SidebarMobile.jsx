@@ -31,12 +31,19 @@ function SidebarMobile() {
           icon="search"
           isActive={pathname.startsWith('/search')}
         />
-        <Navlink
-          href="/messages"
-          icon="messages"
-          disabled={!user}
-          isActive={pathname.startsWith('/messages')}
-        />
+        <div className="relative">
+          <Navlink
+            href="/messages"
+            icon="messages"
+            disabled={!user}
+            isActive={pathname.startsWith('/messages')}
+          />
+          {user && user.unread_count > 0 && (
+            <span className="absolute top-3 left-4 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+              {user.unread_count}
+            </span>
+          )}
+        </div>
 
         <Link
           href={user ? '/posts/create' : '#'}

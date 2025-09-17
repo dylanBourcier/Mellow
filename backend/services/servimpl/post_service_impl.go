@@ -21,10 +21,8 @@ type postServiceImpl struct {
 func NewPostService(postRepo repositories.PostRepository, userService services.UserService, groupService services.GroupService) services.PostService {
 	return &postServiceImpl{postRepo: postRepo, userService: userService, groupService: groupService}
 }
-
 func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) error {
-	// TODO: Vérifier la validité du post (contenu, visibilité)
-	// TODO: Appeler le repository pour insérer le post
+	// Validate the post (content, visibility)
 	if post.Title == "" || post.Content == "" || post.Visibility == "" {
 		return utils.ErrInvalidPayload
 	}
@@ -39,7 +37,24 @@ func (s *postServiceImpl) CreatePost(ctx context.Context, post *models.Post) err
 	}
 	post.PostID = uuid
 	post.CreationDate = time.Now()
-	return s.postRepo.InsertPost(ctx, post)
+
+	// Insert the post into the repository
+	err = s.postRepo.InsertPost(ctx, post)
+	if err != nil {
+		return err
+	}
+
+	// If the visibility is "private", insert viewers into the post_viewer table
+	if post.Visibility == "private" {
+		for _, viewerID := range post.Viewers {
+			err := s.postRepo.AddPostViewer(ctx, post.PostID.String(), viewerID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *postServiceImpl) UpdatePost(ctx context.Context, postID, requesterID, title, content string) error {

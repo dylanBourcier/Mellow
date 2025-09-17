@@ -30,7 +30,7 @@ function EditProfile() {
   useEffect(() => {
     if (user) {
       console.log('user data:', user);
-      
+
       setValue('firstname', user.firstname || '');
       setValue('lastname', user.lastname || '');
       setValue('username', user.username || '');
@@ -43,7 +43,6 @@ function EditProfile() {
       setValue('description', user.description || '');
       setValue('privacy', user.privacy || 'public');
     }
-
   }, [user, setValue]);
 
   const onSubmit = async (data) => {
@@ -53,7 +52,7 @@ function EditProfile() {
       formData.append('lastname', data.lastname);
       formData.append('username', data.username);
       formData.append('birthdate', data.birthdate);
-      formData.append('description', data.description  || '');
+      formData.append('description', data.description || '');
       formData.append('privacy', data.privacy);
       if (data.avatar) {
         formData.append('avatar', data.avatar);
@@ -65,21 +64,24 @@ function EditProfile() {
         credentials: 'include',
       });
       const result = await response.json();
-      if (result.status==="error"){
+      if (result.status === 'error') {
         throw new Error(result.message);
-      }else{
-        toast.custom((t)=>(
+      } else {
+        toast.custom((t) => (
           <CustomToast message="Profile updated successfully!" type="success" />
         ));
-        setUser(prevUser => ({
+        setUser((prevUser) => ({
           ...prevUser,
           ...data,
         }));
         router.push('/profile');
       }
     } catch (error) {
-     toast.custom((t)=>(
-        <CustomToast message={error.message||"Something went wrong"} type="error" />
+      toast.custom((t) => (
+        <CustomToast
+          message={error.message || 'Something went wrong'}
+          type="error"
+        />
       ));
     }
   };
@@ -142,8 +144,7 @@ function EditProfile() {
           <span className="text-red-500">{errors.birthdate.message}</span>
         )}
       </div>
-      <div className="flex flex-col lg:flex-row w-full gap-2">
-      </div>
+      <div className="flex flex-col lg:flex-row w-full gap-2"></div>
       <div className="flex flex-col items-start gap-2.5 w-full">
         <Label htmlFor="description">About me :</Label>
         <Input
@@ -219,20 +220,19 @@ function EditProfile() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Confirmation"
-        message="Acceptez-vous les modifications ?"
+        title="Confirm"
+        message="Are you sure you want to save the changes?"
         actions={[
           {
-            label: 'Oui',
+            label: 'Yes',
             onClick: () => {
               setIsModalOpen(false);
               document.querySelector('form').requestSubmit();
-              
             },
             closeOnClick: true,
           },
           {
-            label: 'Non',
+            label: 'No',
             onClick: null,
             closeOnClick: true,
           },

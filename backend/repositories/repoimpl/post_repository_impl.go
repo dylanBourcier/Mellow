@@ -24,6 +24,15 @@ func (r *postRepositoryImpl) InsertPost(ctx context.Context, post *models.Post) 
 	}
 	return nil
 }
+func (r *postRepositoryImpl) AddPostViewer(ctx context.Context, postID string, viewerID string) error {
+	query := `INSERT INTO posts_viewer (post_id, user_id) VALUES (?, ?)`
+	_, err := r.db.ExecContext(ctx, query, postID, viewerID)
+	if err != nil {
+		return fmt.Errorf("failed to add post viewer: %w", err)
+	}
+	return nil
+}
+
 func (r *postRepositoryImpl) GetPostByID(ctx context.Context, postID string) (*models.PostDetails, error) {
 	query := `
 		SELECT 

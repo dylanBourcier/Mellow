@@ -3,6 +3,7 @@ import React from 'react';
 import Image from 'next/image';
 import UserInfo from './UserInfo';
 import { formatDate } from '@/app/utils/date';
+import { icons } from '@/app/lib/icons';
 
 function PostCard({ post }) {
   const {
@@ -16,6 +17,7 @@ function PostCard({ post }) {
     group_name,
     comments_count,
     user_id,
+    visibility,
   } = post;
 
   const formattedDate = formatDate(creation_date);
@@ -46,7 +48,30 @@ function PostCard({ post }) {
               height={16}
             ></Image>
           </span>
-          <span>{formattedDate}</span>
+          <div className="flex items-center text-dark-grey-lighter">
+            {visibility === 'private' && (
+              <span className="mr-1" title="Private Post">
+                {icons['lock']}
+              </span>
+            )}
+            {visibility === 'followers' && (
+              <span className="mr-1" title="Followers only post">
+                {icons['follower']}
+              </span>
+            )}
+            {visibility === 'public' && group_id == undefined && (
+              <span className="mr-1" title="Public post">
+                {icons['public']}
+              </span>
+            )}
+            {visibility === 'public' && group_id != undefined && (
+              <span className="mr-1" title="Group post">
+                {icons['groups']}
+              </span>
+            )}
+            <span className="mr-1">•</span>
+            <span>{formattedDate}</span>
+          </div>
         </div>
       </Link>
     </div>
