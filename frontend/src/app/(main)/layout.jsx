@@ -17,7 +17,7 @@ export default function MainLayout({ children }) {
     <div className="flex relative min-h-[50dvh] h-[100dvh] p-1 lg:p-6  w-full max-w-7xl justify-center items-start">
       <Sidebar />
       <SidebarMobile />
-      <main className="lg:ml-78 flex-1 flex flex-col px-2 lg:px-3 lg:gap-2">
+      <main className="lg:ml-78 flex-1 flex flex-col px-2 lg:px-3 lg:gap-2 w-full">
         <div className=" flex justify-center items-center">
           <Link href={'/'}>
             <Image

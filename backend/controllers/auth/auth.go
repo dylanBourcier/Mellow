@@ -182,6 +182,7 @@ func MeHandler(authSvc services.AuthService, userService services.UserService) h
 			"creation_date": user.CreationDate,
 			"description":   user.Description,
 			"privacy":       user.Privacy,
+			"unread_count":  user.UnreadMessagesCount,
 		}
 
 		utils.RespondJSON(w, http.StatusOK, "User retrieved successfully", data)

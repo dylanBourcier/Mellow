@@ -7,18 +7,19 @@ import (
 )
 
 type User struct {
-	UserID       uuid.UUID `json:"user_id"`
-	Email        string    `json:"email"`
-	Password     string    `json:"password"`
-	Username     string    `json:"username"`
-	Firstname    string    `json:"firstname"`
-	Lastname     string    `json:"lastname"`
-	Birthdate    time.Time `json:"birthdate"`
-	Role         string    `json:"role"`
-	ImageURL     *string   `json:"image_url,omitempty"`
-	CreationDate time.Time `json:"creation_date"`
-	Description  *string   `json:"description,omitempty"`
-	Privacy      string    `json:"privacy"` // "public", "private"
+	UserID              uuid.UUID `json:"user_id"`
+	Email               string    `json:"email"`
+	Password            string    `json:"password"`
+	Username            string    `json:"username"`
+	Firstname           string    `json:"firstname"`
+	Lastname            string    `json:"lastname"`
+	Birthdate           time.Time `json:"birthdate"`
+	Role                string    `json:"role"`
+	ImageURL            *string   `json:"image_url,omitempty"`
+	CreationDate        time.Time `json:"creation_date"`
+	Description         *string   `json:"description,omitempty"`
+	Privacy             string    `json:"privacy"`               // "public", "private"
+	UnreadMessagesCount int       `json:"unread_messages_count"` // New field to track unread messages
 }
 
 type LoginRequest struct {

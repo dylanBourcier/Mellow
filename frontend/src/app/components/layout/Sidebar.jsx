@@ -1,6 +1,6 @@
 'use client';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navlink from '../ui/Navlink';
 import Image from 'next/image';
 import Button from '../ui/Button';
@@ -12,8 +12,15 @@ import Spinner from '../ui/Spinner';
 
 function Sidebar(props) {
   const pathname = usePathname();
-
   const { user, loading } = useUser();
+  const [unreadCount, setUnreadCount] = React.useState(0);
+  useEffect(() => {
+    if (user) {
+      setUnreadCount(user.unread_count);
+    } else {
+      setUnreadCount(0);
+    }
+  }, [user?.unread_count]);
 
   return (
     <div
@@ -52,6 +59,11 @@ function Sidebar(props) {
           isActive={pathname.startsWith('/messages')}
         >
           Messages
+          {user && user.unread_count > 0 && (
+            <span className="absolute top-3 left-4 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+              {unreadCount}
+            </span>
+          )}
         </Navlink>
         <Navlink
           href="/groups"
