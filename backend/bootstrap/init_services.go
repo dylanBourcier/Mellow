@@ -6,13 +6,14 @@ import (
 )
 
 type Services struct {
-	UserService         services.UserService
-	AuthService         services.AuthService
-	PostService         services.PostService
-	GroupService        services.GroupService
-	CommentService      services.CommentService
-	MessageService      services.MessageService
-	NotificationService services.NotificationService
+	UserService             services.UserService
+	AuthService             services.AuthService
+	PostService             services.PostService
+	GroupService            services.GroupService
+	GroupJoinRequestService services.GroupJoinRequestService
+	CommentService          services.CommentService
+	MessageService          services.MessageService
+	NotificationService     services.NotificationService
 }
 
 func InitServices(repos *Repositories) *Services {
@@ -23,14 +24,16 @@ func InitServices(repos *Repositories) *Services {
 	commentService := servimpl.NewCommentService(repos.CommentRepository, repos.UserRepository, postService)
 	notificationService := servimpl.NewNotificationService(repos.NotificationRepository, repos.UserRepository)
 	messageService := servimpl.NewMessageService(repos.MessageRepository)
+	groupJoinRequestService := servimpl.NewGroupJoinRequestService(repos.GroupJoinRequestRepository, repos.GroupRepository, notificationService)
 
 	return &Services{
-		UserService:         userService,
-		AuthService:         authService,
-		PostService:         postService,
-		GroupService:        groupService,
-		CommentService:      commentService,
-		NotificationService: notificationService,
-		MessageService:      messageService,
+		UserService:             userService,
+		AuthService:             authService,
+		PostService:             postService,
+		GroupService:            groupService,
+		GroupJoinRequestService: groupJoinRequestService,
+		CommentService:          commentService,
+		NotificationService:     notificationService,
+		MessageService:          messageService,
 	}
 }

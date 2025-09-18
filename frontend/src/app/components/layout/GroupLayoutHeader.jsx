@@ -21,6 +21,8 @@ export default function GroupLayoutHeader({ groupId }) {
   const [groupData, setGroupData] = useState(null);
   const [isMember, setIsMember] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [joinPending, setJoinPending] = useState(false);
+  const [joining, setJoining] = useState(false);
 
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +55,72 @@ export default function GroupLayoutHeader({ groupId }) {
 
     fetchGroupData();
   }, [groupId]);
+
+  // check if user has a pending join request
+  useEffect(() => {
+    const checkPending = async () => {
+      try {
+        const res = await fetch(`/api/groups/${groupId}/join-requests/self`, {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.data) {
+          setJoinPending(true);
+        } else {
+          setJoinPending(false);
+        }
+      } catch (_) {
+        // ignore
+      }
+    };
+    if (user) checkPending();
+  }, [groupId, user]);
+
+  const handleRequestJoin = async () => {
+    setJoining(true);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/join-requests`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.status === 201) {
+        setJoinPending(true);
+        toast.success('Join request sent');
+      } else {
+        throw new Error(data.message || 'Failed to send request');
+      }
+    } catch (e) {
+      toast.custom((t) => (
+        <CustomToast t={t} type="error" message={e.message} />
+      ));
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    setJoining(true);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/join-requests/self`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.status === 204) {
+        setJoinPending(false);
+        toast.success('Request cancelled');
+      } else {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to cancel');
+      }
+    } catch (e) {
+      toast.custom((t) => (
+        <CustomToast t={t} type="error" message={e.message} />
+      ));
+    } finally {
+      setJoining(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -116,9 +184,23 @@ export default function GroupLayoutHeader({ groupId }) {
           </button>
         )}
         {!isMember && (
-          <button className="p-2 bg-white rounded-2xl border border-dark-grey">
-            Ask to Join
-          </button>
+          joinPending ? (
+            <button
+              onClick={handleCancelRequest}
+              disabled={joining}
+              className="px-2 text-sm py-1.5 rounded-xl bg-white border border-dark-grey text-dark-grey"
+            >
+              {joining ? 'Cancelling...' : 'Cancel Request'}
+            </button>
+          ) : (
+            <button
+              onClick={handleRequestJoin}
+              disabled={joining}
+              className="px-2 text-sm py-1.5 rounded-xl bg-lavender-1 border border-lavender-1 text-white"
+            >
+              {joining ? 'Sending...' : 'Ask to Join'}
+            </button>
+          )
         )}
 
         {user && user.user_id === groupData.user_id && (
