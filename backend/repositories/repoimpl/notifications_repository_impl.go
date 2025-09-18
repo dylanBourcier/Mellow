@@ -29,17 +29,19 @@ func (r *notificationRepositoryImpl) InsertNotification(ctx context.Context, not
 
 func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, userID string) ([]*models.Notification, error) {
 	query := `SELECT n.notification_id, n.request_id, n.user_id, n.type, n.seen, n.creation_date, 
-					 COALESCE(u.username, '') AS sender_username,
-					 COALESCE(u.image_url, '') AS sender_avatar_url,
-					 n.sender_id,
-					 COALESCE(fr.group_id, '') AS group_id,
-					 COALESCE(g.title, '') AS group_title
-			  FROM notifications n
-			  LEFT JOIN users u ON n.sender_id = u.user_id
-			  LEFT JOIN follow_requests fr ON n.request_id = fr.request_id
-			  LEFT JOIN groups g ON fr.group_id = g.group_id
-			  WHERE n.user_id = ?
-			  ORDER BY n.creation_date ASC`
+                     COALESCE(u.username, '') AS sender_username,
+                     COALESCE(u.image_url, '') AS sender_avatar_url,
+                     n.sender_id,
+                     COALESCE(fr.group_id, gjr.group_id, '') AS group_id,
+                     COALESCE(g.title, g2.title, '') AS group_title
+              FROM notifications n
+              LEFT JOIN users u ON n.sender_id = u.user_id
+              LEFT JOIN follow_requests fr ON n.request_id = fr.request_id
+              LEFT JOIN groups g ON fr.group_id = g.group_id
+              LEFT JOIN group_join_requests gjr ON n.request_id = gjr.id
+              LEFT JOIN groups g2 ON gjr.group_id = g2.group_id
+              WHERE n.user_id = ?
+              ORDER BY n.creation_date ASC`
 
 	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {

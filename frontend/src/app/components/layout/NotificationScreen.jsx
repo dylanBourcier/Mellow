@@ -93,6 +93,56 @@ function NotificationScreen() {
           ));
         }
         break;
+      case 'group_request':
+        // Accept a group join request from notification
+        try {
+          const acceptGroupRequest = async () => {
+            const res = await fetch(
+              `/api/groups/${notification.group_id}/join-requests/${notification.request_id}/accept`,
+              {
+                method: 'POST',
+                credentials: 'include',
+              }
+            );
+            const data = await res.json();
+            if (data.status !== 'success') {
+              throw new Error(data.message || 'Failed to accept group request');
+            }
+          };
+          const process = async () => {
+            try {
+              await markAsRead(notification);
+              await acceptGroupRequest();
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n.notification_id === notification.notification_id
+                    ? { ...n, seen: true }
+                    : n
+                )
+              );
+            } catch (error) {
+              console.error('Error accepting group request:', error);
+              toast.custom((t) => (
+                <CustomToast
+                  t={t}
+                  type="error"
+                  message={'Error accepting group request! ' + error.message}
+                />
+              ));
+            }
+          };
+          process();
+        } catch (error) {
+          console.error('Error accepting group request:', error);
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={'Error accepting group request! ' + error.message}
+            />
+          ));
+        }
+        break;
       case 'group_invite':
         // Logic to accept group invite
         try {
@@ -204,6 +254,55 @@ function NotificationScreen() {
               t={t}
               type="error"
               message={'Error declining follow request! ' + error.message}
+            />
+          ));
+        }
+        break;
+      case 'group_request':
+        try {
+          const declineGroupRequest = async () => {
+            const res = await fetch(
+              `/api/groups/${notification.group_id}/join-requests/${notification.request_id}/reject`,
+              {
+                method: 'POST',
+                credentials: 'include',
+              }
+            );
+            const data = await res.json();
+            if (data.status !== 'success') {
+              throw new Error(data.message || 'Failed to reject group request');
+            }
+          };
+          const process = async () => {
+            try {
+              await markAsRead(notification);
+              await declineGroupRequest();
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n.notification_id === notification.notification_id
+                    ? { ...n, seen: true }
+                    : n
+                )
+              );
+            } catch (error) {
+              console.error('Error rejecting group request:', error);
+              toast.custom((t) => (
+                <CustomToast
+                  t={t}
+                  type="error"
+                  message={'Error rejecting group request! ' + error.message}
+                />
+              ));
+            }
+          };
+          process();
+        } catch (error) {
+          console.error('Error rejecting group request:', error);
+          toast.custom((t) => (
+            <CustomToast
+              t={t}
+              type="error"
+              message={'Error rejecting group request! ' + error.message}
             />
           ));
         }
