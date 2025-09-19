@@ -229,7 +229,7 @@ func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event)
 		return utils.ErrInvalidPayload
 	}
 	//vérifier si le groupe existe
-	_, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
+	group, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
 	if err != nil {
 		if err == utils.ErrGroupNotFound {
 			return utils.ErrGroupNotFound
@@ -269,10 +269,11 @@ func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event)
 			}
 
 			notification := &models.Notification{
-				UserID:   member.UserID,
-				Type:     models.NotificationTypeEventCreated,
-				SenderID: event.UserID.String(),
-				GroupID:  &event.GroupID,
+				UserID:    member.UserID,
+				Type:      models.NotificationTypeEventCreated,
+				SenderID:  event.UserID.String(),
+				GroupID:   &event.GroupID,
+				GroupName: &group.Title, // Ajouter le nom du groupe
 			}
 
 			if err := s.notifSvc.CreateNotification(ctx, notification); err != nil {

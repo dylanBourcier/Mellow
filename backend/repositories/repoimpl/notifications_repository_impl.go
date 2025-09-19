@@ -19,8 +19,13 @@ func NewNotificationRepository(db *sql.DB) repositories.NotificationRepository {
 }
 
 func (r *notificationRepositoryImpl) InsertNotification(ctx context.Context, notif *models.Notification) error {
-	query := `INSERT INTO notifications (notification_id, user_id, sender_id,request_id, type, seen, creation_date) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	_, err := r.db.ExecContext(ctx, query, notif.NotificationID, notif.UserID, notif.SenderID, notif.RequestID, notif.Type, notif.Seen, notif.CreationDate)
+	query := `INSERT INTO notifications (notification_id, user_id, sender_id, request_id, type, seen, creation_date, group_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	var groupID *string
+	if notif.GroupID != nil {
+		groupIDStr := notif.GroupID.String()
+		groupID = &groupIDStr
+	}
+	_, err := r.db.ExecContext(ctx, query, notif.NotificationID, notif.UserID, notif.SenderID, notif.RequestID, notif.Type, notif.Seen, notif.CreationDate, groupID)
 	if err != nil {
 		return fmt.Errorf("failed to insert notification: %w", err)
 	}
@@ -32,14 +37,15 @@ func (r *notificationRepositoryImpl) GetUserNotifications(ctx context.Context, u
                      COALESCE(u.username, '') AS sender_username,
                      COALESCE(u.image_url, '') AS sender_avatar_url,
                      n.sender_id,
-                     COALESCE(fr.group_id, gjr.group_id, '') AS group_id,
-                     COALESCE(g.title, g2.title, '') AS group_title
+                     COALESCE(fr.group_id, gjr.group_id, n.group_id, '') AS group_id,
+                     COALESCE(g.title, g2.title, g3.title, '') AS group_title
               FROM notifications n
               LEFT JOIN users u ON n.sender_id = u.user_id
               LEFT JOIN follow_requests fr ON n.request_id = fr.request_id
               LEFT JOIN groups g ON fr.group_id = g.group_id
               LEFT JOIN group_join_requests gjr ON n.request_id = gjr.id
               LEFT JOIN groups g2 ON gjr.group_id = g2.group_id
+              LEFT JOIN groups g3 ON n.group_id = g3.group_id
               WHERE n.user_id = ?
               ORDER BY n.creation_date ASC`
 
