@@ -19,10 +19,10 @@ type Services struct {
 func InitServices(repos *Repositories) *Services {
 	userService := servimpl.NewUserService(repos.UserRepository)
 	authService := servimpl.NewAuthService(repos.UserRepository, repos.AuthRepository, userService)
-	groupService := servimpl.NewGroupService(repos.GroupRepository)
+	notificationService := servimpl.NewNotificationService(repos.NotificationRepository, repos.UserRepository)
+	groupService := servimpl.NewGroupService(repos.GroupRepository, notificationService)
 	postService := servimpl.NewPostService(repos.PostRepository, userService, groupService)
 	commentService := servimpl.NewCommentService(repos.CommentRepository, repos.UserRepository, postService)
-	notificationService := servimpl.NewNotificationService(repos.NotificationRepository, repos.UserRepository)
 	messageService := servimpl.NewMessageService(repos.MessageRepository)
 	groupJoinRequestService := servimpl.NewGroupJoinRequestService(repos.GroupJoinRequestRepository, repos.GroupRepository, notificationService)
 

@@ -70,6 +70,17 @@ function NotificationsCard({ notification, onAccept, onDecline }) {
     case 'new_follower':
       message = 'has followed you';
       break;
+    case 'event_created':
+      message = (
+        <>
+          has created an event in{' '}
+          <GroupLink
+            groupId={notification.group_id}
+            groupName={notification.group_name}
+          />
+        </>
+      );
+      break;
     case 'group_invite':
       message = (
         <>

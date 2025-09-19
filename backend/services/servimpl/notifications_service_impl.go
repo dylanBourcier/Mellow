@@ -56,19 +56,22 @@ func (s *notificationServiceImpl) CreateNotification(ctx context.Context, notif 
 
 		return utils.ErrInvalidPayload
 	}
-	//check if the notification is already sent
-	existingNotif, err := s.notifRepo.GetNotificationByTypeSenderReceiver(ctx, notif.Type, notif.SenderID, notif.UserID.String())
-	if err != nil {
-		return fmt.Errorf("failed to check existing notification: %w", err)
-	}
-	if existingNotif != nil {
-		// if the notification already exists and his creation date is less than 24 hours, we don't create a new one
-		if time.Since(existingNotif.CreationDate) < 24*time.Hour && !existingNotif.Seen {
-			return nil
-		} else {
-			// if the notification already exists and his creation date is more than 24 hours, we delete the old one
-			if err := s.notifRepo.DeleteNotification(ctx, existingNotif.NotificationID.String()); err != nil {
-				return fmt.Errorf("failed to delete existing notification: %w", err)
+
+	// Check if the notification is already sent (skip for event_created as each event is unique)
+	if notif.Type != models.NotificationTypeEventCreated {
+		existingNotif, err := s.notifRepo.GetNotificationByTypeSenderReceiver(ctx, notif.Type, notif.SenderID, notif.UserID.String())
+		if err != nil {
+			return fmt.Errorf("failed to check existing notification: %w", err)
+		}
+		if existingNotif != nil {
+			// if the notification already exists and his creation date is less than 24 hours, we don't create a new one
+			if time.Since(existingNotif.CreationDate) < 24*time.Hour && !existingNotif.Seen {
+				return nil
+			} else {
+				// if the notification already exists and his creation date is more than 24 hours, we delete the old one
+				if err := s.notifRepo.DeleteNotification(ctx, existingNotif.NotificationID.String()); err != nil {
+					return fmt.Errorf("failed to delete existing notification: %w", err)
+				}
 			}
 		}
 	}
