@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS "notifications" (
     "user_id" VARCHAR NOT NULL,
     "sender_id" VARCHAR NOT NULL,
     "request_id" VARCHAR,
+    "group_id" VARCHAR,
     "type" TEXT NOT NULL,
     "seen" BOOLEAN NOT NULL DEFAULT false,
     "creation_date" DATETIME NOT NULL,

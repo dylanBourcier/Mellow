@@ -14,11 +14,12 @@ import (
 
 type groupServiceImpl struct {
 	groupRepo repositories.GroupRepository
+	notifSvc  services.NotificationService
 }
 
 // NewGroupService crée une nouvelle instance de GroupService.
-func NewGroupService(groupRepo repositories.GroupRepository) services.GroupService {
-	return &groupServiceImpl{groupRepo: groupRepo}
+func NewGroupService(groupRepo repositories.GroupRepository, notifSvc services.NotificationService) services.GroupService {
+	return &groupServiceImpl{groupRepo: groupRepo, notifSvc: notifSvc}
 }
 
 func (s *groupServiceImpl) CreateGroup(ctx context.Context, group *models.Group) error {
@@ -228,7 +229,7 @@ func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event)
 		return utils.ErrInvalidPayload
 	}
 	//vérifier si le groupe existe
-	_, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
+	group, err := s.groupRepo.GetGroupByID(ctx, event.GroupID.String())
 	if err != nil {
 		if err == utils.ErrGroupNotFound {
 			return utils.ErrGroupNotFound
@@ -254,6 +255,34 @@ func (s *groupServiceImpl) InsertEvent(ctx context.Context, event *models.Event)
 	if err := s.groupRepo.InsertEvent(ctx, event); err != nil {
 		return err
 	}
+
+	// Envoyer des notifications à tous les membres du groupe (sauf le créateur de l'événement)
+	members, err := s.groupRepo.GetGroupMembers(ctx, event.GroupID.String())
+	if err != nil {
+		fmt.Printf("Warning: failed to get group members for notifications: %v\n", err)
+		// On continue même si on ne peut pas envoyer les notifications
+	} else {
+		for _, member := range members {
+			// Ne pas envoyer de notification au créateur de l'événement
+			if member.UserID == event.UserID {
+				continue
+			}
+
+			notification := &models.Notification{
+				UserID:    member.UserID,
+				Type:      models.NotificationTypeEventCreated,
+				SenderID:  event.UserID.String(),
+				GroupID:   &event.GroupID,
+				GroupName: &group.Title, // Ajouter le nom du groupe
+			}
+
+			if err := s.notifSvc.CreateNotification(ctx, notification); err != nil {
+				fmt.Printf("Warning: failed to create notification for user %s: %v\n", member.UserID.String(), err)
+				// On continue même si une notification individuelle échoue
+			}
+		}
+	}
+
 	return nil
 }
 
